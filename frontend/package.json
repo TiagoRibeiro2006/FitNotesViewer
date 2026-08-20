@@ -1,7 +1,7 @@
 {
   "name": "fitnotes-viewer-frontend",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-vue": "latest",
+    "sql.js": "^1.13.0",
     "vite": "latest",
     "vue": "latest"
   },
