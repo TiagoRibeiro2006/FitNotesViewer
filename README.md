@@ -1,27 +1,30 @@
 # FitNotes Viewer
 
-V1 simples para carregar um backup `.fitnotes` (SQLite), analisá-lo no backend e mostrar um resumo no browser.
+Aplicação simples para importar backups `.fitnotes` (SQLite) e consultar os exercícios por dia.
 
 ## Stack
 
 - Frontend: Vue 3 + Vite + JavaScript
 - Backend: ASP.NET Core 8 Web API
-- Leitura SQLite: Microsoft.Data.Sqlite
+- SQLite: Microsoft.Data.Sqlite
 
-## Como funciona
+## V2
 
-1. O utilizador escolhe um ficheiro `.fitnotes`.
-2. O frontend envia-o por `multipart/form-data` para `POST /api/fitnotes/analyze`.
-3. A API valida a extensão e o cabeçalho SQLite.
-4. O ficheiro é guardado apenas num ficheiro temporário.
-5. A API abre a base de dados em modo read-only e lê um resumo.
-6. O ficheiro temporário é apagado no `finally`.
+- Uma única página/home.
+- Upload de ficheiro `.fitnotes`.
+- Depois do upload, os dados ficam guardados apenas no `localStorage` do dispositivo/browser.
+- Ao abrir a aplicação novamente, começa sempre no dia atual.
+- Botão `←` para o dia anterior e `→` para o dia seguinte.
+- Mostra apenas os exercícios e o número de séries desse dia.
+- Manifest configurado com `display: standalone` para melhorar a experiência ao adicionar ao ecrã principal.
+
+## Privacidade
+
+O `.fitnotes` é enviado à API apenas para leitura, guardado temporariamente, aberto em modo read-only e apagado no fim. O servidor não mantém o backup. A cópia dos dados usada pela interface fica apenas no armazenamento local do browser/app.
 
 ## Executar localmente
 
 ### Backend
-
-É necessário .NET 8 SDK.
 
 ```bash
 cd backend
@@ -29,11 +32,7 @@ dotnet restore
 dotnet run
 ```
 
-Por omissão, o perfil local usa `http://localhost:5080`.
-
 ### Frontend
-
-É necessário Node.js 18+.
 
 ```bash
 cd frontend
@@ -41,47 +40,15 @@ npm install
 npm run dev
 ```
 
-Abre o endereço indicado pelo Vite, normalmente `http://localhost:5173`.
-
-## Configuração do frontend
-
-Cria `frontend/.env` se quiseres alterar a API:
+Por omissão, o frontend usa `http://localhost:5080` como API. Em produção define:
 
 ```env
-VITE_API_URL=http://localhost:5080
+VITE_API_URL=https://fitnotes-viewer-api.onrender.com
 ```
 
-Em produção, define `VITE_API_URL` para o URL público do backend.
+## Deploy atual
 
-## Endpoint
+- Frontend: Cloudflare Pages
+- Backend: Render
 
-### POST `/api/fitnotes/analyze`
-
-Form data:
-
-- `file`: ficheiro `.fitnotes`
-
-Resposta exemplo:
-
-```json
-{
-  "fileName": "FitNotes_Backup.fitnotes",
-  "totalSets": 4003,
-  "totalExercises": 88,
-  "firstWorkoutDate": "2024-01-01",
-  "lastWorkoutDate": "2026-08-06",
-  "topExercises": [
-    { "name": "Bench Press", "sets": 120 }
-  ]
-}
-```
-
-## Deploy
-
-O repositório já inclui:
-
-- `backend/Dockerfile` para alojar a API num serviço com Docker.
-- `render.yaml` como configuração inicial para Render.
-- `frontend/.env.example` para a variável `VITE_API_URL`.
-
-A base de dados `.fitnotes` não é guardada permanentemente.
+Depois de fazer `git push`, os serviços ligados ao repositório podem fazer redeploy automaticamente.
