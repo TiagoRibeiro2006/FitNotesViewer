@@ -20,7 +20,7 @@ public sealed class FitNotesController : ControllerBase
     public async Task<IActionResult> Analyze(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
-            return BadRequest(new { message = "Seleciona um ficheiro .fitnotes." });
+            return BadRequest(new { message = "Select a .fitnotes file." });
 
         try
         {
@@ -33,7 +33,7 @@ public sealed class FitNotesController : ControllerBase
         }
         catch (SqliteException)
         {
-            return BadRequest(new { message = "Não foi possível ler este backup FitNotes." });
+            return BadRequest(new { message = "This FitNotes backup could not be read." });
         }
     }
 }

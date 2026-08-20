@@ -1,21 +1,28 @@
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #172033;
-  background: #f5f7fb;
+  color: #f5f5f5;
+  background: #000;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-html { background: #f5f7fb; }
-body { margin: 0; min-width: 320px; min-height: 100vh; min-height: 100dvh; }
+html { background: #000; }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
+}
 button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
 .page-shell {
   width: min(760px, calc(100% - 32px));
   margin: 0 auto;
-  padding: max(32px, env(safe-area-inset-top)) 0 max(40px, env(safe-area-inset-bottom));
+  padding: max(32px, env(safe-area-inset-top)) 0 calc(118px + env(safe-area-inset-bottom));
 }
 
 .app-header {
@@ -31,18 +38,25 @@ button { -webkit-tap-highlight-color: transparent; }
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .16em;
-  color: #677286;
+  color: #8f8f96;
 }
 
 h1, h2, p { margin-top: 0; }
-h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; letter-spacing: -.04em; }
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(32px, 7vw, 48px);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+  color: #fff;
+}
 
 .data-pill {
   flex: 0 0 auto;
   padding: 7px 11px;
+  border: 1px solid #333;
   border-radius: 999px;
-  background: #eaf7ee;
-  color: #18753c;
+  background: #171717;
+  color: #f4f4f5;
   font-size: 12px;
   font-weight: 800;
 }
@@ -50,10 +64,10 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
 .upload-card,
 .day-card,
 .empty-state {
-  background: white;
-  border: 1px solid #e3e7ee;
+  background: #101010;
+  border: 1px solid #242424;
   border-radius: 18px;
-  box-shadow: 0 12px 36px rgba(30, 43, 70, .06);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
 }
 
 .upload-card {
@@ -79,8 +93,10 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
 .file-picker span {
   min-height: 44px;
   padding: 0 15px;
+  border: 1px solid #303030;
   border-radius: 11px;
-  background: #eef1f6;
+  background: #1c1c1c;
+  color: #fff;
 }
 
 .file-name {
@@ -89,7 +105,7 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #687386;
+  color: #9d9da4;
   font-size: 14px;
 }
 
@@ -97,12 +113,18 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
   min-height: 44px;
   padding: 0 16px;
   border-radius: 11px;
-  background: #172033;
-  color: white;
+  background: #f5f5f5;
+  color: #080808;
 }
 
-.primary-button:disabled { opacity: .45; cursor: not-allowed; }
-.error-message { grid-column: 1 / -1; margin: 0; color: #b42318; font-size: 14px; font-weight: 650; }
+.primary-button:disabled { opacity: .38; cursor: not-allowed; }
+.error-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ff7066;
+  font-size: 14px;
+  font-weight: 650;
+}
 
 .day-card { margin-top: 18px; padding: 18px; }
 
@@ -112,22 +134,23 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
   align-items: center;
   gap: 12px;
   padding-bottom: 18px;
-  border-bottom: 1px solid #e7eaf0;
+  border-bottom: 1px solid #292929;
 }
 
 .nav-button {
   width: 48px;
   height: 48px;
+  border: 1px solid #303030;
   border-radius: 14px;
-  background: #eef1f6;
-  color: #172033;
+  background: #1b1b1b;
+  color: #fff;
   font-size: 22px;
 }
 
 .nav-button:active { transform: scale(.97); }
 .day-title { text-align: center; }
-.day-title h2 { margin-bottom: 3px; font-size: 22px; }
-.day-title p { margin-bottom: 0; color: #737d8f; font-size: 13px; }
+.day-title h2 { margin-bottom: 3px; font-size: 22px; color: #fff; }
+.day-title p { margin-bottom: 0; color: #888890; font-size: 13px; }
 
 .exercise-list { padding-top: 8px; }
 .exercise-row {
@@ -136,24 +159,89 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
   justify-content: space-between;
   gap: 16px;
   padding: 15px 4px;
-  border-bottom: 1px solid #edf0f4;
+  border-bottom: 1px solid #242424;
 }
 .exercise-row:last-child { border-bottom: 0; }
-.exercise-row strong { font-size: 16px; }
-.exercise-row span { flex: 0 0 auto; color: #727d8f; font-size: 13px; }
+.exercise-row strong { font-size: 16px; color: #f7f7f7; }
+.exercise-row span { flex: 0 0 auto; color: #8f8f96; font-size: 13px; }
 
 .empty-day,
 .empty-state {
   text-align: center;
-  color: #778195;
+  color: #8f8f96;
 }
 .empty-day { padding: 36px 12px 20px; }
 .empty-day p,
 .empty-state p { margin: 0; }
 .empty-state { margin-top: 18px; padding: 30px 20px; }
 
+.bottom-bar {
+  position: fixed;
+  z-index: 50;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  padding: 9px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  border-top: 1px solid #242424;
+  background: rgba(8, 8, 8, .96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.bottom-item {
+  min-width: 0;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #77777f;
+  cursor: default;
+}
+
+.bottom-item svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bottom-item span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.bottom-item.is-active {
+  color: #fff;
+}
+
+.bottom-item.is-active svg {
+  fill: currentColor;
+  stroke-width: 1.5;
+}
+
 @media (max-width: 640px) {
-  .page-shell { width: min(100% - 24px, 760px); padding-top: max(24px, env(safe-area-inset-top)); }
+  .page-shell {
+    width: min(100% - 24px, 760px);
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
   .app-header { align-items: center; }
   .upload-card { grid-template-columns: 1fr auto; }
   .file-picker { grid-column: 1 / 2; }
@@ -167,4 +255,6 @@ h1 { margin-bottom: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.02; let
   .file-picker span { padding: 0 12px; }
   .primary-button { padding: 0 13px; }
   .day-card { padding: 14px; }
+  .bottom-bar { padding-left: 4px; padding-right: 4px; }
+  .bottom-item span { font-size: 9px; }
 }
