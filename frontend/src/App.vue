@@ -39,7 +39,6 @@ const selectedExercise = ref(null)
 const draftSets = ref([])
 const previousSets = ref([])
 const previousDate = ref(null)
-const editorOrigin = ref('picker')
 const editorHasExistingSets = ref(false)
 const deleteConfirming = ref(false)
 const dataDeleteConfirming = ref(false)
@@ -323,7 +322,6 @@ async function openWorkoutModal() {
   searchQuery.value = ''
   selectedCategoryId.value = null
   selectedExercise.value = null
-  editorOrigin.value = 'picker'
   deleteConfirming.value = false
 
   if (!data.value) return
@@ -344,13 +342,11 @@ async function loadExerciseCatalog() {
 }
 
 async function chooseExercise(exercise) {
-  editorOrigin.value = 'picker'
   await openExerciseEditor(exercise)
 }
 
 async function editDayExercise(dayExercise) {
   workoutModalOpen.value = true
-  editorOrigin.value = 'day'
   editorError.value = ''
 
   try {
@@ -425,28 +421,11 @@ function editorLoadingReset() {
   previousDate.value = null
 }
 
-function handleEditorBack() {
-  if (editorOrigin.value === 'day') {
-    closeWorkoutModal()
-    return
-  }
-
-  backToExercisePicker()
-}
-
-function backToExercisePicker() {
-  modalStep.value = 'exercise'
-  selectedExercise.value = null
-  editorOrigin.value = 'picker'
-  editorLoadingReset()
-}
-
 function closeWorkoutModal(force = false) {
   if (editorSaving.value && !force) return
   workoutModalOpen.value = false
   modalStep.value = 'exercise'
   selectedExercise.value = null
-  editorOrigin.value = 'picker'
   editorLoadingReset()
 }
 
@@ -917,12 +896,12 @@ async function deleteCurrentData() {
 
         <template v-else>
           <header class="modal-header">
-            <button class="modal-icon-button modal-back-button" type="button" aria-label="Back" @click="handleEditorBack">←</button>
+            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
             <div class="modal-heading">
               <p>{{ selectedDateLong }}</p>
               <h2>{{ editorTitle }}</h2>
             </div>
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
+            <span class="modal-header-spacer" aria-hidden="true"></span>
           </header>
 
           <div v-if="selectedExercise" class="set-editor">
