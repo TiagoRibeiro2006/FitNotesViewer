@@ -149,8 +149,7 @@ h1 {
 
 .nav-button:active { transform: scale(.97); }
 .day-title { text-align: center; }
-.day-title h2 { margin-bottom: 3px; font-size: 22px; color: #fff; }
-.day-title p { margin-bottom: 0; color: #888890; font-size: 13px; }
+.day-title h2 { margin-bottom: 0; font-size: 22px; color: #fff; }
 
 .exercise-list { padding-top: 8px; }
 .exercise-row {

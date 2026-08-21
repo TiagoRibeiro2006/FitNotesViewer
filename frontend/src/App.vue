@@ -640,7 +640,6 @@ async function deleteCurrentData() {
 
           <div class="day-title">
             <h2>{{ selectedDateLabel }}</h2>
-            <p>{{ selectedDateLong }}</p>
           </div>
 
           <button class="nav-button" aria-label="Next day" @click="changeDay(1)">→</button>
