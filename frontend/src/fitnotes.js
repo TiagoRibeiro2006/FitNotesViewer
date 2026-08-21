@@ -179,6 +179,14 @@ export function warmUpSqliteEngine() {
   return getSqlJs()
 }
 
+function getSqlJs() {
+  if (!sqlJsPromise) {
+    sqlJsPromise = initSqlJs({ locateFile: () => wasmUrl })
+  }
+
+  return sqlJsPromise
+}
+
 function validateFile(file) {
   if (!file) throw new Error('Select a .fitnotes file first.')
   if (!file.name.toLowerCase().endsWith('.fitnotes')) throw new Error('The file must use the .fitnotes extension.')
