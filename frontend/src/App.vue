@@ -239,6 +239,18 @@ function selectCalendarDate(dateKey) {
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
+function openSettings() {
+  activeView.value = 'settings'
+  error.value = ''
+  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
+function backToWorkouts() {
+  activeView.value = 'workouts'
+  error.value = ''
+  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
 function changeDay(amount) {
   selectedDate.value = shiftDateKey(selectedDate.value, amount)
 }
@@ -565,15 +577,7 @@ function friendlyError(err) {
 <template>
   <main class="page-shell">
     <template v-if="activeView === 'workouts'">
-      <header class="app-header">
-        <div>
-          <p class="eyebrow">FITNOTES VIEWER</p>
-          <h1>Your workouts</h1>
-        </div>
-        <span v-if="data" class="data-pill">{{ data.totalSets }} sets</span>
-      </header>
-
-      <section class="upload-card">
+      <section v-if="!data" class="upload-card home-upload-card">
         <label class="file-picker">
           <input type="file" accept=".fitnotes" @change="onFileChange" />
           <span>Choose .fitnotes</span>
@@ -582,13 +586,13 @@ function friendlyError(err) {
         <p class="file-name">{{ fileLabel }}</p>
 
         <button class="primary-button" :disabled="loading || !selectedFile" @click="analyzeFile">
-          {{ loading ? 'Importing…' : data ? 'Update data' : 'Import' }}
+          {{ loading ? 'Importing…' : 'Import' }}
         </button>
 
         <p v-if="error" class="error-message">{{ error }}</p>
       </section>
 
-      <section v-if="data" class="day-card">
+      <section v-if="data" class="day-card home-day-card">
         <div class="day-navigation">
           <button class="nav-button" aria-label="Previous day" @click="changeDay(-1)">←</button>
 
@@ -624,13 +628,9 @@ function friendlyError(err) {
           <p>No workout on this day.</p>
         </div>
       </section>
-
-      <section v-else class="empty-state">
-        <p>Import your FitNotes backup to see the exercises for each day.</p>
-      </section>
     </template>
 
-    <template v-else>
+    <template v-else-if="activeView === 'calendar'">
       <header class="app-header calendar-header">
         <div>
           <p class="eyebrow">FITNOTES VIEWER</p>
@@ -688,6 +688,45 @@ function friendlyError(err) {
         </article>
       </section>
     </template>
+
+    <template v-else-if="activeView === 'settings'">
+      <header class="settings-header">
+        <button class="settings-back-button" type="button" aria-label="Back to workouts" @click="backToWorkouts">←</button>
+        <h1>Settings</h1>
+        <span class="settings-header-spacer" aria-hidden="true"></span>
+      </header>
+
+      <section class="settings-card">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">DATA</p>
+            <h2>FitNotes backup</h2>
+          </div>
+          <span v-if="data" class="data-pill">{{ data.totalSets }} sets</span>
+        </div>
+
+        <section class="upload-card settings-upload-card">
+          <label class="file-picker">
+            <input type="file" accept=".fitnotes" @change="onFileChange" />
+            <span>Choose .fitnotes</span>
+          </label>
+
+          <p class="file-name">{{ fileLabel }}</p>
+
+          <button class="primary-button" :disabled="loading || !selectedFile" @click="analyzeFile">
+            {{ loading ? 'Importing…' : data ? 'Replace data' : 'Import' }}
+          </button>
+
+          <p v-if="error" class="error-message">{{ error }}</p>
+        </section>
+
+        <div v-if="data" class="settings-data-meta">
+          <span>{{ data.totalExercises }} exercises</span>
+          <span aria-hidden="true">•</span>
+          <span>{{ data.firstWorkoutDate }} → {{ data.lastWorkoutDate }}</span>
+        </div>
+      </section>
+    </template>
   </main>
 
   <nav class="bottom-bar" aria-label="App navigation">
@@ -721,7 +760,7 @@ function friendlyError(err) {
       <span>Charts</span>
     </button>
 
-    <button class="bottom-item" type="button" aria-label="Settings">
+    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'settings' }" type="button" aria-label="Settings" @click="openSettings">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21h-4v-.09a1.65 1.65 0 0 0-1.08-1.5 1.65 1.65 0 0 0-1.82.33l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3v-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3h4v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 19.4 9c.16.38.5.72.91.88.2.08.41.12.63.12H21v4h-.09c-.66 0-1.26.4-1.51 1Z" />
