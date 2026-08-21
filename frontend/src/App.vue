@@ -38,7 +38,6 @@ const categories = ref([])
 const selectedExercise = ref(null)
 const draftSets = ref([])
 const previousSets = ref([])
-const previousDate = ref(null)
 const editorHasExistingSets = ref(false)
 const deleteConfirming = ref(false)
 const dataDeleteConfirming = ref(false)
@@ -94,24 +93,6 @@ const filteredExercises = computed(() => {
 })
 
 const editorTitle = computed(() => editorHasExistingSets.value ? 'Edit exercise' : 'Log exercise')
-
-const draftStats = computed(() => {
-  let sets = 0
-  let reps = 0
-  let volume = 0
-
-  for (const set of draftSets.value) {
-    const weight = Number(String(set.weight ?? '').replace(',', '.'))
-    const repetitionCount = Number(set.reps)
-    if (!Number.isFinite(weight) || weight < 0 || !Number.isInteger(repetitionCount) || repetitionCount <= 0) continue
-
-    sets += 1
-    reps += repetitionCount
-    volume += weight * repetitionCount
-  }
-
-  return { sets, reps, volume }
-})
 
 const canSaveExercise = computed(() => {
   let completeSets = 0
@@ -387,7 +368,6 @@ async function openExerciseEditor(exercise) {
 
     editorHasExistingSets.value = currentSets.length > 0
     previousSets.value = previous.sets
-    previousDate.value = previous.date
 
     if (currentSets.length) {
       draftSets.value = currentSets.map((set) => ({
@@ -418,7 +398,6 @@ function editorLoadingReset() {
   deleteConfirming.value = false
   draftSets.value = []
   previousSets.value = []
-  previousDate.value = null
 }
 
 function closeWorkoutModal(force = false) {
@@ -536,18 +515,6 @@ function relativeDate(dateKey) {
   return formatDate(dateKey)
 }
 
-function previousSetLabel(index) {
-  const set = previousSets.value[index]
-  if (!set) return '—'
-  return `${formatNumber(set.weight)} × ${set.reps}`
-}
-
-function formatNumber(value) {
-  const number = Number(value)
-  if (!Number.isFinite(number)) return '0'
-  return Number.isInteger(number) ? String(number) : String(number).replace(/\.0+$/, '')
-}
-
 function friendlyError(err) {
   const message = err instanceof Error ? err.message : String(err ?? '')
 
@@ -583,7 +550,6 @@ async function deleteCurrentData() {
     categories.value = []
     selectedExercise.value = null
     previousSets.value = []
-    previousDate.value = null
     editorHasExistingSets.value = false
     selectedDate.value = todayKey()
     dataDeleteConfirming.value = false
@@ -913,20 +879,8 @@ async function deleteCurrentData() {
               </div>
             </div>
 
-            <div class="session-metrics" aria-label="Current exercise totals">
-              <span><strong>{{ draftStats.sets }}</strong><small>sets</small></span>
-              <span><strong>{{ draftStats.reps }}</strong><small>reps</small></span>
-              <span><strong>{{ formatNumber(draftStats.volume) }}</strong><small>kg volume</small></span>
-            </div>
-
-            <div class="previous-session-line">
-              <span>Previous</span>
-              <strong>{{ previousDate ? formatDate(previousDate) : 'No previous workout' }}</strong>
-            </div>
-
             <div class="sets-grid sets-grid-header" aria-hidden="true">
               <span>Set</span>
-              <span>Previous</span>
               <span>kg</span>
               <span>Reps</span>
               <span></span>
@@ -935,7 +889,6 @@ async function deleteCurrentData() {
             <div class="sets-editor-list">
               <div v-for="(set, index) in draftSets" :key="index" class="sets-grid set-input-row">
                 <span class="set-number">{{ index + 1 }}</span>
-                <span class="previous-set">{{ previousSetLabel(index) }}</span>
                 <input v-model="set.weight" class="set-input" type="text" inputmode="decimal" placeholder="0" aria-label="Weight in kilograms" @input="deleteConfirming = false" />
                 <input v-model="set.reps" class="set-input" type="number" inputmode="numeric" min="1" step="1" placeholder="0" aria-label="Repetitions" @input="deleteConfirming = false" />
                 <button class="remove-set-button" type="button" aria-label="Remove set" @click="removeSet(index)">−</button>
