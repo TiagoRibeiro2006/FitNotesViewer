@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import {
+  clearLocalData,
   deleteWorkoutExercise,
   getExerciseCatalog,
   getPreviousWorkoutSetsForExercise,
@@ -25,7 +26,7 @@ const activeView = ref('workouts')
 const calendarWorkoutDates = ref(new Set())
 let dayLoadSequence = 0
 
-const startModalOpen = ref(false)
+const workoutModalOpen = ref(false)
 const modalStep = ref('exercise')
 const modalLoading = ref(false)
 const editorSaving = ref(false)
@@ -41,6 +42,9 @@ const previousDate = ref(null)
 const editorOrigin = ref('picker')
 const editorHasExistingSets = ref(false)
 const deleteConfirming = ref(false)
+const dataDeleteConfirming = ref(false)
+const deletingData = ref(false)
+const dataDeleteError = ref('')
 
 const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
 
@@ -152,7 +156,7 @@ watch(selectedDate, () => {
   if (data.value) void loadDayExercises()
 })
 
-watch(startModalOpen, (open) => {
+watch(workoutModalOpen, (open) => {
   document.body.classList.toggle('modal-open', open)
 })
 
@@ -242,6 +246,8 @@ function selectCalendarDate(dateKey) {
 function openSettings() {
   activeView.value = 'settings'
   error.value = ''
+  dataDeleteConfirming.value = false
+  dataDeleteError.value = ''
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
@@ -258,6 +264,8 @@ function changeDay(amount) {
 function onFileChange(event) {
   selectedFile.value = event.target.files?.[0] ?? null
   error.value = ''
+  dataDeleteConfirming.value = false
+  dataDeleteError.value = ''
 }
 
 async function loadDayExercises() {
@@ -288,6 +296,8 @@ async function analyzeFile() {
 
   loading.value = true
   error.value = ''
+  dataDeleteConfirming.value = false
+  dataDeleteError.value = ''
 
   try {
     void requestPersistentStorage()
@@ -306,8 +316,8 @@ async function analyzeFile() {
   }
 }
 
-async function openStartModal() {
-  startModalOpen.value = true
+async function openWorkoutModal() {
+  workoutModalOpen.value = true
   modalStep.value = 'exercise'
   editorError.value = ''
   searchQuery.value = ''
@@ -339,7 +349,7 @@ async function chooseExercise(exercise) {
 }
 
 async function editDayExercise(dayExercise) {
-  startModalOpen.value = true
+  workoutModalOpen.value = true
   editorOrigin.value = 'day'
   editorError.value = ''
 
@@ -417,7 +427,7 @@ function editorLoadingReset() {
 
 function handleEditorBack() {
   if (editorOrigin.value === 'day') {
-    closeStartModal()
+    closeWorkoutModal()
     return
   }
 
@@ -431,9 +441,9 @@ function backToExercisePicker() {
   editorLoadingReset()
 }
 
-function closeStartModal(force = false) {
+function closeWorkoutModal(force = false) {
   if (editorSaving.value && !force) return
-  startModalOpen.value = false
+  workoutModalOpen.value = false
   modalStep.value = 'exercise'
   selectedExercise.value = null
   editorOrigin.value = 'picker'
@@ -441,7 +451,7 @@ function closeStartModal(force = false) {
 }
 
 function onKeyDown(event) {
-  if (event.key === 'Escape' && startModalOpen.value) closeStartModal()
+  if (event.key === 'Escape' && workoutModalOpen.value) closeWorkoutModal()
 }
 
 function addSet() {
@@ -479,7 +489,7 @@ async function deleteExerciseFromDay() {
     data.value = await deleteWorkoutExercise(selectedDate.value, selectedExercise.value.id)
     const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
     calendarWorkoutDates.value = workoutDates
-    closeStartModal(true)
+    closeWorkoutModal(true)
   } catch (err) {
     editorError.value = friendlyError(err)
   } finally {
@@ -497,7 +507,7 @@ async function saveExercise() {
     data.value = await saveWorkoutExercise(selectedDate.value, selectedExercise.value, draftSets.value)
     const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
     calendarWorkoutDates.value = workoutDates
-    closeStartModal(true)
+    closeWorkoutModal(true)
   } catch (err) {
     editorError.value = friendlyError(err)
   } finally {
@@ -571,6 +581,38 @@ function friendlyError(err) {
   }
 
   return message || 'Something went wrong.'
+}
+
+async function deleteCurrentData() {
+  if (!data.value || deletingData.value) return
+
+  if (!dataDeleteConfirming.value) {
+    dataDeleteConfirming.value = true
+    return
+  }
+
+  deletingData.value = true
+  dataDeleteError.value = ''
+
+  try {
+    await clearLocalData()
+    dayLoadSequence += 1
+    data.value = null
+    dayExercises.value = []
+    calendarWorkoutDates.value = new Set()
+    exerciseCatalog.value = []
+    categories.value = []
+    selectedExercise.value = null
+    previousSets.value = []
+    previousDate.value = null
+    editorHasExistingSets.value = false
+    selectedDate.value = todayKey()
+    dataDeleteConfirming.value = false
+  } catch (err) {
+    dataDeleteError.value = friendlyError(err)
+  } finally {
+    deletingData.value = false
+  }
 }
 </script>
 
@@ -725,6 +767,24 @@ function friendlyError(err) {
           <span aria-hidden="true">•</span>
           <span>{{ data.firstWorkoutDate }} → {{ data.lastWorkoutDate }}</span>
         </div>
+
+        <div v-if="data" class="settings-delete-row">
+          <div>
+            <strong>Delete current data</strong>
+            <p>Remove the imported backup and all workout data stored on this device.</p>
+          </div>
+          <button
+            class="settings-delete-button"
+            :class="{ 'is-confirming': dataDeleteConfirming }"
+            type="button"
+            :disabled="deletingData"
+            @click="deleteCurrentData"
+          >
+            {{ deletingData ? 'Deleting…' : dataDeleteConfirming ? 'Tap again to delete' : 'Delete data' }}
+          </button>
+        </div>
+
+        <p v-if="dataDeleteError" class="settings-delete-error">{{ dataDeleteError }}</p>
       </section>
     </template>
   </main>
@@ -746,11 +806,11 @@ function friendlyError(err) {
       <span>Calendar</span>
     </button>
 
-    <button class="bottom-item is-start-trigger" type="button" aria-label="Start" aria-haspopup="dialog" @click="openStartModal">
+    <button class="bottom-item is-log-trigger" type="button" aria-label="Log workout" aria-haspopup="dialog" @click="openWorkoutModal">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m12 3 2.65 5.37 5.93.86-4.29 4.18 1.01 5.91L12 16.53 6.7 19.32l1.01-5.91-4.29-4.18 5.93-.86L12 3Z" />
+        <path d="M2.5 10v4M5 8v8m3-5v2m8-2v2m3-5v8m2.5-6v4M8 12h8" />
       </svg>
-      <span>Start</span>
+      <span>Log</span>
     </button>
 
     <button class="bottom-item" type="button" aria-label="Charts">
@@ -770,11 +830,11 @@ function friendlyError(err) {
   </nav>
 
   <Teleport to="body">
-    <div v-if="startModalOpen" class="modal-layer" @click.self="closeStartModal">
+    <div v-if="workoutModalOpen" class="modal-layer" @click.self="closeWorkoutModal">
       <section class="workout-modal" role="dialog" aria-modal="true" :aria-label="modalStep === 'exercise' ? 'Choose exercise' : editorTitle">
         <template v-if="modalStep === 'exercise'">
           <header class="modal-header">
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeStartModal">×</button>
+            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
             <div class="modal-heading">
               <p>{{ selectedDateLong }}</p>
               <h2>Choose exercise</h2>
@@ -786,7 +846,7 @@ function friendlyError(err) {
             <div class="modal-empty-icon">+</div>
             <h3>Import your backup first</h3>
             <p>Your exercise library comes from the FitNotes backup stored on this device.</p>
-            <button class="secondary-button" type="button" @click="closeStartModal">Got it</button>
+            <button class="secondary-button" type="button" @click="closeWorkoutModal">Got it</button>
           </div>
 
           <template v-else>
@@ -853,7 +913,7 @@ function friendlyError(err) {
               <p>{{ selectedDateLong }}</p>
               <h2>{{ editorTitle }}</h2>
             </div>
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeStartModal">×</button>
+            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
           </header>
 
           <div v-if="selectedExercise" class="set-editor">
