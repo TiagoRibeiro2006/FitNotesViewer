@@ -171,9 +171,6 @@ h1 {
 .exercise-row:active { opacity: .62; }
 .exercise-row-copy {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 .exercise-row-copy strong {
   overflow: hidden;
@@ -182,7 +179,6 @@ h1 {
   font-size: 16px;
   color: #f7f7f7;
 }
-.exercise-row-copy small { color: #65656d; font-size: 11px; font-weight: 600; }
 .exercise-row-meta {
   flex: 0 0 auto;
   display: flex;
@@ -198,24 +194,28 @@ h1 {
   line-height: 1;
 }
 
-.empty-day,
 .empty-state {
   text-align: center;
   color: #8f8f96;
 }
 
-.empty-day {
+.day-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 32px 12px 18px;
+  padding: 18px 12px 4px;
+}
+
+.day-actions.is-empty {
+  padding-top: 32px;
+  padding-bottom: 18px;
 }
 
 .empty-state p { margin: 0; }
 .empty-state { margin-top: 18px; padding: 30px 20px; }
 
-.empty-day-action {
+.day-action {
   width: min(100%, 300px);
   min-height: 48px;
   display: inline-flex;
@@ -227,7 +227,7 @@ h1 {
   font-weight: 800;
 }
 
-.empty-day-action svg {
+.day-action svg {
   width: 20px;
   height: 20px;
   fill: none;
@@ -237,18 +237,18 @@ h1 {
   stroke-linejoin: round;
 }
 
-.empty-day-add {
+.day-add-exercise {
   border: 0;
   background: #f5f5f5;
   color: #080808;
   cursor: pointer;
 }
 
-.empty-day-add:active {
+.day-add-exercise:active {
   transform: scale(.98);
 }
 
-.empty-day-copy {
+.day-copy-previous {
   border: 1px solid #292929;
   background: #171717;
   color: #62626a;

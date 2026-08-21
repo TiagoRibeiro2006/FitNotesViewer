@@ -188,7 +188,7 @@ export async function getWorkoutSetsForDate(date) {
   const request = transaction.objectStore('workoutSets').index('date').getAll(date)
   const rows = await requestResult(request)
   await done
-  return (rows ?? []).sort(compareSetRows)
+  return orderWorkoutDayRows(rows ?? [])
 }
 
 export async function getWorkoutSetsForDateExercise(date, exerciseId) {
@@ -284,12 +284,29 @@ export async function saveWorkoutExercise(date, exercise, sets) {
 
   const lookupTransaction = db.transaction('workoutSets', 'readonly')
   const lookupDone = transactionComplete(lookupTransaction)
-  const keys = await requestResult(lookupTransaction.objectStore('workoutSets').index('dateExercise').getAllKeys([date, exercise.id]))
+  const dayRows = await requestResult(lookupTransaction.objectStore('workoutSets').index('date').getAll(date))
   await lookupDone
+
+  const exerciseIds = [...new Set(orderWorkoutDayRows(dayRows ?? []).map((row) => row.exerciseId))]
+  const existingOrder = exerciseIds.indexOf(exercise.id)
+  const exerciseOrder = existingOrder >= 0 ? existingOrder : exerciseIds.length
+  const exerciseOrders = new Map(exerciseIds.map((exerciseId, indexValue) => [exerciseId, indexValue]))
 
   const transaction = db.transaction(['workoutSets', 'metadata'], 'readwrite')
   const store = transaction.objectStore('workoutSets')
-  for (const key of keys ?? []) store.delete(key)
+  const updatedAt = new Date().toISOString()
+
+  for (const row of dayRows ?? []) {
+    if (row.exerciseId === exercise.id) {
+      store.delete(row.id)
+      continue
+    }
+
+    const dayExerciseOrder = exerciseOrders.get(row.exerciseId)
+    if (row.dayExerciseOrder !== dayExerciseOrder) {
+      store.put({ ...row, dayExerciseOrder })
+    }
+  }
 
   cleanedSets.forEach((set, indexValue) => {
     store.put({
@@ -307,9 +324,10 @@ export async function saveWorkoutExercise(date, exercise, sets) {
       isComplete: 1,
       distance: 0,
       durationSeconds: 0,
+      dayExerciseOrder: exerciseOrder,
       localSetOrder: indexValue,
       createdLocally: true,
-      localUpdatedAt: new Date().toISOString(),
+      localUpdatedAt: updatedAt,
     })
   })
 
@@ -444,6 +462,43 @@ function compareSetRows(a, b) {
   const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
   const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
   if (idA !== idB) return idA - idB
+  return String(a.id).localeCompare(String(b.id))
+}
+
+function orderWorkoutDayRows(rows) {
+  const groups = new Map()
+  const sourceRows = [...rows].sort(compareSourceRows)
+
+  for (const row of sourceRows) {
+    if (!groups.has(row.exerciseId)) {
+      groups.set(row.exerciseId, {
+        rows: [],
+        sourceOrder: groups.size,
+        savedOrder: null,
+      })
+    }
+
+    const group = groups.get(row.exerciseId)
+    group.rows.push(row)
+
+    const savedOrder = Number(row.dayExerciseOrder)
+    if (row.dayExerciseOrder !== null && row.dayExerciseOrder !== undefined && Number.isInteger(savedOrder) && savedOrder >= 0) {
+      group.savedOrder = savedOrder
+    }
+  }
+
+  return [...groups.values()]
+    .sort((a, b) => (a.savedOrder ?? a.sourceOrder) - (b.savedOrder ?? b.sourceOrder) || a.sourceOrder - b.sourceOrder)
+    .flatMap((group) => group.rows.sort(compareSetRows))
+}
+
+function compareSourceRows(a, b) {
+  const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
+  const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
+  if (idA !== idB) return idA - idB
+
+  const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
+  if (updatedAtComparison !== 0) return updatedAtComparison
   return String(a.id).localeCompare(String(b.id))
 }
 

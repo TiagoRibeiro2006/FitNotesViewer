@@ -656,7 +656,6 @@ async function deleteCurrentData() {
           >
             <span class="exercise-row-copy">
               <strong>{{ exercise.name }}</strong>
-              <small>Tap to edit sets</small>
             </span>
             <span class="exercise-row-meta">
               <span>{{ exercise.sets }} {{ exercise.sets === 1 ? 'set' : 'sets' }}</span>
@@ -665,15 +664,15 @@ async function deleteCurrentData() {
           </button>
         </div>
 
-        <div v-else class="empty-day">
-          <button class="empty-day-action empty-day-add" type="button" @click="openWorkoutModal">
+        <div class="day-actions" :class="{ 'is-empty': !dayExercises.length }">
+          <button class="day-action day-add-exercise" type="button" @click="openWorkoutModal">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 5v14M5 12h14" />
             </svg>
             <span>Add Exercise</span>
           </button>
 
-          <button class="empty-day-action empty-day-copy" type="button" disabled>
+          <button v-if="!dayExercises.length" class="day-action day-copy-previous" type="button" disabled>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="8" y="8" width="11" height="11" rx="2" />
               <path d="M16 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
