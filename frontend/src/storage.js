@@ -1,5 +1,5 @@
 const DB_NAME = 'fitnotes-viewer'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const LEGACY_STORAGE_KEY = 'fitnotes-viewer-data-v2'
 
 const STORE_DEFINITIONS = {
@@ -10,6 +10,7 @@ const STORE_DEFINITIONS = {
   categories: { keyPath: 'id' },
   bodyWeights: { keyPath: 'id', indexes: [['date', 'date']] },
   measurements: { keyPath: 'id' },
+  measurementUnits: { keyPath: 'id' },
   measurementRecords: { keyPath: 'id', indexes: [['date', 'date'], ['measurementId', 'measurementId']] },
   workoutTimes: { keyPath: 'id', indexes: [['date', 'date']] },
   workoutComments: { keyPath: 'id', indexes: [['date', 'date']] },
@@ -86,6 +87,7 @@ export async function saveFitNotesImport(parsed, file, bytes) {
   putMany(transaction.objectStore('categories'), parsed.categories)
   putMany(transaction.objectStore('bodyWeights'), parsed.bodyWeights)
   putMany(transaction.objectStore('measurements'), parsed.measurements)
+  putMany(transaction.objectStore('measurementUnits'), parsed.measurementUnits)
   putMany(transaction.objectStore('measurementRecords'), parsed.measurementRecords)
   putMany(transaction.objectStore('workoutTimes'), parsed.workoutTimes)
   putMany(transaction.objectStore('workoutComments'), parsed.workoutComments)
@@ -171,27 +173,24 @@ export async function getSummary() {
   return record?.value ?? null
 }
 
-export async function getBodyFavorites() {
+export async function getBodyTrackerData() {
   const db = await openAppDatabase()
-  const transaction = db.transaction(['bodyWeights', 'measurements', 'measurementRecords'], 'readonly')
+  const transaction = db.transaction(['bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
 
   const bodyWeightsRequest = transaction.objectStore('bodyWeights').getAll()
   const measurementsRequest = transaction.objectStore('measurements').getAll()
+  const unitsRequest = transaction.objectStore('measurementUnits').getAll()
   const recordsRequest = transaction.objectStore('measurementRecords').getAll()
-  const [bodyWeights, measurements, records] = await Promise.all([
+  const [bodyWeights, measurements, units, records] = await Promise.all([
     requestResult(bodyWeightsRequest),
     requestResult(measurementsRequest),
+    requestResult(unitsRequest),
     requestResult(recordsRequest),
   ])
   await done
 
-  return [
-    buildBodyWeightFavorite('body-fat', 'Body Fat', '%', bodyWeights, 'bodyFat'),
-    buildBodyWeightFavorite('body-weight', 'Body Weight', 'kg', bodyWeights, 'bodyWeightMetric'),
-    buildMeasurementFavorite('muscle-mass', 'Muscle Mass', 'kg', measurements, records),
-    buildMeasurementFavorite('visceral-fat', 'Visceral Fat', '%', measurements, records),
-  ]
+  return buildBodyTrackerData(bodyWeights, measurements, units, records)
 }
 
 export async function getWorkoutDateSet() {
@@ -525,26 +524,74 @@ function compareSourceRows(a, b) {
   return String(a.id).localeCompare(String(b.id))
 }
 
-function buildBodyWeightFavorite(id, name, unit, rows = [], field) {
+function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = []) {
+  const unitsById = new Map(units.map((unit) => [unit.id, normalizeMeasurementUnit(unit.shortName)]))
+  const measurementItems = measurements.map((measurement) => buildMeasurementItem(
+    measurement,
+    unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
+    records,
+  ))
+  const itemsByName = new Map(measurementItems.map((item) => [normalizeBodyName(item.name), item]))
+  const favoriteMeasurementIds = new Set()
+
+  const favoriteDefinitions = [
+    { id: 'body-fat', name: 'Body Fat', aliases: ['Body Fat'], unit: '%', field: 'bodyFat' },
+    { id: 'body-weight', name: 'Body Weight', aliases: ['Bodyweight', 'Body Weight'], unit: 'kg', field: 'bodyWeightMetric' },
+    { id: 'muscle-mass', name: 'Muscle Mass', aliases: ['Muscle Mass'], unit: 'kg' },
+    { id: 'visceral-fat', name: 'Visceral Fat', aliases: ['Visceral Fat'], unit: '%' },
+  ]
+
+  const favorites = favoriteDefinitions.map((definition) => {
+    const measurementItem = definition.aliases
+      .map((name) => itemsByName.get(normalizeBodyName(name)))
+      .find(Boolean)
+
+    if (measurementItem) favoriteMeasurementIds.add(measurementItem.sourceId)
+
+    const bodyWeightItem = definition.field
+      ? buildBodyWeightItem(definition.id, definition.name, definition.unit, bodyWeights, definition.field)
+      : null
+    const source = measurementItem?.value === null && bodyWeightItem?.value !== null
+      ? bodyWeightItem
+      : measurementItem ?? bodyWeightItem
+
+    return {
+      ...(source ?? buildBodyItem(definition.id, definition.name, definition.unit, [], () => null)),
+      id: definition.id,
+      name: definition.name,
+      favorite: true,
+    }
+  })
+
+  const allMeasurements = measurementItems
+    .filter((item) => item.enabled && !favoriteMeasurementIds.has(item.sourceId))
+    .map((item) => ({ ...item, favorite: false }))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+
+  return { favorites, measurements: allMeasurements }
+}
+
+function buildBodyWeightItem(id, name, unit, rows = [], field) {
   const entries = rows
     .filter((row) => row[field] !== null && row[field] !== undefined && Number.isFinite(Number(row[field])))
     .sort(compareBodyEntries)
 
-  return buildBodyFavorite(id, name, unit, entries, (entry) => entry[field])
+  return buildBodyItem(id, name, unit, entries, (entry) => entry[field])
 }
 
-function buildMeasurementFavorite(id, name, unit, measurements = [], records = []) {
-  const measurement = measurements.find((item) => String(item.name).trim().toLowerCase() === name.toLowerCase())
-  const entries = measurement
-    ? records
-      .filter((record) => record.measurementId === measurement.id && Number.isFinite(Number(record.value)))
-      .sort(compareBodyEntries)
-    : []
+function buildMeasurementItem(measurement, unit, records = []) {
+  const entries = records
+    .filter((record) => record.measurementId === measurement.id && Number.isFinite(Number(record.value)))
+    .sort(compareBodyEntries)
 
-  return buildBodyFavorite(id, name, unit, entries, (entry) => entry.value)
+  return {
+    ...buildBodyItem(`measurement-${measurement.id}`, String(measurement.name ?? ''), unit, entries, (entry) => entry.value),
+    sourceId: measurement.id,
+    enabled: Number(measurement.enabled ?? 1) !== 0,
+  }
 }
 
-function buildBodyFavorite(id, name, unit, entries, getValue) {
+function buildBodyItem(id, name, unit, entries, getValue) {
   const latest = entries.at(-1)
   const previous = entries.at(-2)
   const value = latest ? Number(getValue(latest)) : null
@@ -559,6 +606,20 @@ function buildBodyFavorite(id, name, unit, entries, getValue) {
     date: latest?.date ?? null,
     time: latest?.time ?? null,
   }
+}
+
+function normalizeBodyName(value) {
+  return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
+function normalizeMeasurementUnit(value) {
+  const unit = String(value ?? '').trim()
+  if (unit.toLowerCase() === 'kgs') return 'kg'
+  return unit
+}
+
+function measurementUnitFallback(unitId) {
+  return ({ 2: 'kg', 3: 'lbs', 4: 'cm', 5: 'in', 6: '%' })[Number(unitId)] ?? ''
 }
 
 function compareBodyEntries(a, b) {

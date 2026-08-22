@@ -4,7 +4,7 @@ import { parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import {
   clearLocalData,
   deleteWorkoutExercise,
-  getBodyFavorites,
+  getBodyTrackerData,
   getExerciseCatalog,
   getPreviousWorkoutSetsForExercise,
   getSummary,
@@ -26,9 +26,15 @@ const selectedDate = ref(todayKey())
 const activeView = ref('workouts')
 const calendarWorkoutDates = ref(new Set())
 const bodyFavorites = ref([])
+const bodyMeasurements = ref([])
 const bodyLoading = ref(false)
 const bodyError = ref('')
 let dayLoadSequence = 0
+
+const bodySections = computed(() => [
+  { id: 'favorites', label: 'Favorites', items: bodyFavorites.value, emptyMessage: 'No favorites in this backup.' },
+  { id: 'measurements', label: 'All Measurements', items: bodyMeasurements.value, emptyMessage: 'No other measurements in this backup.' },
+])
 
 const workoutModalOpen = ref(false)
 const modalStep = ref('exercise')
@@ -229,7 +235,9 @@ async function openBody() {
   bodyError.value = ''
 
   try {
-    bodyFavorites.value = await getBodyFavorites()
+    const bodyData = await getBodyTrackerData()
+    bodyFavorites.value = bodyData.favorites
+    bodyMeasurements.value = bodyData.measurements
   } catch {
     bodyError.value = 'Body data could not be loaded from local storage.'
   } finally {
@@ -584,6 +592,7 @@ async function deleteCurrentData() {
     dayExercises.value = []
     calendarWorkoutDates.value = new Set()
     bodyFavorites.value = []
+    bodyMeasurements.value = []
     exerciseCatalog.value = []
     categories.value = []
     selectedExercise.value = null
@@ -674,31 +683,35 @@ async function deleteCurrentData() {
         </div>
       </header>
 
-      <section class="body-favorites-card">
-        <p class="body-section-label">Favorites</p>
+      <div v-if="bodyLoading" class="body-status">Loading body data…</div>
+      <p v-else-if="bodyError" class="body-error">{{ bodyError }}</p>
 
-        <div v-if="bodyLoading" class="body-status">Loading body data…</div>
-        <p v-else-if="bodyError" class="body-error">{{ bodyError }}</p>
+      <div v-else class="body-sections">
+        <section v-for="section in bodySections" :key="section.id" class="body-section-card">
+          <p class="body-section-label">{{ section.label }}</p>
 
-        <div v-else class="body-favorites-list">
-          <article v-for="item in bodyFavorites" :key="item.id" class="body-favorite-row">
-            <div class="body-favorite-copy">
-              <h2>{{ item.name }}</h2>
-              <p class="body-favorite-value">
-                <strong>{{ formatBodyValue(item) }}</strong>
-                <span v-if="item.change !== null" class="body-favorite-change">
-                  {{ item.change < 0 ? '▼' : '▲' }} {{ formatBodyNumber(Math.abs(item.change)) }}
-                </span>
-              </p>
-              <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
-            </div>
+          <p v-if="!section.items.length" class="body-status">{{ section.emptyMessage }}</p>
 
-            <svg class="body-favorite-heart" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-            </svg>
-          </article>
-        </div>
-      </section>
+          <div v-else class="body-measurement-list">
+            <article v-for="item in section.items" :key="item.id" class="body-measurement-row">
+              <div class="body-measurement-copy">
+                <h2>{{ item.name }}</h2>
+                <p class="body-measurement-value">
+                  <strong>{{ formatBodyValue(item) }}</strong>
+                  <span v-if="item.change !== null" class="body-measurement-change">
+                    {{ item.change < 0 ? '▼' : '▲' }} {{ formatBodyNumber(Math.abs(item.change)) }}
+                  </span>
+                </p>
+                <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
+              </div>
+
+              <svg class="body-measurement-heart" :class="{ 'is-favorite': item.favorite }" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+              </svg>
+            </article>
+          </div>
+        </section>
+      </div>
     </template>
 
     <template v-else-if="activeView === 'calendar'">
