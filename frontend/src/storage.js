@@ -535,7 +535,6 @@ function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], r
     records,
   ))
   const itemsByName = new Map(measurementItems.map((item) => [normalizeBodyName(item.name), item]))
-  const favoriteMeasurementIds = new Set()
 
   const favoriteDefinitions = [
     { id: 'body-fat', name: 'Body Fat', aliases: ['Body Fat'], unit: '%', field: 'bodyFat' },
@@ -549,8 +548,6 @@ function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], r
       .map((name) => itemsByName.get(normalizeBodyName(name)))
       .find(Boolean)
 
-    if (measurementItem) favoriteMeasurementIds.add(measurementItem.sourceId)
-
     const bodyWeightItem = definition.field
       ? buildBodyWeightItem(definition.id, definition.name, definition.unit, bodyWeights, definition.field)
       : null
@@ -560,16 +557,20 @@ function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], r
 
     return {
       ...(source ?? buildBodyItem(definition.id, definition.name, definition.unit, [], () => null)),
-      id: definition.id,
+      id: measurementItem?.id ?? definition.id,
       name: definition.name,
       favorite: true,
     }
   })
 
+  const favoritesById = new Map(favorites.map((item) => [item.id, item]))
   const allMeasurements = measurementItems
-    .filter((item) => item.enabled && !favoriteMeasurementIds.has(item.sourceId))
-    .map((item) => ({ ...item, favorite: false }))
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+    .filter((item) => item.enabled)
+    .map((item) => favoritesById.get(item.id) ?? { ...item, favorite: false })
+
+  const allMeasurementIds = new Set(allMeasurements.map((item) => item.id))
+  allMeasurements.push(...favorites.filter((item) => !allMeasurementIds.has(item.id)))
+  allMeasurements.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
 
   return { favorites, measurements: allMeasurements }
 }
