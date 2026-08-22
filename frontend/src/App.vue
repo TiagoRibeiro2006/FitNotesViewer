@@ -718,7 +718,15 @@ async function deleteCurrentData() {
           <span>{{ data.firstWorkoutDate }} → {{ data.lastWorkoutDate }}</span>
         </div>
 
-        <div v-if="data" class="settings-delete-row">
+        <div v-if="data" class="settings-data-action">
+          <div>
+            <strong>Export current data</strong>
+            <p>Download the current workout data as a FitNotes backup.</p>
+          </div>
+          <button class="settings-export-button" type="button" disabled>Export .fitnotes</button>
+        </div>
+
+        <div v-if="data" class="settings-data-action">
           <div>
             <strong>Delete current data</strong>
             <p>Remove the imported backup and all workout data stored on this device.</p>
