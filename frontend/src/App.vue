@@ -4,6 +4,7 @@ import { parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import {
   clearLocalData,
   deleteWorkoutExercise,
+  getBodyFavorites,
   getExerciseCatalog,
   getPreviousWorkoutSetsForExercise,
   getSummary,
@@ -24,6 +25,9 @@ const loading = ref(false)
 const selectedDate = ref(todayKey())
 const activeView = ref('workouts')
 const calendarWorkoutDates = ref(new Set())
+const bodyFavorites = ref([])
+const bodyLoading = ref(false)
+const bodyError = ref('')
 let dayLoadSequence = 0
 
 const workoutModalOpen = ref(false)
@@ -167,6 +171,23 @@ function formatDate(dateKey) {
   }).format(new Date(year, month - 1, day))
 }
 
+function formatBodyNumber(value) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value)
+}
+
+function formatBodyValue(item) {
+  if (item.value === null) return 'No data yet'
+  const separator = item.unit === '%' ? '' : ' '
+  return `${formatBodyNumber(item.value)}${separator}${item.unit}`
+}
+
+function formatBodyEntryDate(item) {
+  if (!item.date) return ''
+  const date = formatDate(item.date)
+  if (!item.time) return date
+  return `${date} at ${String(item.time).slice(0, 5)}`
+}
+
 
 function monthKey(year, monthIndex) {
   return `${year}-${String(monthIndex + 1).padStart(2, '0')}`
@@ -200,6 +221,22 @@ function isToday(dateKey) {
 
 function hasWorkout(dateKey) {
   return calendarWorkoutDates.value.has(dateKey)
+}
+
+async function openBody() {
+  activeView.value = 'body'
+  bodyLoading.value = true
+  bodyError.value = ''
+
+  try {
+    bodyFavorites.value = await getBodyFavorites()
+  } catch {
+    bodyError.value = 'Body data could not be loaded from local storage.'
+  } finally {
+    bodyLoading.value = false
+  }
+
+  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
 async function openCalendar() {
@@ -546,6 +583,7 @@ async function deleteCurrentData() {
     data.value = null
     dayExercises.value = []
     calendarWorkoutDates.value = new Set()
+    bodyFavorites.value = []
     exerciseCatalog.value = []
     categories.value = []
     selectedExercise.value = null
@@ -624,6 +662,41 @@ async function deleteCurrentData() {
             </svg>
             <span>Copy Previous Day</span>
           </button>
+        </div>
+      </section>
+    </template>
+
+    <template v-else-if="activeView === 'body'">
+      <header class="app-header body-header">
+        <div>
+          <p class="eyebrow">BODY</p>
+          <h1>Body Tracker</h1>
+        </div>
+      </header>
+
+      <section class="body-favorites-card">
+        <p class="body-section-label">Favorites</p>
+
+        <div v-if="bodyLoading" class="body-status">Loading body data…</div>
+        <p v-else-if="bodyError" class="body-error">{{ bodyError }}</p>
+
+        <div v-else class="body-favorites-list">
+          <article v-for="item in bodyFavorites" :key="item.id" class="body-favorite-row">
+            <div class="body-favorite-copy">
+              <h2>{{ item.name }}</h2>
+              <p class="body-favorite-value">
+                <strong>{{ formatBodyValue(item) }}</strong>
+                <span v-if="item.change !== null" class="body-favorite-change">
+                  {{ item.change < 0 ? '▼' : '▲' }} {{ formatBodyNumber(Math.abs(item.change)) }}
+                </span>
+              </p>
+              <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
+            </div>
+
+            <svg class="body-favorite-heart" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+            </svg>
+          </article>
         </div>
       </section>
     </template>
@@ -748,7 +821,7 @@ async function deleteCurrentData() {
   </main>
 
   <nav class="bottom-bar" aria-label="App navigation">
-    <button class="bottom-item" type="button" aria-label="Body" disabled>
+    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'body' }" type="button" aria-label="Body" @click="openBody">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="5" r="2.25" />
         <path d="M8.5 10.2c.9-1.7 2-2.7 3.5-2.7s2.6 1 3.5 2.7M9 10.5l-1 4.5m7-4.5 1 4.5M10.4 13.5 10 21m3.6-7.5.4 7.5" />
