@@ -1,11 +1,12 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
+import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import {
   clearLocalData,
   deleteWorkoutExercise,
   getBodyTrackerData,
   getExerciseCatalog,
+  getFitNotesExportData,
   getPreviousWorkoutSetsForExercise,
   getSummary,
   getWorkoutDateSet,
@@ -30,6 +31,7 @@ const bodyMeasurements = ref([])
 const bodyLoading = ref(false)
 const bodyError = ref('')
 let dayLoadSequence = 0
+let exportPreparationSequence = 0
 
 const bodySections = computed(() => [
   { id: 'favorites', label: 'Favorites', items: bodyFavorites.value, emptyMessage: 'No favorites yet.' },
@@ -53,6 +55,10 @@ const deleteConfirming = ref(false)
 const dataDeleteConfirming = ref(false)
 const deletingData = ref(false)
 const dataDeleteError = ref('')
+const exportingData = ref(false)
+const exportError = ref('')
+const exportUrl = ref('')
+const exportFileName = ref('')
 
 const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
 const hasCurrentData = computed(() => data.value.isEmpty !== true)
@@ -141,6 +147,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   document.body.classList.remove('modal-open')
   window.removeEventListener('keydown', onKeyDown)
+  clearFitNotesExport()
 })
 
 watch(selectedDate, () => {
@@ -281,9 +288,57 @@ function selectCalendarDate(dateKey) {
 function openSettings() {
   activeView.value = 'settings'
   error.value = ''
+  exportError.value = ''
   dataDeleteConfirming.value = false
   dataDeleteError.value = ''
+  void prepareFitNotesExport()
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
+async function prepareFitNotesExport() {
+  clearFitNotesExport()
+  const sequence = exportPreparationSequence
+  if (!data.value.backupStored) return
+
+  exportingData.value = true
+  exportError.value = ''
+
+  try {
+    const source = await getFitNotesExportData()
+    if (!source) throw new Error('The original FitNotes backup is not available on this device.')
+
+    const bytes = await createFitNotesExport(source.bytes, source.workoutSets)
+    if (sequence !== exportPreparationSequence) return
+
+    exportFileName.value = createExportFileName()
+    exportUrl.value = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.sqlite3' }))
+  } catch (err) {
+    if (sequence === exportPreparationSequence) exportError.value = friendlyError(err)
+  } finally {
+    if (sequence === exportPreparationSequence) exportingData.value = false
+  }
+}
+
+function clearFitNotesExport() {
+  exportPreparationSequence += 1
+  if (exportUrl.value) URL.revokeObjectURL(exportUrl.value)
+  exportUrl.value = ''
+  exportFileName.value = ''
+  exportingData.value = false
+}
+
+function createExportFileName() {
+  const now = new Date()
+  const parts = [
+    now.getFullYear(),
+    now.getMonth() + 1,
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+  ].map((part) => String(part).padStart(2, '0'))
+
+  return `FitNotes_Backup_${parts.join('_')}.fitnotes`
 }
 
 function openWorkoutLog() {
@@ -299,6 +354,7 @@ function changeDay(amount) {
 function onFileChange(event) {
   selectedFile.value = event.target.files?.[0] ?? null
   error.value = ''
+  exportError.value = ''
   dataDeleteConfirming.value = false
   dataDeleteError.value = ''
 }
@@ -344,6 +400,7 @@ async function analyzeFile() {
     selectedDate.value = todayKey()
     calendarWorkoutDates.value = await getWorkoutDateSet()
     await loadDayExercises()
+    if (activeView.value === 'settings') await prepareFitNotesExport()
   } catch (err) {
     error.value = friendlyError(err)
   } finally {
@@ -609,6 +666,8 @@ async function deleteCurrentData() {
     editorHasExistingSets.value = false
     selectedDate.value = todayKey()
     dataDeleteConfirming.value = false
+    exportError.value = ''
+    clearFitNotesExport()
   } catch (err) {
     dataDeleteError.value = friendlyError(err)
   } finally {
@@ -796,8 +855,20 @@ async function deleteCurrentData() {
             <strong>Export current data</strong>
             <p>Download the current workout data as a FitNotes backup.</p>
           </div>
-          <button class="settings-export-button" type="button" disabled>Export .fitnotes</button>
+          <a
+            v-if="exportUrl"
+            class="settings-export-button"
+            :href="exportUrl"
+            :download="exportFileName"
+          >
+            Export .fitnotes
+          </a>
+          <button v-else class="settings-export-button" type="button" disabled>
+            {{ exportingData ? 'Preparing…' : 'Export unavailable' }}
+          </button>
         </div>
+
+        <p v-if="exportError" class="settings-export-error">{{ exportError }}</p>
 
         <div v-if="hasCurrentData" class="settings-data-action">
           <div>

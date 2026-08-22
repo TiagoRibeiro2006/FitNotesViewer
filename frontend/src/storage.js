@@ -381,20 +381,23 @@ export async function deleteWorkoutExercise(date, exerciseId) {
   return refreshSummary()
 }
 
-export async function getStoredBackup() {
+export async function getFitNotesExportData() {
   const db = await openAppDatabase()
-  const transaction = db.transaction('backups', 'readonly')
+  const transaction = db.transaction(['backups', 'workoutSets'], 'readonly')
   const done = transactionComplete(transaction)
-  const record = await requestResult(transaction.objectStore('backups').get('current'))
+  const backupRequest = transaction.objectStore('backups').get('current')
+  const workoutSetsRequest = transaction.objectStore('workoutSets').getAll()
+  const [record, workoutSets] = await Promise.all([
+    requestResult(backupRequest),
+    requestResult(workoutSetsRequest),
+  ])
   await done
 
   if (!record?.data) return null
 
   return {
-    name: record.name,
-    size: record.size,
-    importedAt: record.importedAt,
-    blob: new Blob([record.data], { type: record.type || 'application/vnd.sqlite3' }),
+    bytes: new Uint8Array(record.data.slice(0)),
+    workoutSets: workoutSets ?? [],
   }
 }
 

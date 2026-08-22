@@ -1262,11 +1262,19 @@ body.modal-open {
   border-radius: 12px;
   font-size: 13px;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .settings-export-button {
+  display: grid;
+  place-items: center;
   border: 1px solid #303036;
   background: #1b1b1f;
+  color: #f0f0f2;
+  cursor: pointer;
+}
+
+.settings-export-button:disabled {
   color: #92929a;
   cursor: not-allowed;
   opacity: .55;
@@ -1290,7 +1298,8 @@ body.modal-open {
   cursor: not-allowed;
 }
 
-.settings-delete-error {
+.settings-delete-error,
+.settings-export-error {
   margin: 12px 0 0;
   color: #ff7066;
   font-size: 13px;
