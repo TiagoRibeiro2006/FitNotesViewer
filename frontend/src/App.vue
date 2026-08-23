@@ -4,9 +4,8 @@ import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import { warmUpSqliteEngine } from './fitnotes'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
-import CalendarList from './features/calendar/components/CalendarList.vue'
-import { createCalendarMonths, monthKey } from './features/calendar/calendarUtils'
 import SettingsView from './features/settings/SettingsView.vue'
+import CopyWorkoutDayModal from './features/workouts/components/CopyWorkoutDayModal.vue'
 import { exerciseMeta } from './features/workouts/exerciseFormatters'
 import BaseModal from './shared/components/BaseModal.vue'
 import { createEmptySummary } from './shared/models/summary'
@@ -15,12 +14,10 @@ import { formatDate, shiftDateKey, todayKey } from './shared/utils/dates'
 import { friendlyError } from './shared/utils/errors'
 import { formatNumber as formatBodyNumber } from './shared/utils/numbers'
 import {
-  copyWorkoutDay,
   deleteWorkoutExercise,
   getExerciseCatalog,
   getPreviousWorkoutSetsForExercise,
   getSummary,
-  getWorkoutDateSet,
   getWorkoutSetsForDate,
   getWorkoutSetsForDateExercise,
   migrateLegacyLocalStorage,
@@ -32,10 +29,7 @@ const data = ref(createEmptySummary())
 const dayExercises = ref([])
 const selectedDate = ref(todayKey())
 const activeView = ref('workouts')
-const calendarWorkoutDates = ref(new Set())
 const copyDayModalOpen = ref(false)
-const copyingDay = ref(false)
-const copyDayError = ref('')
 let dayLoadSequence = 0
 
 const workoutModalOpen = ref(false)
@@ -67,13 +61,6 @@ const selectedDateLabel = computed(() => {
 
 const selectedDateLong = computed(() => formatDate(selectedDate.value))
 
-
-const currentMonthKey = computed(() => {
-  const now = new Date()
-  return monthKey(now.getFullYear(), now.getMonth())
-})
-
-const copyCalendarMonths = computed(() => createCalendarMonths(calendarWorkoutDates.value))
 
 const filteredExercises = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -143,41 +130,17 @@ function selectCalendarDate(dateKey) {
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
-async function openCopyDayModal() {
+function openCopyDayModal() {
   copyDayModalOpen.value = true
-  copyDayError.value = ''
-
-  try {
-    calendarWorkoutDates.value = await getWorkoutDateSet()
-  } catch {
-    copyDayError.value = 'Workout dates could not be loaded.'
-  }
-
-  await nextTick()
-  document.getElementById('copy-calendar-current-month')?.scrollIntoView({ block: 'start' })
 }
 
-function closeCopyDayModal(force = false) {
-  if (copyingDay.value && !force) return
+function closeCopyDayModal() {
   copyDayModalOpen.value = false
-  copyDayError.value = ''
 }
 
-async function copyWorkoutDate(sourceDate) {
-  if (copyingDay.value) return
-  copyingDay.value = true
-  copyDayError.value = ''
-
-  try {
-    data.value = await copyWorkoutDay(sourceDate, selectedDate.value) ?? createEmptySummary()
-    const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
-    calendarWorkoutDates.value = workoutDates
-    closeCopyDayModal(true)
-  } catch (err) {
-    copyDayError.value = friendlyError(err)
-  } finally {
-    copyingDay.value = false
-  }
+async function handleWorkoutCopied(summary) {
+  data.value = summary
+  await loadDayExercises()
 }
 
 function openSettings() {
@@ -373,8 +336,7 @@ async function deleteExerciseFromDay() {
 
   try {
     data.value = await deleteWorkoutExercise(selectedDate.value, selectedExercise.value.id)
-    const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
-    calendarWorkoutDates.value = workoutDates
+    await Promise.all([loadDayExercises(), loadExerciseCatalog()])
     closeWorkoutModal(true)
   } catch (err) {
     editorError.value = friendlyError(err)
@@ -391,8 +353,7 @@ async function saveExercise() {
 
   try {
     data.value = await saveWorkoutExercise(selectedDate.value, selectedExercise.value, draftSets.value)
-    const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
-    calendarWorkoutDates.value = workoutDates
+    await Promise.all([loadDayExercises(), loadExerciseCatalog()])
     closeWorkoutModal(true)
   } catch (err) {
     editorError.value = friendlyError(err)
@@ -414,15 +375,13 @@ async function handleDataImported(summary) {
   selectedDate.value = todayKey()
   exerciseCatalog.value = []
   categories.value = []
-  const [, workoutDates] = await Promise.all([loadDayExercises(), getWorkoutDateSet()])
-  calendarWorkoutDates.value = workoutDates
+  await loadDayExercises()
 }
 
 function handleDataDeleted() {
   dayLoadSequence += 1
   data.value = createEmptySummary()
   dayExercises.value = []
-  calendarWorkoutDates.value = new Set()
   exerciseCatalog.value = []
   categories.value = []
   selectedExercise.value = null
@@ -651,42 +610,12 @@ function handleDataDeleted() {
         </template>
   </BaseModal>
 
-  <BaseModal
+  <CopyWorkoutDayModal
     :open="copyDayModalOpen"
-    aria-label="Copy workout from another day"
-    modal-class="copy-calendar-modal"
+    :target-date="selectedDate"
+    :target-date-label="selectedDateLong"
     @close="closeCopyDayModal"
-  >
-        <header class="modal-header">
-          <button class="modal-icon-button" type="button" aria-label="Close" @click="closeCopyDayModal">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m7 7 10 10M17 7 7 17" />
-            </svg>
-          </button>
-          <div class="modal-heading">
-            <p>Copy to {{ selectedDateLong }}</p>
-            <h2>Choose a day</h2>
-          </div>
-          <span class="modal-header-spacer" aria-hidden="true"></span>
-        </header>
-
-        <div class="copy-calendar-content">
-          <p class="copy-calendar-intro">Choose any day. Empty days will copy an empty log.</p>
-
-          <CalendarList
-            :months="copyCalendarMonths"
-            :current-month-key="currentMonthKey"
-            current-month-element-id="copy-calendar-current-month"
-            :workout-dates="calendarWorkoutDates"
-            action-label-prefix="Copy"
-            :disabled="copyingDay"
-            compact
-            aria-label="Choose a workout day to copy"
-            @select="copyWorkoutDate"
-          />
-
-          <p v-if="copyDayError" class="editor-error copy-calendar-error">{{ copyDayError }}</p>
-        </div>
-  </BaseModal>
+    @copied="handleWorkoutCopied"
+  />
 
 </template>
