@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import { warmUpSqliteEngine } from './fitnotes'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
+import CalendarView from './features/calendar/CalendarView.vue'
 import CalendarList from './features/calendar/components/CalendarList.vue'
 import { createCalendarMonths, monthKey } from './features/calendar/calendarUtils'
 import SettingsView from './features/settings/SettingsView.vue'
@@ -72,7 +73,6 @@ const currentMonthKey = computed(() => {
   return monthKey(now.getFullYear(), now.getMonth())
 })
 
-const calendarMonths = computed(() => createCalendarMonths(calendarWorkoutDates.value))
 const copyCalendarMonths = computed(() => createCalendarMonths(calendarWorkoutDates.value))
 
 const filteredExercises = computed(() => {
@@ -133,16 +133,8 @@ function openBody() {
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
-async function openCalendar() {
+function openCalendar() {
   activeView.value = 'calendar'
-  calendarWorkoutDates.value = await getWorkoutDateSet()
-
-  await nextTick()
-  const currentMonth = document.getElementById('calendar-current-month')
-  if (!currentMonth) return
-
-  const top = currentMonth.getBoundingClientRect().top + window.scrollY - 20
-  window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
 }
 
 function selectCalendarDate(dateKey) {
@@ -498,29 +490,12 @@ function handleDataDeleted() {
 
     <BodyTrackerView v-else-if="activeView === 'body'" />
 
-    <template v-else-if="activeView === 'calendar'">
-      <header class="app-header calendar-header">
-        <div>
-          <p class="eyebrow">FITNOTES VIEWER</p>
-          <h1>Calendar</h1>
-        </div>
-        <span class="data-pill">{{ selectedDateLong }}</span>
-      </header>
-
-      <section class="calendar-intro">
-        <p>Choose a day to open it. Scroll up for previous months.</p>
-      </section>
-
-      <CalendarList
-        :months="calendarMonths"
-        :current-month-key="currentMonthKey"
-        current-month-element-id="calendar-current-month"
-        :selected-date="selectedDate"
-        :workout-dates="calendarWorkoutDates"
-        aria-label="Workout calendar"
-        @select="selectCalendarDate"
-      />
-    </template>
+    <CalendarView
+      v-else-if="activeView === 'calendar'"
+      :selected-date="selectedDate"
+      :selected-date-label="selectedDateLong"
+      @select="selectCalendarDate"
+    />
 
     <SettingsView
       v-else-if="activeView === 'settings'"
