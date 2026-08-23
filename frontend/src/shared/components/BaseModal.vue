@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { onBeforeUnmount, onMounted, watch } from 'vue'
+
+const props = defineProps({
   open: { type: Boolean, required: true },
   ariaLabel: { type: String, required: true },
   layerClass: { type: String, default: '' },
@@ -7,6 +9,23 @@ defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+watch(() => props.open, updateBodyState)
+
+onMounted(() => window.addEventListener('keydown', handleKeyDown))
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+  if (props.open) document.body.classList.remove('modal-open')
+})
+
+function updateBodyState(open) {
+  document.body.classList.toggle('modal-open', open)
+}
+
+function handleKeyDown(event) {
+  if (event.key === 'Escape' && props.open) emit('close')
+}
 </script>
 
 <template>
