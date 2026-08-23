@@ -1,5 +1,5 @@
 const DB_NAME = 'fitnotes-viewer'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const LEGACY_STORAGE_KEY = 'fitnotes-viewer-data-v2'
 
 const STORE_DEFINITIONS = {
@@ -10,6 +10,7 @@ const STORE_DEFINITIONS = {
   categories: { keyPath: 'id' },
   bodyWeights: { keyPath: 'id', indexes: [['date', 'date']] },
   measurements: { keyPath: 'id' },
+  measurementUnits: { keyPath: 'id' },
   measurementRecords: { keyPath: 'id', indexes: [['date', 'date'], ['measurementId', 'measurementId']] },
   workoutTimes: { keyPath: 'id', indexes: [['date', 'date']] },
   workoutComments: { keyPath: 'id', indexes: [['date', 'date']] },
@@ -86,6 +87,7 @@ export async function saveFitNotesImport(parsed, file, bytes) {
   putMany(transaction.objectStore('categories'), parsed.categories)
   putMany(transaction.objectStore('bodyWeights'), parsed.bodyWeights)
   putMany(transaction.objectStore('measurements'), parsed.measurements)
+  putMany(transaction.objectStore('measurementUnits'), parsed.measurementUnits)
   putMany(transaction.objectStore('measurementRecords'), parsed.measurementRecords)
   putMany(transaction.objectStore('workoutTimes'), parsed.workoutTimes)
   putMany(transaction.objectStore('workoutComments'), parsed.workoutComments)
@@ -171,6 +173,120 @@ export async function getSummary() {
   return record?.value ?? null
 }
 
+export async function getBodyTrackerData() {
+  const db = await openAppDatabase()
+  const transaction = db.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
+  const done = transactionComplete(transaction)
+
+  const favoritesRequest = transaction.objectStore('metadata').get('bodyFavoriteIds')
+  const bodyWeightsRequest = transaction.objectStore('bodyWeights').getAll()
+  const measurementsRequest = transaction.objectStore('measurements').getAll()
+  const unitsRequest = transaction.objectStore('measurementUnits').getAll()
+  const recordsRequest = transaction.objectStore('measurementRecords').getAll()
+  const [favoritesRecord, bodyWeights, measurements, units, records] = await Promise.all([
+    requestResult(favoritesRequest),
+    requestResult(bodyWeightsRequest),
+    requestResult(measurementsRequest),
+    requestResult(unitsRequest),
+    requestResult(recordsRequest),
+  ])
+  await done
+
+  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value)
+}
+
+export async function saveBodyFavoriteIds(ids) {
+  const uniqueIds = [...new Set(ids.map(String))]
+  const db = await openAppDatabase()
+  const transaction = db.transaction('metadata', 'readwrite')
+  transaction.objectStore('metadata').put({ key: 'bodyFavoriteIds', value: uniqueIds })
+  await transactionComplete(transaction)
+}
+
+export async function saveBodyMeasurementValue(item, rawValue) {
+  const value = normalizeNonNegativeNumber(rawValue)
+  if (value === null) throw new Error('Enter a valid value.')
+
+  const db = await openAppDatabase()
+  const now = new Date()
+  const date = localDateKey(now)
+  const time = localTimeKey(now)
+  const updatedAt = now.toISOString()
+  const recordId = createLocalId('local-body-record')
+
+  if (item?.sourceId !== null && item?.sourceId !== undefined) {
+    const transaction = db.transaction(['measurementRecords', 'metadata'], 'readwrite')
+    transaction.objectStore('measurementRecords').put({
+      id: recordId,
+      measurementId: item.sourceId,
+      date,
+      time,
+      value,
+      comment: null,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+    markLocalChanges(transaction, updatedAt)
+    await transactionComplete(transaction)
+    return getBodyTrackerData()
+  }
+
+  if (item?.sourceType === 'bodyWeight' && ['bodyWeightMetric', 'bodyFat'].includes(item.sourceField)) {
+    const transaction = db.transaction(['bodyWeights', 'metadata'], 'readwrite')
+    transaction.objectStore('bodyWeights').put({
+      id: recordId,
+      date,
+      time,
+      bodyWeightMetric: null,
+      bodyFat: null,
+      comments: null,
+      [item.sourceField]: value,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+    markLocalChanges(transaction, updatedAt)
+    await transactionComplete(transaction)
+    return getBodyTrackerData()
+  }
+
+  const measurementId = `local-measurement-${normalizeBodyName(item?.name) || createLocalId('value')}`
+  const unitId = `local-unit-${normalizeBodyName(item?.unit) || 'value'}`
+  const transaction = db.transaction(['measurements', 'measurementUnits', 'measurementRecords', 'metadata'], 'readwrite')
+
+  transaction.objectStore('measurementUnits').put({
+    id: unitId,
+    type: 0,
+    longName: String(item?.unit ?? ''),
+    shortName: String(item?.unit ?? ''),
+    createdLocally: true,
+  })
+  transaction.objectStore('measurements').put({
+    id: measurementId,
+    localBodyId: String(item?.id ?? measurementId),
+    name: String(item?.name ?? 'Measurement'),
+    unitId,
+    goalType: 0,
+    goalValue: 0,
+    custom: 1,
+    enabled: 1,
+    sortOrder: 9999,
+    createdLocally: true,
+  })
+  transaction.objectStore('measurementRecords').put({
+    id: recordId,
+    measurementId,
+    date,
+    time,
+    value,
+    comment: null,
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 export async function getWorkoutDateSet() {
   const db = await openAppDatabase()
   const transaction = db.transaction('workoutSets', 'readonly')
@@ -188,7 +304,7 @@ export async function getWorkoutSetsForDate(date) {
   const request = transaction.objectStore('workoutSets').index('date').getAll(date)
   const rows = await requestResult(request)
   await done
-  return (rows ?? []).sort(compareSetRows)
+  return orderWorkoutDayRows(rows ?? [])
 }
 
 export async function getWorkoutSetsForDateExercise(date, exerciseId) {
@@ -284,12 +400,29 @@ export async function saveWorkoutExercise(date, exercise, sets) {
 
   const lookupTransaction = db.transaction('workoutSets', 'readonly')
   const lookupDone = transactionComplete(lookupTransaction)
-  const keys = await requestResult(lookupTransaction.objectStore('workoutSets').index('dateExercise').getAllKeys([date, exercise.id]))
+  const dayRows = await requestResult(lookupTransaction.objectStore('workoutSets').index('date').getAll(date))
   await lookupDone
+
+  const exerciseIds = [...new Set(orderWorkoutDayRows(dayRows ?? []).map((row) => row.exerciseId))]
+  const existingOrder = exerciseIds.indexOf(exercise.id)
+  const exerciseOrder = existingOrder >= 0 ? existingOrder : exerciseIds.length
+  const exerciseOrders = new Map(exerciseIds.map((exerciseId, indexValue) => [exerciseId, indexValue]))
 
   const transaction = db.transaction(['workoutSets', 'metadata'], 'readwrite')
   const store = transaction.objectStore('workoutSets')
-  for (const key of keys ?? []) store.delete(key)
+  const updatedAt = new Date().toISOString()
+
+  for (const row of dayRows ?? []) {
+    if (row.exerciseId === exercise.id) {
+      store.delete(row.id)
+      continue
+    }
+
+    const dayExerciseOrder = exerciseOrders.get(row.exerciseId)
+    if (row.dayExerciseOrder !== dayExerciseOrder) {
+      store.put({ ...row, dayExerciseOrder })
+    }
+  }
 
   cleanedSets.forEach((set, indexValue) => {
     store.put({
@@ -307,9 +440,10 @@ export async function saveWorkoutExercise(date, exercise, sets) {
       isComplete: 1,
       distance: 0,
       durationSeconds: 0,
+      dayExerciseOrder: exerciseOrder,
       localSetOrder: indexValue,
       createdLocally: true,
-      localUpdatedAt: new Date().toISOString(),
+      localUpdatedAt: updatedAt,
     })
   })
 
@@ -341,20 +475,60 @@ export async function deleteWorkoutExercise(date, exerciseId) {
   return refreshSummary()
 }
 
-export async function getStoredBackup() {
+export async function copyWorkoutDay(sourceDate, targetDate) {
+  if (sourceDate === targetDate) return getSummary()
+
   const db = await openAppDatabase()
-  const transaction = db.transaction('backups', 'readonly')
+  const lookupTransaction = db.transaction('workoutSets', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const store = lookupTransaction.objectStore('workoutSets')
+  const [sourceRows, targetKeys] = await Promise.all([
+    requestResult(store.index('date').getAll(sourceDate)),
+    requestResult(store.index('date').getAllKeys(targetDate)),
+  ])
+  await lookupDone
+
+  if (!sourceRows?.length && !targetKeys?.length) return getSummary()
+
+  const transaction = db.transaction(['workoutSets', 'metadata'], 'readwrite')
+  const targetStore = transaction.objectStore('workoutSets')
+  const updatedAt = new Date().toISOString()
+
+  for (const key of targetKeys ?? []) targetStore.delete(key)
+  for (const row of orderWorkoutDayRows(sourceRows ?? [])) {
+    targetStore.put({
+      ...row,
+      id: createLocalSetId(),
+      date: targetDate,
+      routineSectionExerciseSetId: 0,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+  }
+
+  transaction.objectStore('metadata').put({ key: 'hasLocalChanges', value: true })
+  transaction.objectStore('metadata').put({ key: 'lastLocalChangeAt', value: updatedAt })
+  await transactionComplete(transaction)
+  return refreshSummary()
+}
+
+export async function getFitNotesExportData() {
+  const db = await openAppDatabase()
+  const transaction = db.transaction(['backups', 'workoutSets'], 'readonly')
   const done = transactionComplete(transaction)
-  const record = await requestResult(transaction.objectStore('backups').get('current'))
+  const backupRequest = transaction.objectStore('backups').get('current')
+  const workoutSetsRequest = transaction.objectStore('workoutSets').getAll()
+  const [record, workoutSets] = await Promise.all([
+    requestResult(backupRequest),
+    requestResult(workoutSetsRequest),
+  ])
   await done
 
   if (!record?.data) return null
 
   return {
-    name: record.name,
-    size: record.size,
-    importedAt: record.importedAt,
-    blob: new Blob([record.data], { type: record.type || 'application/vnd.sqlite3' }),
+    bytes: new Uint8Array(record.data.slice(0)),
+    workoutSets: workoutSets ?? [],
   }
 }
 
@@ -431,9 +605,32 @@ function normalizePositiveInteger(value) {
   return Number.isInteger(number) && number > 0 ? number : null
 }
 
+function createLocalId(prefix) {
+  if (globalThis.crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 function createLocalSetId() {
-  if (globalThis.crypto?.randomUUID) return `local-${crypto.randomUUID()}`
-  return `local-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return createLocalId('local')
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function localTimeKey(date) {
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
+function markLocalChanges(transaction, updatedAt) {
+  transaction.objectStore('metadata').put({ key: 'hasLocalChanges', value: true })
+  transaction.objectStore('metadata').put({ key: 'lastLocalChangeAt', value: updatedAt })
 }
 
 function compareSetRows(a, b) {
@@ -444,6 +641,169 @@ function compareSetRows(a, b) {
   const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
   const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
   if (idA !== idB) return idA - idB
+  return String(a.id).localeCompare(String(b.id))
+}
+
+function orderWorkoutDayRows(rows) {
+  const groups = new Map()
+  const sourceRows = [...rows].sort(compareSourceRows)
+
+  for (const row of sourceRows) {
+    if (!groups.has(row.exerciseId)) {
+      groups.set(row.exerciseId, {
+        rows: [],
+        sourceOrder: groups.size,
+        savedOrder: null,
+      })
+    }
+
+    const group = groups.get(row.exerciseId)
+    group.rows.push(row)
+
+    const savedOrder = Number(row.dayExerciseOrder)
+    if (row.dayExerciseOrder !== null && row.dayExerciseOrder !== undefined && Number.isInteger(savedOrder) && savedOrder >= 0) {
+      group.savedOrder = savedOrder
+    }
+  }
+
+  return [...groups.values()]
+    .sort((a, b) => (a.savedOrder ?? a.sourceOrder) - (b.savedOrder ?? b.sourceOrder) || a.sourceOrder - b.sourceOrder)
+    .flatMap((group) => group.rows.sort(compareSetRows))
+}
+
+function compareSourceRows(a, b) {
+  const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
+  const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
+  if (idA !== idB) return idA - idB
+
+  const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
+  if (updatedAtComparison !== 0) return updatedAtComparison
+  return String(a.id).localeCompare(String(b.id))
+}
+
+function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds) {
+  const unitsById = new Map(units.map((unit) => [unit.id, normalizeMeasurementUnit(unit.shortName)]))
+  const measurementItems = measurements.map((measurement) => buildMeasurementItem(
+    measurement,
+    unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
+    records,
+  ))
+  const itemsByName = new Map(measurementItems.map((item) => [normalizeBodyName(item.name), item]))
+
+  const favoriteDefinitions = [
+    { id: 'body-fat', name: 'Body Fat', aliases: ['Body Fat'], unit: '%', field: 'bodyFat' },
+    { id: 'body-weight', name: 'Body Weight', aliases: ['Bodyweight', 'Body Weight'], unit: 'kg', field: 'bodyWeightMetric' },
+    { id: 'muscle-mass', name: 'Muscle Mass', aliases: ['Muscle Mass'], unit: 'kg' },
+    { id: 'visceral-fat', name: 'Visceral Fat', aliases: ['Visceral Fat'], unit: '%' },
+  ]
+
+  const defaultFavorites = favoriteDefinitions.map((definition) => {
+    const measurementItem = definition.aliases
+      .map((name) => itemsByName.get(normalizeBodyName(name)))
+      .find(Boolean)
+
+    const bodyWeightItem = definition.field
+      ? buildBodyWeightItem(definition.id, definition.name, definition.unit, bodyWeights, definition.field)
+      : null
+    const source = measurementItem?.value === null && bodyWeightItem?.value !== null
+      ? bodyWeightItem
+      : measurementItem ?? bodyWeightItem
+
+    return {
+      ...(source ?? buildBodyItem(definition.id, definition.name, definition.unit, [], () => null)),
+      id: measurementItem?.id ?? definition.id,
+      name: definition.name,
+      favorite: true,
+    }
+  })
+
+  const defaultFavoritesById = new Map(defaultFavorites.map((item) => [item.id, item]))
+  let allMeasurements = measurementItems
+    .filter((item) => item.enabled)
+    .map((item) => defaultFavoritesById.get(item.id) ?? { ...item, favorite: false })
+
+  const allMeasurementIds = new Set(allMeasurements.map((item) => item.id))
+  allMeasurements.push(...defaultFavorites.filter((item) => !allMeasurementIds.has(item.id)))
+  allMeasurements.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+
+  const itemsById = new Map(allMeasurements.map((item) => [item.id, item]))
+  const favoriteIds = Array.isArray(savedFavoriteIds)
+    ? [...new Set(savedFavoriteIds.map(String))].filter((id) => itemsById.has(id))
+    : defaultFavorites.map((item) => item.id)
+  const favoriteIdSet = new Set(favoriteIds)
+
+  allMeasurements = allMeasurements.map((item) => ({ ...item, favorite: favoriteIdSet.has(item.id) }))
+  const favorites = favoriteIds.map((id) => ({ ...itemsById.get(id), favorite: true }))
+
+  return { favorites, measurements: allMeasurements }
+}
+
+function buildBodyWeightItem(id, name, unit, rows = [], field) {
+  const entries = rows
+    .filter((row) => row[field] !== null && row[field] !== undefined && Number.isFinite(Number(row[field])))
+    .sort(compareBodyEntries)
+
+  return {
+    ...buildBodyItem(id, name, unit, entries, (entry) => entry[field]),
+    sourceType: 'bodyWeight',
+    sourceField: field,
+  }
+}
+
+function buildMeasurementItem(measurement, unit, records = []) {
+  const entries = records
+    .filter((record) => record.measurementId === measurement.id && Number.isFinite(Number(record.value)))
+    .sort(compareBodyEntries)
+
+  return {
+    ...buildBodyItem(measurement.localBodyId ?? `measurement-${measurement.id}`, String(measurement.name ?? ''), unit, entries, (entry) => entry.value),
+    sourceType: 'measurement',
+    sourceId: measurement.id,
+    enabled: Number(measurement.enabled ?? 1) !== 0,
+  }
+}
+
+function buildBodyItem(id, name, unit, entries, getValue) {
+  const latest = entries.at(-1)
+  const previous = entries.at(-2)
+  const value = latest ? Number(getValue(latest)) : null
+  const previousValue = previous ? Number(getValue(previous)) : null
+
+  return {
+    id,
+    name,
+    unit,
+    value,
+    change: value !== null && previousValue !== null ? value - previousValue : null,
+    date: latest?.date ?? null,
+    time: latest?.time ?? null,
+  }
+}
+
+function normalizeBodyName(value) {
+  return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
+function normalizeMeasurementUnit(value) {
+  const unit = String(value ?? '').trim()
+  if (unit.toLowerCase() === 'kgs') return 'kg'
+  return unit
+}
+
+function measurementUnitFallback(unitId) {
+  return ({ 2: 'kg', 3: 'lbs', 4: 'cm', 5: 'in', 6: '%' })[Number(unitId)] ?? ''
+}
+
+function compareBodyEntries(a, b) {
+  const dateComparison = String(a.date ?? '').localeCompare(String(b.date ?? ''))
+  if (dateComparison !== 0) return dateComparison
+
+  const timeComparison = String(a.time ?? '').localeCompare(String(b.time ?? ''))
+  if (timeComparison !== 0) return timeComparison
+
+  const idA = Number(a.id)
+  const idB = Number(b.id)
+  if (Number.isFinite(idA) && Number.isFinite(idB)) return idA - idB
   return String(a.id).localeCompare(String(b.id))
 }
 
