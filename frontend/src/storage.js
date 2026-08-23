@@ -391,6 +391,43 @@ export async function deleteWorkoutExercise(date, exerciseId) {
   return refreshSummary()
 }
 
+export async function copyWorkoutDay(sourceDate, targetDate) {
+  if (sourceDate === targetDate) return getSummary()
+
+  const db = await openAppDatabase()
+  const lookupTransaction = db.transaction('workoutSets', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const store = lookupTransaction.objectStore('workoutSets')
+  const [sourceRows, targetKeys] = await Promise.all([
+    requestResult(store.index('date').getAll(sourceDate)),
+    requestResult(store.index('date').getAllKeys(targetDate)),
+  ])
+  await lookupDone
+
+  if (!sourceRows?.length && !targetKeys?.length) return getSummary()
+
+  const transaction = db.transaction(['workoutSets', 'metadata'], 'readwrite')
+  const targetStore = transaction.objectStore('workoutSets')
+  const updatedAt = new Date().toISOString()
+
+  for (const key of targetKeys ?? []) targetStore.delete(key)
+  for (const row of orderWorkoutDayRows(sourceRows ?? [])) {
+    targetStore.put({
+      ...row,
+      id: createLocalSetId(),
+      date: targetDate,
+      routineSectionExerciseSetId: 0,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+  }
+
+  transaction.objectStore('metadata').put({ key: 'hasLocalChanges', value: true })
+  transaction.objectStore('metadata').put({ key: 'lastLocalChangeAt', value: updatedAt })
+  await transactionComplete(transaction)
+  return refreshSummary()
+}
+
 export async function getFitNotesExportData() {
   const db = await openAppDatabase()
   const transaction = db.transaction(['backups', 'workoutSets'], 'readonly')
