@@ -203,6 +203,90 @@ export async function saveBodyFavoriteIds(ids) {
   await transactionComplete(transaction)
 }
 
+export async function saveBodyMeasurementValue(item, rawValue) {
+  const value = normalizeNonNegativeNumber(rawValue)
+  if (value === null) throw new Error('Enter a valid value.')
+
+  const db = await openAppDatabase()
+  const now = new Date()
+  const date = localDateKey(now)
+  const time = localTimeKey(now)
+  const updatedAt = now.toISOString()
+  const recordId = createLocalId('local-body-record')
+
+  if (item?.sourceId !== null && item?.sourceId !== undefined) {
+    const transaction = db.transaction(['measurementRecords', 'metadata'], 'readwrite')
+    transaction.objectStore('measurementRecords').put({
+      id: recordId,
+      measurementId: item.sourceId,
+      date,
+      time,
+      value,
+      comment: null,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+    markLocalChanges(transaction, updatedAt)
+    await transactionComplete(transaction)
+    return getBodyTrackerData()
+  }
+
+  if (item?.sourceType === 'bodyWeight' && ['bodyWeightMetric', 'bodyFat'].includes(item.sourceField)) {
+    const transaction = db.transaction(['bodyWeights', 'metadata'], 'readwrite')
+    transaction.objectStore('bodyWeights').put({
+      id: recordId,
+      date,
+      time,
+      bodyWeightMetric: null,
+      bodyFat: null,
+      comments: null,
+      [item.sourceField]: value,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+    markLocalChanges(transaction, updatedAt)
+    await transactionComplete(transaction)
+    return getBodyTrackerData()
+  }
+
+  const measurementId = `local-measurement-${normalizeBodyName(item?.name) || createLocalId('value')}`
+  const unitId = `local-unit-${normalizeBodyName(item?.unit) || 'value'}`
+  const transaction = db.transaction(['measurements', 'measurementUnits', 'measurementRecords', 'metadata'], 'readwrite')
+
+  transaction.objectStore('measurementUnits').put({
+    id: unitId,
+    type: 0,
+    longName: String(item?.unit ?? ''),
+    shortName: String(item?.unit ?? ''),
+    createdLocally: true,
+  })
+  transaction.objectStore('measurements').put({
+    id: measurementId,
+    localBodyId: String(item?.id ?? measurementId),
+    name: String(item?.name ?? 'Measurement'),
+    unitId,
+    goalType: 0,
+    goalValue: 0,
+    custom: 1,
+    enabled: 1,
+    sortOrder: 9999,
+    createdLocally: true,
+  })
+  transaction.objectStore('measurementRecords').put({
+    id: recordId,
+    measurementId,
+    date,
+    time,
+    value,
+    comment: null,
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 export async function getWorkoutDateSet() {
   const db = await openAppDatabase()
   const transaction = db.transaction('workoutSets', 'readonly')
@@ -521,9 +605,32 @@ function normalizePositiveInteger(value) {
   return Number.isInteger(number) && number > 0 ? number : null
 }
 
+function createLocalId(prefix) {
+  if (globalThis.crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 function createLocalSetId() {
-  if (globalThis.crypto?.randomUUID) return `local-${crypto.randomUUID()}`
-  return `local-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return createLocalId('local')
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function localTimeKey(date) {
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
+function markLocalChanges(transaction, updatedAt) {
+  transaction.objectStore('metadata').put({ key: 'hasLocalChanges', value: true })
+  transaction.objectStore('metadata').put({ key: 'lastLocalChangeAt', value: updatedAt })
 }
 
 function compareSetRows(a, b) {
@@ -636,7 +743,11 @@ function buildBodyWeightItem(id, name, unit, rows = [], field) {
     .filter((row) => row[field] !== null && row[field] !== undefined && Number.isFinite(Number(row[field])))
     .sort(compareBodyEntries)
 
-  return buildBodyItem(id, name, unit, entries, (entry) => entry[field])
+  return {
+    ...buildBodyItem(id, name, unit, entries, (entry) => entry[field]),
+    sourceType: 'bodyWeight',
+    sourceField: field,
+  }
 }
 
 function buildMeasurementItem(measurement, unit, records = []) {
@@ -645,7 +756,8 @@ function buildMeasurementItem(measurement, unit, records = []) {
     .sort(compareBodyEntries)
 
   return {
-    ...buildBodyItem(`measurement-${measurement.id}`, String(measurement.name ?? ''), unit, entries, (entry) => entry.value),
+    ...buildBodyItem(measurement.localBodyId ?? `measurement-${measurement.id}`, String(measurement.name ?? ''), unit, entries, (entry) => entry.value),
+    sourceType: 'measurement',
     sourceId: measurement.id,
     enabled: Number(measurement.enabled ?? 1) !== 0,
   }
