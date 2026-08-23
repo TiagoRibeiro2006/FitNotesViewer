@@ -14,6 +14,7 @@ import {
   getWorkoutSetsForDateExercise,
   migrateLegacyLocalStorage,
   requestPersistentStorage,
+  saveBodyFavoriteIds,
   saveFitNotesImport,
   saveWorkoutExercise,
 } from './storage'
@@ -30,6 +31,7 @@ const bodyFavorites = ref([])
 const bodyMeasurements = ref([])
 const bodyLoading = ref(false)
 const bodyError = ref('')
+const bodyFavoritesSaving = ref(false)
 let dayLoadSequence = 0
 let exportPreparationSequence = 0
 
@@ -265,6 +267,29 @@ async function openBody() {
   }
 
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
+async function toggleBodyFavorite(item) {
+  if (bodyFavoritesSaving.value) return
+
+  bodyFavoritesSaving.value = true
+  bodyError.value = ''
+
+  try {
+    const favoriteIds = bodyFavorites.value.map((favorite) => favorite.id)
+    const nextFavoriteIds = item.favorite
+      ? favoriteIds.filter((id) => id !== item.id)
+      : [...favoriteIds, item.id]
+
+    await saveBodyFavoriteIds(nextFavoriteIds)
+    const bodyData = await getBodyTrackerData()
+    bodyFavorites.value = bodyData.favorites
+    bodyMeasurements.value = bodyData.measurements
+  } catch {
+    bodyError.value = 'Favorites could not be updated in local storage.'
+  } finally {
+    bodyFavoritesSaving.value = false
+  }
 }
 
 async function openCalendar() {
@@ -758,9 +783,18 @@ async function deleteCurrentData() {
                 <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
               </div>
 
-              <svg class="body-measurement-heart" :class="{ 'is-favorite': item.favorite }" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-              </svg>
+              <button
+                class="body-favorite-button"
+                type="button"
+                :aria-label="item.favorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`"
+                :aria-pressed="item.favorite"
+                :disabled="bodyFavoritesSaving"
+                @click="toggleBodyFavorite(item)"
+              >
+                <svg class="body-measurement-heart" :class="{ 'is-favorite': item.favorite }" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                </svg>
+              </button>
             </article>
           </div>
         </section>
