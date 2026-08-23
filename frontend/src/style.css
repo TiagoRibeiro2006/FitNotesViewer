@@ -8,13 +8,17 @@
 }
 
 * { box-sizing: border-box; }
-html { background: #000; }
+html {
+  background: #000;
+  touch-action: manipulation;
+}
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   min-height: 100dvh;
   background: #000;
+  touch-action: manipulation;
 }
 button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
