@@ -1,6 +1,14 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
+import { formatBodyEntryDate, formatBodyValue } from './features/body/bodyFormatters'
+import { createCalendarMonths, isToday, monthKey } from './features/calendar/calendarUtils'
+import { exerciseMeta } from './features/workouts/exerciseFormatters'
+import { createEmptySummary } from './shared/models/summary'
+import { androidColorToCss } from './shared/utils/colors'
+import { formatDate, shiftDateKey, todayKey } from './shared/utils/dates'
+import { friendlyError } from './shared/utils/errors'
+import { formatNumber as formatBodyNumber } from './shared/utils/numbers'
 import {
   clearLocalData,
   copyWorkoutDay,
@@ -163,111 +171,6 @@ watch(selectedDate, () => {
 watch(() => workoutModalOpen.value || copyDayModalOpen.value || bodyValueModalOpen.value, (open) => {
   document.body.classList.toggle('modal-open', open)
 })
-
-function todayKey() {
-  return dateToKey(new Date())
-}
-
-function createEmptySummary() {
-  return {
-    fileName: null,
-    totalSets: 0,
-    totalExercises: 0,
-    firstWorkoutDate: null,
-    lastWorkoutDate: null,
-    backupStored: false,
-    isEmpty: true,
-  }
-}
-
-function dateToKey(date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function shiftDateKey(dateKey, amount) {
-  const [year, month, day] = dateKey.split('-').map(Number)
-  const date = new Date(year, month - 1, day)
-  date.setDate(date.getDate() + amount)
-  return dateToKey(date)
-}
-
-function formatDate(dateKey) {
-  const [year, month, day] = dateKey.split('-').map(Number)
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(year, month - 1, day))
-}
-
-function formatBodyNumber(value) {
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value)
-}
-
-function formatBodyValue(item) {
-  if (item.value === null) return 'No data yet'
-  const separator = item.unit === '%' ? '' : ' '
-  return `${formatBodyNumber(item.value)}${separator}${item.unit}`
-}
-
-function formatBodyEntryDate(item) {
-  if (!item.date) return ''
-  const date = formatDate(item.date)
-  if (!item.time) return date
-  return `${date} at ${String(item.time).slice(0, 5)}`
-}
-
-
-function monthKey(year, monthIndex) {
-  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`
-}
-
-function createCalendarMonths(workoutDates) {
-  const months = []
-  const firstWorkoutDate = [...workoutDates].sort()[0] ?? todayKey()
-  const [firstYear, firstMonth] = firstWorkoutDate.split('-').map(Number)
-  const cursor = new Date(firstYear, firstMonth - 1, 1)
-  const now = new Date()
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-
-  while (cursor <= end) {
-    const year = cursor.getFullYear()
-    const month = cursor.getMonth()
-    months.push(buildCalendarMonth(year, month))
-    cursor.setMonth(cursor.getMonth() + 1)
-  }
-
-  return months
-}
-
-function buildCalendarMonth(year, monthIndex) {
-  const firstDay = new Date(year, monthIndex, 1)
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
-  const leadingBlankDays = (firstDay.getDay() + 6) % 7
-  const days = []
-
-  for (let index = 0; index < leadingBlankDays; index += 1) {
-    days.push({ key: `blank-${year}-${monthIndex}-${index}`, blank: true })
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const key = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    days.push({ key, blank: false, day })
-  }
-
-  return {
-    key: monthKey(year, monthIndex),
-    label: new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(firstDay),
-    days,
-  }
-}
-
-function isToday(dateKey) {
-  return dateKey === todayKey()
-}
 
 function hasWorkout(dateKey) {
   return calendarWorkoutDates.value.has(dateKey)
@@ -721,54 +624,6 @@ function categoryStyle(category) {
 
 function exerciseStyle(exercise) {
   return { '--category-color': androidColorToCss(exercise?.categoryColor) }
-}
-
-function androidColorToCss(value) {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) return '#7c7c85'
-  const rgb = (Number(value) >>> 0) & 0xffffff
-  if (rgb === 0x000000) return '#a1a1aa'
-  return `#${rgb.toString(16).padStart(6, '0')}`
-}
-
-function exerciseMeta(exercise) {
-  const workouts = `${exercise.workoutCount} ${exercise.workoutCount === 1 ? 'workout' : 'workouts'}`
-  if (!exercise.lastWorkoutDate) return workouts
-  return `${workouts} · ${relativeDate(exercise.lastWorkoutDate)}`
-}
-
-function relativeDate(dateKey) {
-  const [year, month, day] = dateKey.split('-').map(Number)
-  const target = new Date(year, month - 1, day)
-  const [todayYear, todayMonth, todayDay] = todayKey().split('-').map(Number)
-  const today = new Date(todayYear, todayMonth - 1, todayDay)
-  const days = Math.round((today - target) / 86400000)
-
-  if (days === 0) return 'today'
-  if (days === 1) return 'yesterday'
-  if (days > 1 && days < 30) return `${days} days ago`
-  if (days >= 30 && days < 365) {
-    const months = Math.max(1, Math.round(days / 30))
-    return `${months} ${months === 1 ? 'month' : 'months'} ago`
-  }
-  if (days >= 365) {
-    const years = Math.max(1, Math.round(days / 365))
-    return `${years} ${years === 1 ? 'year' : 'years'} ago`
-  }
-  return formatDate(dateKey)
-}
-
-function friendlyError(err) {
-  const message = err instanceof Error ? err.message : String(err ?? '')
-
-  if (message.includes('file is not a database') || message.includes('malformed')) {
-    return 'The file does not contain a valid FitNotes SQLite database.'
-  }
-
-  if (message.toLowerCase().includes('quota')) {
-    return 'The device does not have enough browser storage for this backup.'
-  }
-
-  return message || 'Something went wrong.'
 }
 
 async function deleteCurrentData() {
