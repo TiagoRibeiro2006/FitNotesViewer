@@ -1,3 +1,4 @@
+using FitNotesViewer.Api.Data;
 using FitNotesViewer.Api.Services;
 using FitNotesViewer.Api.Validation;
 
@@ -5,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<FitNotesAnalyzerService>();
+builder.Services.AddSingleton<FitNotesDatabaseReader>();
 builder.Services.AddSingleton<FitNotesFileValidator>();
 
 builder.Services.AddCors(options =>
