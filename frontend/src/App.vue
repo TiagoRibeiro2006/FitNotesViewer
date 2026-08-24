@@ -1,32 +1,35 @@
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
-import { warmUpSqliteEngine } from './fitnotes'
+import { useAppNavigation } from './app/useAppNavigation'
+import { requestPersistentStorage } from './data/browserStorage'
+import { migrateLegacyLocalStorage } from './data/repositories/backupRepository'
+import { getSummary } from './data/repositories/summaryRepository'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
 import SettingsView from './features/settings/SettingsView.vue'
 import WorkoutLogView from './features/workouts/WorkoutLogView.vue'
+import { warmUpSqliteEngine } from './fitnotes'
 import { createEmptySummary } from './shared/models/summary'
-import { formatDate, todayKey } from './shared/utils/dates'
-import {
-  getSummary,
-  migrateLegacyLocalStorage,
-  requestPersistentStorage,
-} from './storage'
 
-const data = ref(createEmptySummary())
-const selectedDate = ref(todayKey())
-const activeView = ref('workouts')
+const summary = ref(createEmptySummary())
 const appReady = ref(false)
 
-const selectedDateLong = computed(() => formatDate(selectedDate.value))
+const {
+  activeView,
+  selectedDate,
+  selectedDateLong,
+  navigateTo,
+  resetSelectedDate,
+  selectCalendarDate,
+} = useAppNavigation()
 
 onMounted(async () => {
   try {
     await migrateLegacyLocalStorage()
-    data.value = await getSummary() ?? createEmptySummary()
+    summary.value = await getSummary() ?? createEmptySummary()
   } catch {
-    data.value = createEmptySummary()
+    summary.value = createEmptySummary()
   } finally {
     appReady.value = true
   }
@@ -35,50 +38,18 @@ onMounted(async () => {
   void warmUpSqliteEngine().catch(() => {})
 })
 
-function openBody() {
-  activeView.value = 'body'
-  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+function handleWorkoutChanged(updatedSummary) {
+  summary.value = updatedSummary
 }
 
-function openCalendar() {
-  activeView.value = 'calendar'
-}
-
-function selectCalendarDate(dateKey) {
-  selectedDate.value = dateKey
-  activeView.value = 'workouts'
-  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
-}
-
-function openSettings() {
-  activeView.value = 'settings'
-  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
-}
-
-function openWorkoutLog() {
-  activeView.value = 'workouts'
-  void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
-}
-
-function navigateTo(view) {
-  if (view === 'body') return openBody()
-  if (view === 'calendar') return openCalendar()
-  if (view === 'settings') return openSettings()
-  return openWorkoutLog()
-}
-
-function handleWorkoutChanged(summary) {
-  data.value = summary
-}
-
-function handleDataImported(summary) {
-  data.value = summary
-  selectedDate.value = todayKey()
+function handleDataImported(importedSummary) {
+  summary.value = importedSummary
+  resetSelectedDate()
 }
 
 function handleDataDeleted() {
-  data.value = createEmptySummary()
-  selectedDate.value = todayKey()
+  summary.value = createEmptySummary()
+  resetSelectedDate()
 }
 </script>
 
@@ -103,7 +74,7 @@ function handleDataDeleted() {
 
     <SettingsView
       v-else-if="activeView === 'settings'"
-      :summary="data"
+      :summary="summary"
       @data-imported="handleDataImported"
       @data-deleted="handleDataDeleted"
     />
