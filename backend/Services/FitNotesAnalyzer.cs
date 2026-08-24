@@ -5,12 +5,12 @@ using FitNotesViewer.Api.Validation;
 
 namespace FitNotesViewer.Api.Services;
 
-public sealed class FitNotesAnalyzerService
+public sealed class FitNotesAnalyzer : IFitNotesAnalyzer
 {
     private readonly FitNotesFileValidator _fileValidator;
     private readonly FitNotesDatabaseReader _databaseReader;
 
-    public FitNotesAnalyzerService(
+    public FitNotesAnalyzer(
         FitNotesFileValidator fileValidator,
         FitNotesDatabaseReader databaseReader)
     {

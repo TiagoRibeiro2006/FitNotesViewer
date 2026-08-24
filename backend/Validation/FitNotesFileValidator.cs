@@ -2,7 +2,6 @@ namespace FitNotesViewer.Api.Validation;
 
 public sealed class FitNotesFileValidator
 {
-    private const long MaxFileSize = 25 * 1024 * 1024;
     private static readonly byte[] SqliteHeader = "SQLite format 3\0"u8.ToArray();
 
     public void ValidateUpload(IFormFile file)
@@ -13,7 +12,7 @@ public sealed class FitNotesFileValidator
         if (!HasFitNotesExtension(file.FileName))
             throw new InvalidDataException("The file must use the .fitnotes extension.");
 
-        if (file.Length > MaxFileSize)
+        if (file.Length > FitNotesFileRules.MaxFileSize)
             throw new InvalidDataException("The file exceeds the 25 MB limit.");
     }
 
@@ -31,7 +30,7 @@ public sealed class FitNotesFileValidator
     {
         return string.Equals(
             Path.GetExtension(fileName),
-            ".fitnotes",
+            FitNotesFileRules.Extension,
             StringComparison.OrdinalIgnoreCase);
     }
 }
