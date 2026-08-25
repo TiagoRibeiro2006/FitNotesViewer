@@ -1,4 +1,5 @@
-import { getSqlJs, validateFile, validateSqlite } from './sqliteEngine'
+import { validateFitNotesFile, validateSqliteDatabase } from './fitNotesValidation'
+import { loadSqliteEngine } from './sqliteEngine'
 import {
   ensureRequiredTables,
   normalizeDate,
@@ -9,12 +10,12 @@ import {
 } from './sqliteHelpers'
 
 export async function parseFitNotesFile(file) {
-  validateFile(file)
+  validateFitNotesFile(file)
 
   const bytes = new Uint8Array(await file.arrayBuffer())
-  validateSqlite(bytes)
+  validateSqliteDatabase(bytes)
 
-  const SQL = await getSqlJs()
+  const SQL = await loadSqliteEngine()
   const db = new SQL.Database(bytes)
 
   try {

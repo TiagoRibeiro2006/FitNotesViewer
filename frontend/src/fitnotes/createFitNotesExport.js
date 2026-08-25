@@ -1,11 +1,12 @@
-import { getSqlJs, validateSqlite } from './sqliteEngine'
+import { validateSqliteDatabase } from './fitNotesValidation'
+import { loadSqliteEngine } from './sqliteEngine'
 import { ensureRequiredTables, queryRows } from './sqliteHelpers'
 
 export async function createFitNotesExport(sourceBytes, workoutSets = []) {
   const bytes = sourceBytes instanceof Uint8Array ? sourceBytes : new Uint8Array(sourceBytes)
-  validateSqlite(bytes)
+  validateSqliteDatabase(bytes)
 
-  const SQL = await getSqlJs()
+  const SQL = await loadSqliteEngine()
   const db = new SQL.Database(bytes)
 
   try {
