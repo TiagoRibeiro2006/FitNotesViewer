@@ -115,6 +115,13 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     draftSets.value.splice(index, 1)
   }
 
+  function updateSet(index, field, value) {
+    const set = draftSets.value[index]
+    if (!set || !['weight', 'reps'].includes(field)) return
+    set[field] = value
+    deleteConfirming.value = false
+  }
+
   async function save() {
     if (!selectedExercise.value || !canSave.value || saving.value) return
     saving.value = true
@@ -192,6 +199,7 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     save,
     startEditor,
     startPicker,
+    updateSet,
   }
 }
 
