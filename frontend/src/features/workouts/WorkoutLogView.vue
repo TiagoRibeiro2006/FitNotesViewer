@@ -16,7 +16,15 @@ const selectedDate = computed(() => props.selectedDate)
 const exerciseModalOpen = ref(false)
 const exerciseModalTarget = ref(null)
 const copyModalOpen = ref(false)
-const { error, exercises, loading, load } = useWorkoutDay(selectedDate)
+const {
+  error,
+  exercises,
+  loading,
+  reordering,
+  load,
+  moveExercise,
+  saveExerciseOrder,
+} = useWorkoutDay(selectedDate)
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -73,12 +81,15 @@ async function handleWorkoutChanged(summary) {
     :date-label="selectedDateLabel"
     :exercises="exercises"
     :loading="loading"
+    :reordering="reordering"
     :error="error"
     @previous="changeDay(-1)"
     @next="changeDay(1)"
     @today="goToToday"
     @add="openExercisePicker"
     @edit="editExercise"
+    @move-exercise="moveExercise"
+    @save-exercise-order="saveExerciseOrder"
     @copy="copyModalOpen = true"
   />
 

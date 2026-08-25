@@ -20,6 +20,11 @@ body {
   background: #000;
   touch-action: manipulation;
 }
+body.press-drag-active {
+  overflow: hidden;
+  cursor: grabbing;
+  user-select: none;
+}
 button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
@@ -129,4 +134,3 @@ h1 {
   font-size: 14px;
   font-weight: 650;
 }
-

@@ -1,10 +1,11 @@
 import { ref } from 'vue'
-import { getWorkoutSetsForDate } from '../../../data/repositories/workoutRepository'
+import { getWorkoutSetsForDate, reorderWorkoutExercises } from '../../../data/repositories/workoutRepository'
 import { groupWorkoutSetsByExercise } from '../workoutMappers'
 
 export function useWorkoutDay(selectedDate) {
   const exercises = ref([])
   const loading = ref(false)
+  const reordering = ref(false)
   const error = ref('')
   let loadSequence = 0
 
@@ -26,10 +27,34 @@ export function useWorkoutDay(selectedDate) {
     }
   }
 
+  function moveExercise(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return
+    const [exercise] = exercises.value.splice(fromIndex, 1)
+    exercises.value.splice(toIndex, 0, exercise)
+  }
+
+  async function saveExerciseOrder() {
+    if (reordering.value) return
+    reordering.value = true
+    error.value = ''
+
+    try {
+      await reorderWorkoutExercises(selectedDate.value, exercises.value.map((exercise) => exercise.id))
+    } catch {
+      error.value = 'Exercise order could not be saved.'
+      await load()
+    } finally {
+      reordering.value = false
+    }
+  }
+
   return {
     error,
     exercises,
     loading,
+    reordering,
     load,
+    moveExercise,
+    saveExerciseOrder,
   }
 }
