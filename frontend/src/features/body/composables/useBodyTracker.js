@@ -2,7 +2,6 @@ import { computed, ref } from 'vue'
 import {
   getBodyTrackerData,
   saveBodyFavoriteIds,
-  saveBodyMeasurementValue,
 } from '../../../data/repositories/bodyRepository'
 
 export function useBodyTracker() {
@@ -11,7 +10,6 @@ export function useBodyTracker() {
   const loading = ref(false)
   const error = ref('')
   const favoritesSaving = ref(false)
-  const valueSaving = ref(false)
 
   const sections = computed(() => [
     { id: 'favorites', label: 'Favorites', items: favorites.value, emptyMessage: 'No favorites yet.' },
@@ -50,19 +48,6 @@ export function useBodyTracker() {
     }
   }
 
-  async function saveValue(item, value) {
-    if (valueSaving.value) return false
-    valueSaving.value = true
-    error.value = ''
-
-    try {
-      applyTrackerData(await saveBodyMeasurementValue(item, value))
-      return true
-    } finally {
-      valueSaving.value = false
-    }
-  }
-
   function applyTrackerData(data) {
     favorites.value = data.favorites
     measurements.value = data.measurements
@@ -73,9 +58,7 @@ export function useBodyTracker() {
     favoritesSaving,
     loading,
     sections,
-    valueSaving,
     load,
-    saveValue,
     toggleFavorite,
   }
 }

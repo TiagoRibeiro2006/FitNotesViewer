@@ -1,8 +1,7 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { friendlyError } from '../../shared/utils/errors'
+import BodyMeasurementDetailView from './components/BodyMeasurementDetailView.vue'
 import BodyMeasurementList from './components/BodyMeasurementList.vue'
-import BodyValueModal from './components/BodyValueModal.vue'
 import { useBodyTracker } from './composables/useBodyTracker'
 
 const {
@@ -10,15 +9,11 @@ const {
   favoritesSaving,
   loading,
   sections,
-  valueSaving,
   load,
-  saveValue,
   toggleFavorite,
 } = useBodyTracker()
 
-const modalOpen = ref(false)
 const selectedItem = ref(null)
-const modalError = ref('')
 
 onMounted(async () => {
   await load()
@@ -26,55 +21,42 @@ onMounted(async () => {
   window.scrollTo({ top: 0, behavior: 'auto' })
 })
 
-function openValueModal(item) {
+async function openMeasurement(item) {
   selectedItem.value = item
-  modalError.value = ''
-  modalOpen.value = true
+  await nextTick()
+  window.scrollTo({ top: 0, behavior: 'auto' })
 }
 
-function closeValueModal() {
-  if (valueSaving.value) return
-  modalOpen.value = false
+async function closeMeasurement() {
   selectedItem.value = null
-  modalError.value = ''
-}
-
-async function submitValue(value) {
-  if (!selectedItem.value) return
-  modalError.value = ''
-
-  try {
-    if (await saveValue(selectedItem.value, value)) closeValueModal()
-  } catch (saveError) {
-    modalError.value = friendlyError(saveError)
-  }
+  await nextTick()
+  window.scrollTo({ top: 0, behavior: 'auto' })
 }
 </script>
 
 <template>
-  <header class="app-header body-header">
-    <div>
-      <p class="eyebrow">BODY</p>
-      <h1>Body Tracker</h1>
-    </div>
-  </header>
-
-  <div v-if="loading" class="body-status">Loading body data…</div>
-  <p v-else-if="error" class="body-error">{{ error }}</p>
-  <BodyMeasurementList
-    v-else
-    :sections="sections"
-    :favorites-saving="favoritesSaving"
-    @add-value="openValueModal"
-    @toggle-favorite="toggleFavorite"
-  />
-
-  <BodyValueModal
-    :open="modalOpen"
+  <BodyMeasurementDetailView
+    v-if="selectedItem"
     :item="selectedItem"
-    :saving="valueSaving"
-    :error="modalError"
-    @close="closeValueModal"
-    @save="submitValue"
+    @close="closeMeasurement"
+    @changed="load"
   />
+  <template v-else>
+    <header class="app-header body-header">
+      <div>
+        <p class="eyebrow">BODY</p>
+        <h1>Body Tracker</h1>
+      </div>
+    </header>
+
+    <div v-if="loading" class="body-status">Loading body data…</div>
+    <p v-else-if="error" class="body-error">{{ error }}</p>
+    <BodyMeasurementList
+      v-else
+      :sections="sections"
+      :favorites-saving="favoritesSaving"
+      @open-measurement="openMeasurement"
+      @toggle-favorite="toggleFavorite"
+    />
+  </template>
 </template>
