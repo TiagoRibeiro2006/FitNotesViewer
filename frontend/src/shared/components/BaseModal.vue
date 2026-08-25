@@ -10,14 +10,23 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-watch(() => props.open, updateBodyState)
+watch(readOpenState, updateBodyState)
 
-onMounted(() => window.addEventListener('keydown', handleKeyDown))
+onMounted(startListening)
+onBeforeUnmount(stopListening)
 
-onBeforeUnmount(() => {
+function readOpenState() {
+  return props.open
+}
+
+function startListening() {
+  window.addEventListener('keydown', handleKeyDown)
+}
+
+function stopListening() {
   window.removeEventListener('keydown', handleKeyDown)
   if (props.open) document.body.classList.remove('modal-open')
-})
+}
 
 function updateBodyState(open) {
   document.body.classList.toggle('modal-open', open)
