@@ -252,6 +252,44 @@
   font-weight: 700;
 }
 
+.body-date-time-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.body-date-time-fields label {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.body-date-time-fields label > span {
+  margin-left: 2px;
+  color: #8f8f96;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.body-date-time-fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 13px;
+  border: 1px solid #303030;
+  border-radius: 13px;
+  outline: 0;
+  background: #151515;
+  color: #f5f5f5;
+}
+
+.body-date-time-fields input:focus {
+  border-color: #66666e;
+}
+
 .body-value-error {
   margin-top: 10px;
 }
@@ -387,6 +425,10 @@
   }
 
   .body-record-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .body-date-time-fields {
     grid-template-columns: 1fr;
   }
 }

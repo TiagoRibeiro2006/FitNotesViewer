@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { dateToKey, timeToKey } from '../../../shared/utils/dates'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
 import { useBodyMeasurementDetails } from '../composables/useBodyMeasurementDetails'
 import BodyRecordModal from './BodyRecordModal.vue'
@@ -10,6 +11,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'changed'])
 const value = ref('')
+const selectedDate = ref('')
+const selectedTime = ref('')
 const selectedRecord = ref(null)
 const {
   error,
@@ -26,19 +29,32 @@ const {
 } = useBodyMeasurementDetails()
 
 const canSave = computed(() => {
+  if (!selectedDate.value || !selectedTime.value) return false
   const text = String(value.value).trim()
   if (!text) return false
   const number = Number(text.replace(',', '.'))
   return Number.isFinite(number) && number >= 0
 })
 
-onMounted(() => load(props.item))
+onMounted(initialize)
+
+function initialize() {
+  resetDateTime()
+  load(props.item)
+}
 
 async function submit() {
   if (!canSave.value) return
-  if (!await addValue(props.item, value.value)) return
+  if (!await addValue(props.item, value.value, selectedDate.value, selectedTime.value)) return
   value.value = ''
+  resetDateTime()
   emit('changed')
+}
+
+function resetDateTime() {
+  const now = new Date()
+  selectedDate.value = dateToKey(now)
+  selectedTime.value = timeToKey(now).slice(0, 5)
 }
 
 function displayValue(record) {
@@ -99,6 +115,17 @@ async function removeRecord() {
             placeholder="0"
           />
           <span v-if="item.unit">{{ item.unit }}</span>
+        </div>
+
+        <div class="body-date-time-fields">
+          <label>
+            <span>Date</span>
+            <input v-model="selectedDate" type="date" required />
+          </label>
+          <label>
+            <span>Time</span>
+            <input v-model="selectedTime" type="time" required />
+          </label>
         </div>
 
         <p v-if="error" class="editor-error body-value-error">{{ error }}</p>
