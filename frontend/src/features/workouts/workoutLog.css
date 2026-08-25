@@ -67,6 +67,7 @@
 .exercise-set-number { text-align: left; }
 .exercise-set-weight { text-align: center; color: #d7d7dc; }
 .exercise-set-reps { text-align: right; }
+.exercise-set-value { color: #fff; }
 .exercise-row-chevron {
   flex: 0 0 auto;
   color: #55555d;
@@ -141,4 +142,3 @@
 .home-day-card {
   margin-top: 0;
 }
-

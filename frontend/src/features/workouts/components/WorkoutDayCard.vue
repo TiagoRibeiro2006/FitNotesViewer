@@ -40,8 +40,8 @@ const emit = defineEmits(['add', 'copy', 'edit', 'next', 'previous', 'today'])
         <span class="exercise-set-list">
           <span v-for="(set, index) in exercise.sets" :key="set.id" class="exercise-set-row">
             <span class="exercise-set-number">{{ index + 1 }}</span>
-            <span class="exercise-set-weight">{{ formatNumber(set.weight) }} kg</span>
-            <span class="exercise-set-reps">{{ set.reps }} reps</span>
+            <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
+            <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
           </span>
         </span>
       </button>
