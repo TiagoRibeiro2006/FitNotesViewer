@@ -28,17 +28,22 @@ async function load() {
 
   try {
     workoutDates.value = await getWorkoutDateSet()
-    await nextTick()
-    const currentMonth = document.getElementById('calendar-current-month')
-    if (!currentMonth) return
-
-    const top = currentMonth.getBoundingClientRect().top + window.scrollY - 20
-    window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
   } catch {
     error.value = 'Workout dates could not be loaded.'
   } finally {
     loading.value = false
   }
+
+  await nextTick()
+  scrollToCurrentMonth()
+}
+
+function scrollToCurrentMonth() {
+  const currentMonth = document.getElementById('calendar-current-month')
+  if (!currentMonth) return
+
+  const top = currentMonth.getBoundingClientRect().top + window.scrollY - 20
+  window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
 }
 </script>
 
