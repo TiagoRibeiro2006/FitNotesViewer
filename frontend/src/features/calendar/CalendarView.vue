@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
-import { getWorkoutDateSet } from '../../data/repositories/workoutRepository'
+import { getWorkoutCalendarColors } from '../../data/repositories/workoutRepository'
 import CalendarList from './components/CalendarList.vue'
 import { createCalendarMonths, monthKey } from './calendarUtils'
 
@@ -10,10 +10,11 @@ defineProps({
 })
 
 const emit = defineEmits(['select'])
-const workoutDates = ref(new Set())
+const workoutColors = ref(new Map())
 const loading = ref(false)
 const error = ref('')
 
+const workoutDates = computed(() => new Set(workoutColors.value.keys()))
 const months = computed(() => createCalendarMonths(workoutDates.value))
 const currentMonthKey = computed(() => {
   const now = new Date()
@@ -27,7 +28,7 @@ async function load() {
   error.value = ''
 
   try {
-    workoutDates.value = await getWorkoutDateSet()
+    workoutColors.value = await getWorkoutCalendarColors()
   } catch {
     error.value = 'Workout dates could not be loaded.'
   } finally {
@@ -68,6 +69,7 @@ function scrollToCurrentMonth() {
     :current-month-key="currentMonthKey"
     current-month-element-id="calendar-current-month"
     :workout-dates="workoutDates"
+    :workout-colors="workoutColors"
     :selected-date="selectedDate"
     aria-label="Workout calendar"
     @select="emit('select', $event)"

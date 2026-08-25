@@ -1,5 +1,6 @@
 <script setup>
 import { formatDate } from '../../../shared/utils/dates'
+import { androidColorToCss } from '../../../shared/utils/colors'
 import { isToday } from '../calendarUtils'
 
 const props = defineProps({
@@ -8,6 +9,7 @@ const props = defineProps({
   currentMonthElementId: { type: String, default: '' },
   selectedDate: { type: String, default: '' },
   workoutDates: { type: Set, required: true },
+  workoutColors: { type: Map, default: () => new Map() },
   actionLabelPrefix: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
 })
@@ -16,6 +18,10 @@ const emit = defineEmits(['select'])
 
 function hasWorkout(dateKey) {
   return props.workoutDates.has(dateKey)
+}
+
+function workoutDotStyle(dateKey) {
+  return { '--workout-color': androidColorToCss(props.workoutColors.get(dateKey)) }
 }
 
 function actionLabel(dateKey) {
@@ -58,7 +64,7 @@ function actionLabel(dateKey) {
           @click="emit('select', day.key)"
         >
           <span class="calendar-day-number">{{ day.day }}</span>
-          <span v-if="hasWorkout(day.key)" class="calendar-workout-dot" aria-hidden="true"></span>
+          <span v-if="hasWorkout(day.key)" class="calendar-workout-dot" :style="workoutDotStyle(day.key)" aria-hidden="true"></span>
         </button>
       </template>
     </div>

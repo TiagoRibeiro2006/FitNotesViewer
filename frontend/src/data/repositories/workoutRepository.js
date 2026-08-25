@@ -13,6 +13,19 @@ export async function getWorkoutDateSet() {
   return new Set((rows ?? []).map((row) => row.date).filter(Boolean))
 }
 
+export async function getWorkoutCalendarColors() {
+  const database = await openAppDatabase()
+  const transaction = database.transaction(['workoutSets', 'exercises', 'categories'], 'readonly')
+  const done = transactionComplete(transaction)
+  const [workoutSets, exercises, categories] = await Promise.all([
+    requestResult(transaction.objectStore('workoutSets').getAll()),
+    requestResult(transaction.objectStore('exercises').getAll()),
+    requestResult(transaction.objectStore('categories').getAll()),
+  ])
+  await done
+  return buildWorkoutCalendarColors(workoutSets, exercises, categories)
+}
+
 export async function getWorkoutSetsForDate(date) {
   const database = await openAppDatabase()
   const transaction = database.transaction('workoutSets', 'readonly')
@@ -176,6 +189,26 @@ function buildExerciseUsage(workoutSets = []) {
   }
 
   return usage
+}
+
+function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories = []) {
+  const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
+  const categoriesById = new Map(categories.map((category) => [category.id, category]))
+  const setsByDate = new Map()
+
+  for (const set of workoutSets) {
+    if (!set.date) continue
+    const daySets = setsByDate.get(set.date) ?? []
+    daySets.push(set)
+    setsByDate.set(set.date, daySets)
+  }
+
+  return new Map([...setsByDate].map(([date, daySets]) => {
+    const firstSet = orderWorkoutDayRows(daySets)[0]
+    const exercise = exercisesById.get(firstSet?.exerciseId)
+    const category = categoriesById.get(exercise?.categoryId)
+    return [date, category?.colour ?? null]
+  }))
 }
 
 function buildCatalogExercise(exercise, categoriesById, usage) {

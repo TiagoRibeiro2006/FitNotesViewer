@@ -157,12 +157,8 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #8f8f96;
+  background: var(--workout-color, #8f8f96);
   transform: translateX(-50%);
-}
-
-.calendar-day.is-selected .calendar-workout-dot {
-  background: #080808;
 }
 
 .calendar-day:active {
