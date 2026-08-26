@@ -1,6 +1,6 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
-import { usePressDragList } from '../../../shared/composables/usePressDragList'
+import { useDragList } from '../../../shared/composables/useDragList'
 
 defineProps({
   canSave: { type: Boolean, default: false },
@@ -20,7 +20,7 @@ const emit = defineEmits([
   'save',
   'update-set',
 ])
-const { draggingIndex, startDrag } = usePressDragList(moveSet)
+const { draggingIndex, startDrag } = useDragList(moveSet)
 
 function moveSet(fromIndex, toIndex) {
   emit('move-set', fromIndex, toIndex)
@@ -55,18 +55,24 @@ function exerciseStyle(exercise) {
     <div
       class="sets-editor-list"
       :class="{ 'is-reordering': draggingIndex >= 0 }"
-      data-press-drag-list
+      data-drag-list
     >
       <div
         v-for="(set, index) in sets"
         :key="index"
         class="sets-grid set-input-row"
         :class="{ 'is-dragging': draggingIndex === index }"
-        data-press-drag-item
-        @contextmenu.prevent
-        @pointerdown="startDrag($event, index, saving)"
+        data-drag-item
       >
-        <span class="set-number">{{ index + 1 }}</span>
+        <button
+          class="set-number set-drag-handle"
+          type="button"
+          :aria-label="`Move set ${index + 1}`"
+          @contextmenu.prevent
+          @pointerdown="startDrag($event, index, saving)"
+        >
+          {{ index + 1 }}
+        </button>
         <input
           :value="set.weight"
           class="set-input"

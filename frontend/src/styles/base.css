@@ -20,7 +20,7 @@ body {
   background: #000;
   touch-action: manipulation;
 }
-body.press-drag-active {
+body.drag-active {
   overflow: hidden;
   cursor: grabbing;
   user-select: none;
