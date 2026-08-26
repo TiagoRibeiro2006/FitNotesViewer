@@ -94,8 +94,7 @@ function close(force = false) {
         <p>{{ dateLabel }}</p>
         <h2>{{ step === 'exercise' ? 'Choose exercise' : title }}</h2>
       </div>
-      <ExerciseOptionsMenu v-if="step === 'sets'" />
-      <span v-else class="modal-header-spacer" aria-hidden="true"></span>
+      <ExerciseOptionsMenu :mode="step" />
     </header>
 
     <ExercisePicker
