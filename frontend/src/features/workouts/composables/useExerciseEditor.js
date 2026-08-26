@@ -49,6 +49,7 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     step,
     title: sets.title,
     addSet: sets.addSet,
+    moveSet: sets.moveSet,
     openEditor,
     removeExercise: sets.removeExercise,
     removeSet: sets.removeSet,

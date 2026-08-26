@@ -20,6 +20,8 @@ export function usePressDragList(moveItem, finishDrag) {
 
   function startDrag(event, index, disabled = false) {
     if (disabled || (event.pointerType === 'mouse' && event.button !== 0)) return
+    const interactiveElement = event.target.closest('input, button, select, textarea, a')
+    if (interactiveElement && interactiveElement !== event.currentTarget) return
 
     clearGesture()
     pointerId = event.pointerId
@@ -77,7 +79,7 @@ export function usePressDragList(moveItem, finishDrag) {
     clearGesture()
 
     if (wasDragging) blockClick()
-    if (shouldSave) finishDrag()
+    if (shouldSave) finishDrag?.()
   }
 
   function consumeClick(event) {
