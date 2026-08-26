@@ -390,6 +390,96 @@
   -webkit-backdrop-filter: blur(16px);
 }
 
+.set-editor.has-history .editor-actions {
+  position: static;
+  margin-bottom: 0;
+}
+
+.exercise-history-card {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid #252525;
+  border-radius: 16px;
+  background: #111;
+}
+
+.exercise-history-title {
+  margin: 0;
+  padding: 15px 16px;
+  border-bottom: 1px solid #242424;
+  color: #777780;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.exercise-history-day {
+  padding: 15px 16px 10px;
+  border-bottom: 1px solid #242424;
+}
+
+.exercise-history-day:last-child {
+  border-bottom: 0;
+}
+
+.exercise-history-day header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.exercise-history-day header strong {
+  color: #f4f4f4;
+  font-size: 15px;
+}
+
+.exercise-history-day header span {
+  color: #777780;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.exercise-history-set {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  min-height: 34px;
+  color: #777780;
+  text-align: center;
+}
+
+.exercise-history-set > span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.exercise-history-set strong {
+  color: #f4f4f4;
+  font-size: 15px;
+}
+
+.exercise-history-set small {
+  color: #777780;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.exercise-history-status {
+  margin: 0;
+  padding: 28px 16px;
+  color: #777780;
+  text-align: center;
+  font-size: 13px;
+}
+
+.exercise-history-status.is-error {
+  color: #ff7066;
+}
+
 .delete-exercise-button {
   min-height: 50px;
   padding: 0 12px;
@@ -534,6 +624,12 @@
   background: transparent;
   color: #fff;
   text-align: left;
+  cursor: pointer;
+}
+
+.exercise-options-popover button:not(:disabled):active,
+.exercise-options-popover button.is-selected {
+  background: #202020;
 }
 
 .exercise-options-popover button:disabled {
@@ -568,6 +664,13 @@
   stroke: none;
   font-size: 13px;
   font-weight: 850;
+}
+
+.exercise-options-popover .exercise-options-check {
+  width: 19px;
+  height: 19px;
+  margin-left: auto;
+  stroke-width: 2.5;
 }
 
 .modal-header-spacer {

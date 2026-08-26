@@ -61,6 +61,15 @@ export async function getPreviousWorkoutSetsForExercise(exerciseId, beforeDate) 
   }
 }
 
+export async function getWorkoutHistoryForExercise(exerciseId) {
+  const database = await openAppDatabase()
+  const transaction = database.transaction('workoutSets', 'readonly')
+  const done = transactionComplete(transaction)
+  const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
+  await done
+  return buildWorkoutHistory(rows ?? [])
+}
+
 export async function getExerciseCatalog() {
   const database = await openAppDatabase()
   const transaction = database.transaction(['exercises', 'categories', 'workoutSets'], 'readonly')
@@ -239,6 +248,28 @@ function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories
     const category = categoriesById.get(exercise?.categoryId)
     return [date, category?.colour ?? null]
   }))
+}
+
+function buildWorkoutHistory(rows) {
+  const rowsByDate = new Map()
+
+  for (const row of rows) {
+    if (!row.date) continue
+    const dayRows = rowsByDate.get(row.date) ?? []
+    dayRows.push(row)
+    rowsByDate.set(row.date, dayRows)
+  }
+
+  return [...rowsByDate]
+    .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+    .map(([date, dayRows]) => ({
+      date,
+      sets: dayRows.sort(compareSetRows).map((row) => ({
+        id: row.id,
+        reps: row.reps,
+        weight: row.weight,
+      })),
+    }))
 }
 
 function buildCatalogExercise(exercise, categoriesById, usage) {

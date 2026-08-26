@@ -3,7 +3,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 defineProps({
   mode: { type: String, default: 'sets' },
+  selectedOption: { type: String, default: '' },
 })
+
+const emit = defineEmits(['select'])
 
 const open = ref(false)
 const menu = ref(null)
@@ -23,6 +26,11 @@ function stopListening() {
 
 function toggle() {
   open.value = !open.value
+}
+
+function select(option) {
+  emit('select', option)
+  open.value = false
 }
 
 function closeFromOutside(event) {
@@ -72,25 +80,52 @@ function closeWithEscape(event) {
         </button>
       </template>
       <template v-else>
-        <button type="button" role="menuitem" disabled>
+        <button
+          type="button"
+          role="menuitemcheckbox"
+          :class="{ 'is-selected': selectedOption === 'history' }"
+          :aria-checked="selectedOption === 'history'"
+          @click="select('history')"
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="8" />
             <path d="M12 8v4l3 2" />
           </svg>
           <span>History</span>
+          <svg v-if="selectedOption === 'history'" class="exercise-options-check" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 12 4 4 8-8" />
+          </svg>
         </button>
-        <button type="button" role="menuitem" disabled>
+        <button
+          type="button"
+          role="menuitemcheckbox"
+          :class="{ 'is-selected': selectedOption === 'records' }"
+          :aria-checked="selectedOption === 'records'"
+          @click="select('records')"
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
           </svg>
           <span>Records</span>
+          <svg v-if="selectedOption === 'records'" class="exercise-options-check" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 12 4 4 8-8" />
+          </svg>
         </button>
-        <button type="button" role="menuitem" disabled>
+        <button
+          type="button"
+          role="menuitemcheckbox"
+          :class="{ 'is-selected': selectedOption === 'one-rep-max' }"
+          :aria-checked="selectedOption === 'one-rep-max'"
+          @click="select('one-rep-max')"
+        >
           <svg class="exercise-options-number" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="4" y="4" width="16" height="16" rx="5" />
             <text x="12" y="16" text-anchor="middle">1</text>
           </svg>
           <span>1RM Calc</span>
+          <svg v-if="selectedOption === 'one-rep-max'" class="exercise-options-check" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 12 4 4 8-8" />
+          </svg>
         </button>
       </template>
     </div>

@@ -1,6 +1,7 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { useDragList } from '../../../shared/composables/useDragList'
+import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
 
 defineProps({
   canSave: { type: Boolean, default: false },
@@ -10,6 +11,7 @@ defineProps({
   hasExistingSets: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
   sets: { type: Array, required: true },
+  showHistory: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -36,7 +38,7 @@ function exerciseStyle(exercise) {
 </script>
 
 <template>
-  <div class="set-editor">
+  <div class="set-editor" :class="{ 'has-history': showHistory }">
     <div class="selected-exercise-card" :style="exerciseStyle(exercise)">
       <span class="exercise-color-dot"></span>
       <div>
@@ -124,5 +126,7 @@ function exerciseStyle(exercise) {
         {{ saving ? 'Saving…' : hasExistingSets ? 'Save changes' : 'Save exercise' }}
       </button>
     </div>
+
+    <ExerciseHistoryPanel v-if="showHistory" :exercise-id="exercise.id" />
   </div>
 </template>
