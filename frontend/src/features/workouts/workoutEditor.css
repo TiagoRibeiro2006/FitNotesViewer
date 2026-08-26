@@ -426,20 +426,13 @@
 .exercise-history-day header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
 .exercise-history-day header strong {
   color: #f4f4f4;
   font-size: 15px;
-}
-
-.exercise-history-day header span {
-  color: #777780;
-  font-size: 12px;
-  font-weight: 650;
 }
 
 .exercise-history-set {
