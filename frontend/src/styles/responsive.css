@@ -16,9 +16,8 @@
   .data-pill { display: none; }
   .file-picker span { padding: 0 12px; }
   .primary-button { padding: 0 13px; }
-  .day-card { padding: 14px; }
+  .day-content-card { padding: 14px; }
   .bottom-bar { padding-left: 4px; padding-right: 4px; }
   .bottom-item span { font-size: 9px; }
 }
-
 
