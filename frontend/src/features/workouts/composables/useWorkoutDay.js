@@ -4,7 +4,7 @@ import { groupWorkoutSetsByExercise } from '../workoutMappers'
 
 export function useWorkoutDay(selectedDate) {
   const exercises = ref([])
-  const loading = ref(false)
+  const loading = ref(true)
   const reordering = ref(false)
   const error = ref('')
   let loadSequence = 0

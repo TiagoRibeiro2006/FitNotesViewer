@@ -81,7 +81,7 @@ function saveExerciseOrder() {
       </article>
     </div>
 
-    <div class="day-actions" :class="{ 'is-empty': !exercises.length }">
+    <div v-if="!loading && !error" class="day-actions" :class="{ 'is-empty': !exercises.length }">
       <button class="day-action day-add-exercise" type="button" @click="emit('add')">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14M5 12h14" />
