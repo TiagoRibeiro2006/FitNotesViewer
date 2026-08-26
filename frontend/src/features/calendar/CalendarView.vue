@@ -43,7 +43,13 @@ function scrollToCurrentMonth() {
   const currentMonth = document.getElementById('calendar-current-month')
   if (!currentMonth) return
 
-  const top = currentMonth.getBoundingClientRect().top + window.scrollY - 20
+  const bottomNavigation = document.querySelector('.bottom-bar')
+  const bottomNavigationHeight = bottomNavigation?.getBoundingClientRect().height ?? 0
+  const visibleHeight = window.innerHeight - bottomNavigationHeight
+  const margin = Math.max(20, (visibleHeight - currentMonth.offsetHeight) / 2)
+  currentMonth.parentElement.style.paddingBottom = `${margin}px`
+
+  const top = currentMonth.getBoundingClientRect().top + window.scrollY - margin
   window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
 }
 </script>
