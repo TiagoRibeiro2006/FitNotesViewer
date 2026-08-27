@@ -128,6 +128,7 @@ function selectOption(option) {
       :can-save="canSave"
       :error="error"
       :show-history="selectedOption === 'history'"
+      :show-records="selectedOption === 'records'"
       @update-set="updateSet"
       @move-set="moveSet"
       @remove-set="removeSet"

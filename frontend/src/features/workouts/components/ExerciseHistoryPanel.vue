@@ -19,12 +19,12 @@ function readExerciseId() {
 </script>
 
 <template>
-  <section class="exercise-history-card" aria-label="Exercise history">
-    <p class="exercise-history-title">History</p>
+  <section class="exercise-details-card" aria-label="Exercise history">
+    <p class="exercise-details-title">History</p>
 
-    <p v-if="loading" class="exercise-history-status">Loading history…</p>
-    <p v-else-if="error" class="exercise-history-status is-error">{{ error }}</p>
-    <p v-else-if="!days.length" class="exercise-history-status">No history yet</p>
+    <p v-if="loading" class="exercise-details-status">Loading history…</p>
+    <p v-else-if="error" class="exercise-details-status is-error">{{ error }}</p>
+    <p v-else-if="!days.length" class="exercise-details-status">No history yet</p>
 
     <article v-for="day in days" v-else :key="day.date" class="exercise-history-day">
       <header>
