@@ -843,6 +843,10 @@
   opacity: 1;
 }
 
+.catalog-add-button {
+  color: #4b9cff;
+}
+
 .exercise-options-popover button + button {
   border-top: 1px solid #292929;
   border-radius: 0;

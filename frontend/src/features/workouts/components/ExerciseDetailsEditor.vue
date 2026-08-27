@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   categories: { type: Array, required: true },
+  creating: { type: Boolean, default: false },
   error: { type: String, default: '' },
   exercise: { type: Object, required: true },
   saving: { type: Boolean, default: false },
@@ -67,7 +68,7 @@ function submit() {
     <p v-if="error" class="editor-error">{{ error }}</p>
 
     <button class="save-workout-button exercise-details-save" type="submit" :disabled="saving || !canSave">
-      {{ saving ? 'Saving…' : 'Save exercise' }}
+      {{ saving ? 'Saving…' : creating ? 'Add exercise' : 'Save exercise' }}
     </button>
   </form>
 </template>
