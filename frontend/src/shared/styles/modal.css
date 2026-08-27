@@ -21,7 +21,7 @@ body.modal-open {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #2a2a2a;
-  border-radius: 24px;
+  border-radius: var(--box-radius);
   background: #090909;
   box-shadow: 0 30px 90px rgba(0, 0, 0, .65);
 }
@@ -97,4 +97,3 @@ body.modal-open {
   transform: scale(.96);
   background: #202020;
 }
-

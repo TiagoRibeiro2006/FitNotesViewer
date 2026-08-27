@@ -1,7 +1,7 @@
 .settings-card {
   padding: 18px;
   border: 1px solid #242424;
-  border-radius: 18px;
+  border-radius: var(--box-radius);
   background: #101010;
   box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
 }
@@ -21,7 +21,7 @@
 }
 
 .settings-upload-card {
-  border-radius: 14px;
+  border-radius: var(--box-radius);
   background: #151515;
   box-shadow: none;
 }
