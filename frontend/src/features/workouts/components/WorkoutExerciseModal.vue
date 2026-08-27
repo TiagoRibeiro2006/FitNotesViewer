@@ -169,6 +169,7 @@ function selectOption(option) {
       :saving="saving"
       :can-save="canSave"
       :error="error"
+      :show-calculator="selectedOption === 'one-rep-max'"
       :show-history="selectedOption === 'history'"
       :show-records="selectedOption === 'records'"
       @update-set="updateSet"

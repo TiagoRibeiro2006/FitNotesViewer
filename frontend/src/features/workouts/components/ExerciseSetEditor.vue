@@ -2,6 +2,7 @@
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { useDragList } from '../../../shared/composables/useDragList'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
+import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
 import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
 
 defineProps({
@@ -12,6 +13,7 @@ defineProps({
   hasExistingSets: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
   sets: { type: Array, required: true },
+  showCalculator: { type: Boolean, default: false },
   showHistory: { type: Boolean, default: false },
   showRecords: { type: Boolean, default: false },
 })
@@ -41,7 +43,7 @@ function exerciseStyle(exercise) {
 </script>
 
 <template>
-  <div class="set-editor" :class="{ 'has-details': showHistory || showRecords }">
+  <div class="set-editor" :class="{ 'has-details': showHistory || showRecords || showCalculator }">
     <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
       <span class="exercise-color-dot"></span>
       <div>
@@ -133,5 +135,6 @@ function exerciseStyle(exercise) {
 
     <ExerciseHistoryPanel v-if="showHistory" :exercise-id="exercise.id" />
     <ExerciseRecordsPanel v-if="showRecords" :exercise-id="exercise.id" />
+    <ExerciseOneRepMaxPanel v-if="showCalculator" />
   </div>
 </template>
