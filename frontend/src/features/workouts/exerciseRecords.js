@@ -34,6 +34,6 @@ function createCandidate(date, set, targetReps) {
 function isBetterRecord(candidate, current) {
   if (!current) return true
   if (candidate.weight !== current.weight) return candidate.weight > current.weight
-  if (candidate.reps !== current.reps) return candidate.reps < current.reps
+  if (candidate.reps !== current.reps) return candidate.reps > current.reps
   return candidate.date > current.date
 }
