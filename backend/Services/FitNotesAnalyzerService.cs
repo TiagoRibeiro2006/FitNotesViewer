@@ -10,14 +10,14 @@ public sealed class FitNotesAnalyzerService
     public async Task<FitNotesSummary> AnalyzeAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (file.Length <= 0)
-            throw new InvalidDataException("O ficheiro está vazio.");
+            throw new InvalidDataException("The file is empty.");
 
         if (!string.Equals(Path.GetExtension(file.FileName), ".fitnotes", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("O ficheiro tem de ter a extensão .fitnotes.");
+            throw new InvalidDataException("The file must use the .fitnotes extension.");
 
         const long maxFileSize = 25 * 1024 * 1024;
         if (file.Length > maxFileSize)
-            throw new InvalidDataException("O ficheiro excede o limite de 25 MB.");
+            throw new InvalidDataException("The file exceeds the 25 MB limit.");
 
         var tempPath = Path.Combine(Path.GetTempPath(), $"fitnotes-{Guid.NewGuid():N}.fitnotes");
 
@@ -121,7 +121,7 @@ public sealed class FitNotesAnalyzerService
             }
             catch
             {
-                // Não bloqueia a resposta caso a limpeza temporária falhe.
+                // Do not block the response if temporary file cleanup fails.
             }
         }
     }
@@ -133,7 +133,7 @@ public sealed class FitNotesAnalyzerService
         var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
 
         if (bytesRead != SqliteHeader.Length || !buffer.SequenceEqual(SqliteHeader))
-            throw new InvalidDataException("O ficheiro não contém uma base de dados SQLite válida.");
+            throw new InvalidDataException("The file does not contain a valid SQLite database.");
     }
 
     private static async Task EnsureRequiredTablesAsync(SqliteConnection connection, CancellationToken cancellationToken)
@@ -146,7 +146,7 @@ public sealed class FitNotesAnalyzerService
 
             var exists = Convert.ToInt64(await command.ExecuteScalarAsync(cancellationToken)) > 0;
             if (!exists)
-                throw new InvalidDataException($"O backup não contém a tabela obrigatória '{tableName}'.");
+                throw new InvalidDataException($"The backup does not contain the required table '{tableName}'.");
         }
     }
 

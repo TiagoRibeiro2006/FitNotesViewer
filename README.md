@@ -1,6 +1,6 @@
 # FitNotes Viewer
 
-Aplicação simples para importar backups `.fitnotes` (SQLite) e consultar os exercícios por dia.
+A simple app for importing `.fitnotes` backups (SQLite) and browsing exercises by day.
 
 ## Stack
 
@@ -8,21 +8,23 @@ Aplicação simples para importar backups `.fitnotes` (SQLite) e consultar os ex
 - Backend: ASP.NET Core 8 Web API
 - SQLite: Microsoft.Data.Sqlite
 
-## V2
+## Current version
 
-- Uma única página/home.
-- Upload de ficheiro `.fitnotes`.
-- Depois do upload, os dados ficam guardados apenas no `localStorage` do dispositivo/browser.
-- Ao abrir a aplicação novamente, começa sempre no dia atual.
-- Botão `←` para o dia anterior e `→` para o dia seguinte.
-- Mostra apenas os exercícios e o número de séries desse dia.
-- Manifest configurado com `display: standalone` para melhorar a experiência ao adicionar ao ecrã principal.
+- Single-page home screen.
+- `.fitnotes` file upload.
+- Imported workout data is stored only in the device/browser `localStorage`.
+- The app always opens on the current day.
+- `←` moves to the previous day and `→` moves to the next day.
+- Shows only the exercises and number of sets for the selected day.
+- Full dark theme with a fixed bottom navigation mockup.
+- Bottom navigation currently contains non-functional Body, Calendar, Start, Charts and Settings items.
+- Manifest uses `display: standalone` for a more app-like experience when added to the home screen.
 
-## Privacidade
+## Privacy
 
-O `.fitnotes` é enviado à API apenas para leitura, guardado temporariamente, aberto em modo read-only e apagado no fim. O servidor não mantém o backup. A cópia dos dados usada pela interface fica apenas no armazenamento local do browser/app.
+The `.fitnotes` file is sent to the API only for reading, stored temporarily, opened in read-only mode and deleted afterwards. The server does not keep the backup. The copy of the imported data used by the interface stays only in the browser/app local storage.
 
-## Executar localmente
+## Run locally
 
 ### Backend
 
@@ -40,15 +42,15 @@ npm install
 npm run dev
 ```
 
-Por omissão, o frontend usa `http://localhost:5080` como API. Em produção define:
+By default, the frontend uses `http://localhost:5080` as the API. In production, define:
 
 ```env
 VITE_API_URL=https://fitnotes-viewer-api.onrender.com
 ```
 
-## Deploy atual
+## Current deployment
 
 - Frontend: Cloudflare Pages
 - Backend: Render
 
-Depois de fazer `git push`, os serviços ligados ao repositório podem fazer redeploy automaticamente.
+After `git push`, the services connected to the repository can redeploy automatically.
