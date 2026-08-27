@@ -18,6 +18,18 @@
   padding: 12px;
 }
 
+.day-navigation-card::before {
+  content: '';
+  width: 100vw;
+  height: max(8px, env(safe-area-inset-top));
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  background: #000;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .day-content-card {
   min-width: 0;
 }
