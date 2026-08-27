@@ -1,12 +1,12 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { getWorkoutCalendarColors } from '../../data/repositories/workoutRepository'
+import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import CalendarList from './components/CalendarList.vue'
 import { createCalendarMonths, monthKey } from './calendarUtils'
 
 defineProps({
   selectedDate: { type: String, required: true },
-  selectedDateLabel: { type: String, required: true },
 })
 
 const emit = defineEmits(['select'])
@@ -44,30 +44,22 @@ function scrollToCurrentMonth() {
   if (!currentMonth) return
 
   const bottomNavigation = document.querySelector('.bottom-bar')
+  const sectionHeader = document.querySelector('.section-sticky-header')
   const bottomNavigationHeight = bottomNavigation?.getBoundingClientRect().height ?? 0
-  const visibleHeight = window.innerHeight - bottomNavigationHeight
+  const sectionHeaderHeight = sectionHeader?.getBoundingClientRect().height ?? 0
+  const visibleHeight = window.innerHeight - bottomNavigationHeight - sectionHeaderHeight
   const margin = Math.max(20, (visibleHeight - currentMonth.offsetHeight) / 2)
   currentMonth.parentElement.style.paddingBottom = `${margin}px`
 
-  const top = currentMonth.getBoundingClientRect().top + window.scrollY - margin
+  const top = currentMonth.getBoundingClientRect().top + window.scrollY - sectionHeaderHeight - margin
   window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
 }
 </script>
 
 <template>
-  <header class="app-header calendar-header">
-    <div>
-      <p class="eyebrow">FITNOTES VIEWER</p>
-      <h1>Calendar</h1>
-    </div>
-    <span class="data-pill">{{ selectedDateLabel }}</span>
-  </header>
+  <AppSectionHeader title="Calendar" />
 
-  <section class="calendar-intro">
-    <p>Choose a day to open it. Scroll up for previous months.</p>
-  </section>
-
-  <p v-if="loading" class="calendar-intro">Loading workout dates…</p>
+  <p v-if="loading" class="calendar-status">Loading workout dates…</p>
   <p v-else-if="error" class="body-error">{{ error }}</p>
   <CalendarList
     v-else

@@ -42,6 +42,29 @@ button { -webkit-tap-highlight-color: transparent; }
   margin-bottom: 22px;
 }
 
+.section-sticky-header {
+  width: 100vw;
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  margin-left: calc(50% - 50vw);
+  margin-bottom: 18px;
+  padding: max(14px, env(safe-area-inset-top)) 0 14px;
+  border-radius: 0 0 var(--box-radius) var(--box-radius);
+  background: #000;
+}
+
+.section-sticky-header-inner {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.section-sticky-header h1 {
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   font-size: 11px;

@@ -1,15 +1,7 @@
-.calendar-header {
-  margin-bottom: 14px;
-}
-
-.calendar-intro {
+.calendar-status {
   margin-bottom: 18px;
   color: #8f8f96;
   font-size: 14px;
-}
-
-.calendar-intro p {
-  margin: 0;
 }
 
 .calendar-stack {

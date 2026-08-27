@@ -18,7 +18,6 @@ const appReady = ref(false)
 const {
   activeView,
   selectedDate,
-  selectedDateLong,
   navigateTo,
   resetSelectedDate,
   selectCalendarDate,
@@ -79,7 +78,6 @@ function handleDataDeleted() {
     <CalendarView
       v-else-if="activeView === 'calendar'"
       :selected-date="selectedDate"
-      :selected-date-label="selectedDateLong"
       @select="selectCalendarDate"
     />
 
