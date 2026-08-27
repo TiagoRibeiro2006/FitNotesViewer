@@ -19,6 +19,7 @@ defineProps({
 const emit = defineEmits([
   'add-set',
   'delete',
+  'edit-details',
   'move-set',
   'remove-set',
   'save',
@@ -41,13 +42,14 @@ function exerciseStyle(exercise) {
 
 <template>
   <div class="set-editor" :class="{ 'has-details': showHistory || showRecords }">
-    <div class="selected-exercise-card" :style="exerciseStyle(exercise)">
+    <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
       <span class="exercise-color-dot"></span>
       <div>
         <strong>{{ exercise.name }}</strong>
         <small>{{ exercise.categoryName }}</small>
       </div>
-    </div>
+      <span class="selected-exercise-chevron" aria-hidden="true">›</span>
+    </button>
 
     <div class="sets-grid sets-grid-header" aria-hidden="true">
       <span>Set</span>

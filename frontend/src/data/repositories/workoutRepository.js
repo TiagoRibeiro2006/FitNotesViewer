@@ -70,27 +70,6 @@ export async function getWorkoutHistoryForExercise(exerciseId) {
   return buildWorkoutHistory(rows ?? [])
 }
 
-export async function getExerciseCatalog() {
-  const database = await openAppDatabase()
-  const transaction = database.transaction(['exercises', 'categories', 'workoutSets'], 'readonly')
-  const done = transactionComplete(transaction)
-  const [exercises, categories, workoutSets] = await Promise.all([
-    requestResult(transaction.objectStore('exercises').getAll()),
-    requestResult(transaction.objectStore('categories').getAll()),
-    requestResult(transaction.objectStore('workoutSets').getAll()),
-  ])
-  await done
-
-  const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]))
-  const usage = buildExerciseUsage(workoutSets)
-  const catalog = (exercises ?? [])
-    .map((exercise) => buildCatalogExercise(exercise, categoriesById, usage))
-    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'en', { sensitivity: 'base' }))
-  const sortedCategories = [...(categories ?? [])].sort(compareCategories)
-
-  return { exercises: catalog, categories: sortedCategories }
-}
-
 export async function saveWorkoutExercise(date, exercise, sets) {
   const cleanedSets = sets
     .map((set) => ({
@@ -216,20 +195,6 @@ export async function copyWorkoutDay(sourceDate, targetDate) {
   return refreshSummary()
 }
 
-function buildExerciseUsage(workoutSets = []) {
-  const usage = new Map()
-
-  for (const set of workoutSets) {
-    const stats = usage.get(set.exerciseId) ?? { dates: new Set(), totalSets: 0, lastDate: null }
-    if (set.date) stats.dates.add(set.date)
-    stats.totalSets += 1
-    if (set.date && (!stats.lastDate || set.date > stats.lastDate)) stats.lastDate = set.date
-    usage.set(set.exerciseId, stats)
-  }
-
-  return usage
-}
-
 function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories = []) {
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const categoriesById = new Map(categories.map((category) => [category.id, category]))
@@ -270,25 +235,6 @@ function buildWorkoutHistory(rows) {
         weight: row.weight,
       })),
     }))
-}
-
-function buildCatalogExercise(exercise, categoriesById, usage) {
-  const category = categoriesById.get(exercise.categoryId)
-  const stats = usage.get(exercise.id)
-  return {
-    ...exercise,
-    categoryName: category?.name ?? 'Other',
-    categoryColor: category?.colour ?? null,
-    workoutCount: stats?.dates.size ?? 0,
-    totalSetCount: stats?.totalSets ?? 0,
-    lastWorkoutDate: stats?.lastDate ?? null,
-  }
-}
-
-function compareCategories(a, b) {
-  const orderA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 9999
-  const orderB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 9999
-  return orderA - orderB || String(a.name).localeCompare(String(b.name))
 }
 
 function createWorkoutSet(date, exercise, set, exerciseOrder, setOrder, updatedAt) {

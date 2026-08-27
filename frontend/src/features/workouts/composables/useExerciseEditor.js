@@ -1,10 +1,12 @@
 import { ref } from 'vue'
 import { useExerciseCatalog } from './useExerciseCatalog'
+import { useExerciseDetails } from './useExerciseDetails'
 import { useExerciseSets } from './useExerciseSets'
 
 export function useExerciseEditor(selectedDate, callbacks = {}) {
   const step = ref('exercise')
   const catalog = useExerciseCatalog()
+  const details = useExerciseDetails()
   const sets = useExerciseSets(selectedDate, callbacks)
 
   async function startPicker() {
@@ -27,9 +29,32 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     await sets.open(exercise)
   }
 
+  function openExerciseDetails() {
+    if (sets.selectedExercise.value) step.value = 'exercise-details'
+  }
+
+  async function saveExerciseDetails(changes) {
+    const exercise = sets.selectedExercise.value
+    if (!exercise) return
+
+    const result = await details.save(exercise.id, changes)
+    if (!result?.exercise) return
+
+    await catalog.load()
+    sets.replaceExercise(catalog.findById(exercise.id) ?? result.exercise)
+    step.value = 'sets'
+    callbacks.onChanged?.(result.summary)
+  }
+
+  function returnToSets() {
+    details.reset()
+    step.value = 'sets'
+  }
+
   function reset() {
     step.value = 'exercise'
     catalog.resetFilters()
+    details.reset()
     sets.reset()
   }
 
@@ -37,6 +62,8 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     canSave: sets.canSave,
     categories: catalog.categories,
     deleteConfirming: sets.deleteConfirming,
+    detailsError: details.error,
+    detailsSaving: details.saving,
     draftSets: sets.draftSets,
     error: sets.error,
     filteredExercises: catalog.filteredExercises,
@@ -51,12 +78,15 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     addSet: sets.addSet,
     moveSet: sets.moveSet,
     openEditor,
+    openExerciseDetails,
     removeExercise: sets.removeExercise,
     removeSet: sets.removeSet,
     reset,
     save: sets.save,
+    saveExerciseDetails,
     startEditor,
     startPicker,
+    returnToSets,
     updateSet: sets.updateSet,
   }
 }

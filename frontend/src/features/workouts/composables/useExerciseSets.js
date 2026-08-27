@@ -76,6 +76,10 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     deleteConfirming.value = false
   }
 
+  function replaceExercise(exercise) {
+    selectedExercise.value = exercise
+  }
+
   async function save() {
     if (!selectedExercise.value || !canSave.value || saving.value) return
     saving.value = true
@@ -156,6 +160,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     moveSet,
     removeExercise,
     removeSet,
+    replaceExercise,
     reset,
     save,
     updateSet,
