@@ -75,6 +75,32 @@ public sealed class FitNotesAnalyzerService
                 });
             }
 
+            var workoutSets = new List<WorkoutSet>();
+
+            await using (var workoutCommand = connection.CreateCommand())
+            {
+                workoutCommand.CommandText = """
+                    SELECT tl._id, tl.exercise_id, e.name, tl.date, tl.metric_weight, tl.reps
+                    FROM training_log tl
+                    INNER JOIN exercise e ON e._id = tl.exercise_id
+                    ORDER BY tl.date ASC, tl._id ASC;
+                    """;
+
+                await using var workoutReader = await workoutCommand.ExecuteReaderAsync(cancellationToken);
+                while (await workoutReader.ReadAsync(cancellationToken))
+                {
+                    workoutSets.Add(new WorkoutSet
+                    {
+                        Id = workoutReader.GetInt64(0),
+                        ExerciseId = workoutReader.GetInt64(1),
+                        ExerciseName = workoutReader.GetString(2),
+                        Date = NormalizeDate(workoutReader.GetString(3)) ?? workoutReader.GetString(3),
+                        Weight = workoutReader.GetDouble(4),
+                        Reps = workoutReader.GetInt32(5)
+                    });
+                }
+            }
+
             return new FitNotesSummary
             {
                 FileName = Path.GetFileName(file.FileName),
@@ -82,7 +108,8 @@ public sealed class FitNotesAnalyzerService
                 TotalExercises = totalExercises,
                 FirstWorkoutDate = NormalizeDate(firstWorkoutDate),
                 LastWorkoutDate = NormalizeDate(lastWorkoutDate),
-                TopExercises = topExercises
+                TopExercises = topExercises,
+                WorkoutSets = workoutSets
             };
         }
         finally
