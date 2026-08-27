@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
+import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyMeasurementDetailView from './components/BodyMeasurementDetailView.vue'
 import BodyMeasurementList from './components/BodyMeasurementList.vue'
 import { useBodyTracker } from './composables/useBodyTracker'
@@ -42,12 +43,7 @@ async function closeMeasurement() {
     @changed="load"
   />
   <template v-else>
-    <header class="app-header body-header">
-      <div>
-        <p class="eyebrow">BODY</p>
-        <h1>Body Tracker</h1>
-      </div>
-    </header>
+    <AppSectionHeader title="Body Tracker" />
 
     <div v-if="loading" class="body-status">Loading body data…</div>
     <p v-else-if="error" class="body-error">{{ error }}</p>
