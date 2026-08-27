@@ -44,18 +44,22 @@
 .day-title { text-align: center; }
 .day-title h2 { margin-bottom: 0; font-size: 22px; color: #fff; }
 
-.exercise-list { padding-top: 8px; }
+.exercise-list {
+  display: grid;
+  gap: 12px;
+  padding-top: 8px;
+}
 .exercise-row {
   width: 100%;
   display: block;
   padding: 0;
-  border: 0;
-  border-bottom: 1px solid #242424;
+  overflow: hidden;
+  border: 1px solid #242424;
+  border-radius: var(--box-radius);
   background: transparent;
   color: inherit;
   text-align: left;
 }
-.exercise-row:last-child { border-bottom: 0; }
 .exercise-row-content {
   width: 100%;
   min-width: 0;
