@@ -367,6 +367,15 @@
   padding: 0;
 }
 
+.set-progress-star {
+  width: 19px;
+  height: 19px;
+  fill: #4b9cff;
+  stroke: #4b9cff;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
 .set-drag-handle {
   cursor: grab;
   touch-action: none;

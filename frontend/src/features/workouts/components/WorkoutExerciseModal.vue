@@ -33,6 +33,7 @@ const {
   deleteConfirming,
   detailsError,
   detailsSaving,
+  draftProgress,
   draftSets,
   error,
   filteredExercises,
@@ -215,6 +216,7 @@ function selectOption(option) {
       v-else-if="step === 'sets' && selectedExercise"
       :exercise="selectedExercise"
       :sets="draftSets"
+      :set-progress="draftProgress"
       :has-existing-sets="hasExistingSets"
       :delete-confirming="deleteConfirming"
       :saving="saving"

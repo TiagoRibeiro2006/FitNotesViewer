@@ -64,6 +64,7 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     deleteConfirming: sets.deleteConfirming,
     detailsError: details.error,
     detailsSaving: details.saving,
+    draftProgress: sets.draftProgress,
     draftSets: sets.draftSets,
     error: sets.error,
     filteredExercises: catalog.filteredExercises,
