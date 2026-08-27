@@ -20,11 +20,11 @@ const props = defineProps({
 const emit = defineEmits(['close', 'data-changed'])
 const catalogActive = ref(false)
 const selectedOption = ref('')
-const catalogManager = useCatalogManager()
 const callbacks = {
   onChanged: notifyDataChanged,
   onClose: closeAfterSave,
 }
+const catalogManager = useCatalogManager(callbacks)
 const selectedDate = computed(readSelectedDate)
 
 const {
@@ -134,10 +134,10 @@ function goBack() {
 }
 
 function selectOption(option) {
-  if (step.value === 'exercise' && option === 'muscles') {
+  if (step.value === 'exercise' && (option === 'muscles' || option === 'exercises')) {
     selectedOption.value = ''
     catalogActive.value = true
-    void catalogManager.open('muscles')
+    void catalogManager.open(option)
     return
   }
 
@@ -176,11 +176,19 @@ function selectOption(option) {
         @select="catalogManager.select"
       />
       <MuscleDetailsEditor
-        v-else-if="catalogManager.selectedItem.value"
+        v-else-if="catalogManager.mode.value === 'muscles' && catalogManager.selectedItem.value"
         :muscle="catalogManager.selectedItem.value"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveMuscle"
+      />
+      <ExerciseDetailsEditor
+        v-else-if="catalogManager.selectedItem.value"
+        :categories="catalogManager.categories.value"
+        :exercise="catalogManager.selectedItem.value"
+        :error="catalogManager.error.value"
+        :saving="catalogManager.saving.value"
+        @save="catalogManager.saveExercise"
       />
     </template>
 

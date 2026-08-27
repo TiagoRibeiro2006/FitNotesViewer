@@ -68,7 +68,7 @@ function closeWithEscape(event) {
           </svg>
           <span>Muscle</span>
         </button>
-        <button type="button" role="menuitem" disabled>
+        <button type="button" role="menuitem" @click="select('exercises')">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="2.5" y="9.5" width="3" height="5" rx=".75" />
             <rect x="5.5" y="7.5" width="3" height="9" rx=".75" />
