@@ -53,7 +53,8 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
 
   function removeSet(index) {
     if (draftSets.value.length <= 1) {
-      draftSets.value[0] = { weight: '', reps: '' }
+      draftSets.value[0].weight = ''
+      draftSets.value[0].reps = ''
       return
     }
 

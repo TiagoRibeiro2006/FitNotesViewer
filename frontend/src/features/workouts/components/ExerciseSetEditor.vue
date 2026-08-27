@@ -61,7 +61,7 @@ function exerciseStyle(exercise) {
     >
       <div
         v-for="(set, index) in sets"
-        :key="index"
+        :key="set.draftId"
         class="sets-grid set-input-row"
         :class="{ 'is-dragging': draggingIndex === index }"
         data-drag-item
