@@ -88,12 +88,6 @@
   cursor: pointer;
 }
 
-.settings-delete-button.is-confirming {
-  border-color: #75302f;
-  background: #351616;
-  color: #ff8a82;
-}
-
 .settings-delete-button:disabled {
   opacity: .4;
   cursor: not-allowed;

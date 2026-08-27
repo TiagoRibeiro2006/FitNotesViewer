@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
+import TypedConfirmationModal from '../../shared/components/TypedConfirmationModal.vue'
 import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import { useFitNotesBackup } from './composables/useFitNotesBackup'
 
@@ -8,12 +9,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['data-imported', 'data-deleted'])
-const summary = computed(() => props.summary)
+const summary = computed(readSummary)
 const catalogMode = ref('muscles')
 const catalogOpen = ref(false)
+const confirmationAction = ref('')
+const confirmationOpen = computed(readConfirmationOpen)
+const confirmationTitle = computed(readConfirmationTitle)
+const confirmationMessage = computed(readConfirmationMessage)
+const confirmationLabel = computed(readConfirmationLabel)
+const confirmationBusy = computed(readConfirmationBusy)
 
 const {
-  deleteConfirming,
   deleteError,
   deleting,
   exportError,
@@ -31,10 +37,16 @@ const {
   selectFile,
 } = useFitNotesBackup(summary)
 
-onMounted(() => {
+onMounted(initializeSettings)
+
+function initializeSettings() {
   void prepareExport()
   window.scrollTo({ top: 0, behavior: 'auto' })
-})
+}
+
+function readSummary() {
+  return props.summary
+}
 
 function onFileChange(event) {
   selectFile(event.target.files?.[0] ?? null)
@@ -49,6 +61,14 @@ async function importFile() {
   await prepareExport(true)
 }
 
+function handleImport() {
+  if (hasCurrentData.value) {
+    openConfirmation('replace')
+    return
+  }
+  void importFile()
+}
+
 async function removeData() {
   if (await deleteCurrentData()) emit('data-deleted')
 }
@@ -56,6 +76,44 @@ async function removeData() {
 function openCatalog(mode) {
   catalogMode.value = mode
   catalogOpen.value = true
+}
+
+function openConfirmation(action) {
+  confirmationAction.value = action
+}
+
+function closeConfirmation() {
+  if (!confirmationBusy.value) confirmationAction.value = ''
+}
+
+async function confirmAction() {
+  const action = confirmationAction.value
+  confirmationAction.value = ''
+  if (action === 'replace') await importFile()
+  if (action === 'delete') await removeData()
+}
+
+function readConfirmationOpen() {
+  return confirmationAction.value !== ''
+}
+
+function readConfirmationTitle() {
+  return confirmationAction.value === 'delete' ? 'Delete current data' : 'Replace current data'
+}
+
+function readConfirmationMessage() {
+  if (confirmationAction.value === 'delete') {
+    return 'This permanently removes the imported backup and all data stored on this device.'
+  }
+  return 'This replaces all current data on this device with the selected FitNotes backup.'
+}
+
+function readConfirmationLabel() {
+  return confirmationAction.value === 'delete' ? 'Delete data' : 'Replace data'
+}
+
+function readConfirmationBusy() {
+  return confirmationAction.value === 'delete' ? deleting.value : importing.value
 }
 </script>
 
@@ -76,7 +134,7 @@ function openCatalog(mode) {
 
       <p class="file-name">{{ fileLabel }}</p>
 
-      <button class="primary-button" :disabled="importing || !selectedFile" @click="importFile">
+      <button class="primary-button" :disabled="importing || !selectedFile" @click="handleImport">
         {{ importing ? 'Importing…' : hasCurrentData ? 'Replace data' : 'Import' }}
       </button>
 
@@ -125,12 +183,11 @@ function openCatalog(mode) {
       </div>
       <button
         class="settings-delete-button"
-        :class="{ 'is-confirming': deleteConfirming }"
         type="button"
         :disabled="deleting"
-        @click="removeData"
+        @click="openConfirmation('delete')"
       >
-        {{ deleting ? 'Deleting…' : deleteConfirming ? 'Tap again to delete' : 'Delete data' }}
+        {{ deleting ? 'Deleting…' : 'Delete data' }}
       </button>
     </div>
 
@@ -141,5 +198,16 @@ function openCatalog(mode) {
     :open="catalogOpen"
     :mode="catalogMode"
     @close="catalogOpen = false"
+  />
+
+  <TypedConfirmationModal
+    :open="confirmationOpen"
+    :title="confirmationTitle"
+    :message="confirmationMessage"
+    :confirm-label="confirmationLabel"
+    :busy="confirmationBusy"
+    :danger="confirmationAction === 'delete'"
+    @close="closeConfirmation"
+    @confirm="confirmAction"
   />
 </template>
