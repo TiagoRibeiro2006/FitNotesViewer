@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import {
   clearLocalData,
+  copyWorkoutDay,
   deleteWorkoutExercise,
   getBodyTrackerData,
   getExerciseCatalog,
@@ -32,6 +33,9 @@ const bodyMeasurements = ref([])
 const bodyLoading = ref(false)
 const bodyError = ref('')
 const bodyFavoritesSaving = ref(false)
+const copyDayModalOpen = ref(false)
+const copyingDay = ref(false)
+const copyDayError = ref('')
 let dayLoadSequence = 0
 let exportPreparationSequence = 0
 
@@ -85,23 +89,8 @@ const currentMonthKey = computed(() => {
   return monthKey(now.getFullYear(), now.getMonth())
 })
 
-const calendarMonths = computed(() => {
-  const months = []
-  const firstWorkoutDate = [...calendarWorkoutDates.value].sort()[0] ?? todayKey()
-  const [firstYear, firstMonth] = firstWorkoutDate.split('-').map(Number)
-  const cursor = new Date(firstYear, firstMonth - 1, 1)
-  const now = new Date()
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-
-  while (cursor <= end) {
-    const year = cursor.getFullYear()
-    const month = cursor.getMonth()
-    months.push(buildCalendarMonth(year, month))
-    cursor.setMonth(cursor.getMonth() + 1)
-  }
-
-  return months
-})
+const calendarMonths = computed(() => createCalendarMonths(calendarWorkoutDates.value))
+const copyCalendarMonths = computed(() => createCalendarMonths(calendarWorkoutDates.value))
 
 const filteredExercises = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -158,7 +147,7 @@ watch(selectedDate, () => {
   void loadDayExercises()
 })
 
-watch(workoutModalOpen, (open) => {
+watch(() => workoutModalOpen.value || copyDayModalOpen.value, (open) => {
   document.body.classList.toggle('modal-open', open)
 })
 
@@ -221,6 +210,24 @@ function formatBodyEntryDate(item) {
 
 function monthKey(year, monthIndex) {
   return `${year}-${String(monthIndex + 1).padStart(2, '0')}`
+}
+
+function createCalendarMonths(workoutDates) {
+  const months = []
+  const firstWorkoutDate = [...workoutDates].sort()[0] ?? todayKey()
+  const [firstYear, firstMonth] = firstWorkoutDate.split('-').map(Number)
+  const cursor = new Date(firstYear, firstMonth - 1, 1)
+  const now = new Date()
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+
+  while (cursor <= end) {
+    const year = cursor.getFullYear()
+    const month = cursor.getMonth()
+    months.push(buildCalendarMonth(year, month))
+    cursor.setMonth(cursor.getMonth() + 1)
+  }
+
+  return months
 }
 
 function buildCalendarMonth(year, monthIndex) {
@@ -310,6 +317,43 @@ function selectCalendarDate(dateKey) {
   selectedDate.value = dateKey
   activeView.value = 'workouts'
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
+async function openCopyDayModal() {
+  copyDayModalOpen.value = true
+  copyDayError.value = ''
+
+  try {
+    calendarWorkoutDates.value = await getWorkoutDateSet()
+  } catch {
+    copyDayError.value = 'Workout dates could not be loaded.'
+  }
+
+  await nextTick()
+  document.getElementById('copy-calendar-current-month')?.scrollIntoView({ block: 'start' })
+}
+
+function closeCopyDayModal(force = false) {
+  if (copyingDay.value && !force) return
+  copyDayModalOpen.value = false
+  copyDayError.value = ''
+}
+
+async function copyWorkoutDate(sourceDate) {
+  if (copyingDay.value) return
+  copyingDay.value = true
+  copyDayError.value = ''
+
+  try {
+    data.value = await copyWorkoutDay(sourceDate, selectedDate.value) ?? createEmptySummary()
+    const [, , workoutDates] = await Promise.all([loadDayExercises(), loadExerciseCatalog(), getWorkoutDateSet()])
+    calendarWorkoutDates.value = workoutDates
+    closeCopyDayModal(true)
+  } catch (err) {
+    copyDayError.value = friendlyError(err)
+  } finally {
+    copyingDay.value = false
+  }
 }
 
 function openSettings() {
@@ -551,7 +595,9 @@ function closeWorkoutModal(force = false) {
 }
 
 function onKeyDown(event) {
-  if (event.key === 'Escape' && workoutModalOpen.value) closeWorkoutModal()
+  if (event.key !== 'Escape') return
+  if (workoutModalOpen.value) closeWorkoutModal()
+  else if (copyDayModalOpen.value) closeCopyDayModal()
 }
 
 function addSet() {
@@ -752,7 +798,7 @@ async function deleteCurrentData() {
             <span>Add Exercise</span>
           </button>
 
-          <button v-if="!dayExercises.length" class="day-action day-copy-previous" type="button" disabled>
+          <button v-if="!dayExercises.length" class="day-action day-copy-previous" type="button" @click="openCopyDayModal">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="8" y="8" width="11" height="11" rx="2" />
               <path d="M16 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
@@ -1119,6 +1165,76 @@ async function deleteCurrentData() {
             </div>
           </div>
         </template>
+      </section>
+    </div>
+  </Teleport>
+
+  <Teleport to="body">
+    <div v-if="copyDayModalOpen" class="modal-layer" @click.self="closeCopyDayModal">
+      <section class="workout-modal copy-calendar-modal" role="dialog" aria-modal="true" aria-label="Copy workout from another day">
+        <header class="modal-header">
+          <button class="modal-icon-button" type="button" aria-label="Close" @click="closeCopyDayModal">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m7 7 10 10M17 7 7 17" />
+            </svg>
+          </button>
+          <div class="modal-heading">
+            <p>Copy to {{ selectedDateLong }}</p>
+            <h2>Choose a day</h2>
+          </div>
+          <span class="modal-header-spacer" aria-hidden="true"></span>
+        </header>
+
+        <div class="copy-calendar-content">
+          <p class="copy-calendar-intro">Choose any day. Empty days will copy an empty log.</p>
+
+          <section class="calendar-stack copy-calendar-stack" aria-label="Choose a workout day to copy">
+            <article
+              v-for="month in copyCalendarMonths"
+              :id="month.key === currentMonthKey ? 'copy-calendar-current-month' : undefined"
+              :key="month.key"
+              class="calendar-month"
+            >
+              <div class="calendar-month-heading">
+                <h2>{{ month.label }}</h2>
+                <span v-if="month.key === currentMonthKey">Current month</span>
+              </div>
+
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+
+              <div class="calendar-grid">
+                <template v-for="day in month.days" :key="day.key">
+                  <span v-if="day.blank" class="calendar-day is-blank" aria-hidden="true"></span>
+                  <button
+                    v-else
+                    class="calendar-day"
+                    :class="{
+                      'is-today': isToday(day.key),
+                      'has-workout': hasWorkout(day.key),
+                    }"
+                    type="button"
+                    :disabled="copyingDay"
+                    :aria-label="`Copy ${formatDate(day.key)}`"
+                    @click="copyWorkoutDate(day.key)"
+                  >
+                    <span class="calendar-day-number">{{ day.day }}</span>
+                    <span v-if="hasWorkout(day.key)" class="calendar-workout-dot" aria-hidden="true"></span>
+                  </button>
+                </template>
+              </div>
+            </article>
+          </section>
+
+          <p v-if="copyDayError" class="editor-error copy-calendar-error">{{ copyDayError }}</p>
+        </div>
       </section>
     </div>
   </Teleport>
