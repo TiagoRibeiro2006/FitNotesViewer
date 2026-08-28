@@ -84,6 +84,15 @@ export async function parseFitNotesFile(file) {
       FROM Measurement ORDER BY sort_order, _id;
     `).map(normalizeObjectNumbers)
 
+    const measurementUnits = optionalRows(db, 'MeasurementUnit', `
+      SELECT
+        _id AS id,
+        type,
+        long_name AS longName,
+        short_name AS shortName
+      FROM MeasurementUnit ORDER BY _id;
+    `).map(normalizeObjectNumbers)
+
     const measurementRecords = optionalRows(db, 'MeasurementRecord', `
       SELECT
         _id AS id,
@@ -161,6 +170,7 @@ export async function parseFitNotesFile(file) {
         categories,
         bodyWeights,
         measurements,
+        measurementUnits,
         measurementRecords,
         workoutTimes,
         workoutComments,

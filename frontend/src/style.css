@@ -1124,7 +1124,12 @@ body.modal-open {
   margin-bottom: 14px;
 }
 
-.body-favorites-card {
+.body-sections {
+  display: grid;
+  gap: 18px;
+}
+
+.body-section-card {
   overflow: hidden;
   border: 1px solid #242424;
   border-radius: 18px;
@@ -1156,7 +1161,7 @@ body.modal-open {
   color: #ff7066;
 }
 
-.body-favorite-row {
+.body-measurement-row {
   min-height: 126px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 34px;
@@ -1166,15 +1171,15 @@ body.modal-open {
   border-bottom: 1px solid #292929;
 }
 
-.body-favorite-row:last-child {
+.body-measurement-row:last-child {
   border-bottom: 0;
 }
 
-.body-favorite-copy {
+.body-measurement-copy {
   min-width: 0;
 }
 
-.body-favorite-copy h2 {
+.body-measurement-copy h2 {
   margin: 0 0 10px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1184,7 +1189,7 @@ body.modal-open {
   font-weight: 600;
 }
 
-.body-favorite-value {
+.body-measurement-value {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -1194,16 +1199,16 @@ body.modal-open {
   font-size: 18px;
 }
 
-.body-favorite-value strong {
+.body-measurement-value strong {
   font-weight: 500;
 }
 
-.body-favorite-change {
+.body-measurement-change {
   color: #85858d;
   font-size: 15px;
 }
 
-.body-favorite-copy small {
+.body-measurement-copy small {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1212,21 +1217,26 @@ body.modal-open {
   font-size: 13px;
 }
 
-.body-favorite-heart {
+.body-measurement-heart {
   width: 30px;
   height: 30px;
-  fill: #4b9cff;
+  fill: none;
   stroke: #4b9cff;
+  stroke-width: 1.8;
+}
+
+.body-measurement-heart.is-favorite {
+  fill: #4b9cff;
   stroke-width: 1.5;
 }
 
 @media (max-width: 640px) {
-  .body-favorite-row {
+  .body-measurement-row {
     min-height: 116px;
     padding: 18px 15px;
   }
 
-  .body-favorite-copy h2 {
+  .body-measurement-copy h2 {
     font-size: 19px;
   }
 }
