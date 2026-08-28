@@ -23,10 +23,7 @@ export function buildProgressBaseline(rows) {
 }
 
 export function calculateDraftProgress(drafts, baseline) {
-  const state = {
-    bestReps: Number(baseline?.bestReps ?? 0),
-    maxWeight: baseline?.maxWeight ?? null,
-  }
+  const state = copyProgressState(baseline)
   const progress = []
 
   for (const draft of drafts) progress.push(updateProgressState(state, draft))
@@ -34,28 +31,48 @@ export function calculateDraftProgress(drafts, baseline) {
 }
 
 function updateProgressState(state, set) {
-  const weight = Number(String(set.weight).replace(',', '.'))
-  const reps = Number(set.reps)
-  if (!Number.isFinite(weight) || weight < 0) return false
-  if (!Number.isInteger(reps) || reps < 1) return false
+  const point = readProgressPoint(set)
+  if (!point || isDominated(point, state.points)) return false
 
-  const progressed =
-    state.maxWeight === null ||
-    weight > state.maxWeight ||
-    (weight === state.maxWeight && reps > state.bestReps)
-
-  if (weight > (state.maxWeight ?? Number.NEGATIVE_INFINITY)) {
-    state.maxWeight = weight
-    state.bestReps = reps
-  } else if (weight === state.maxWeight && reps > state.bestReps) {
-    state.bestReps = reps
+  const remainingPoints = []
+  for (const existingPoint of state.points) {
+    if (!dominates(point, existingPoint)) remainingPoints.push(existingPoint)
   }
-
-  return progressed
+  remainingPoints.push(point)
+  state.points = remainingPoints
+  return true
 }
 
 function createEmptyProgressState() {
-  return { bestReps: 0, maxWeight: null }
+  return { points: [] }
+}
+
+function copyProgressState(source) {
+  const state = createEmptyProgressState()
+  for (const point of source?.points ?? []) {
+    const validPoint = readProgressPoint(point)
+    if (validPoint) state.points.push(validPoint)
+  }
+  return state
+}
+
+function readProgressPoint(set) {
+  const weight = Number(String(set.weight).replace(',', '.'))
+  const reps = Number(set.reps)
+  if (!Number.isFinite(weight) || weight < 0) return null
+  if (!Number.isInteger(reps) || reps < 1) return null
+  return { weight, reps }
+}
+
+function isDominated(point, existingPoints) {
+  for (const existingPoint of existingPoints) {
+    if (dominates(existingPoint, point)) return true
+  }
+  return false
+}
+
+function dominates(first, second) {
+  return first.weight >= second.weight && first.reps >= second.reps
 }
 
 function compareChronologicalRows(first, second) {
