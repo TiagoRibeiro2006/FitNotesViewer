@@ -433,10 +433,6 @@ body.modal-open {
   cursor: pointer;
 }
 
-.modal-back-button {
-  font-size: 24px;
-}
-
 .modal-icon-button:active {
   transform: scale(.96);
   background: #202020;
