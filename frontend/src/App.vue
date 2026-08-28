@@ -744,12 +744,6 @@ async function deleteCurrentData() {
     </template>
 
     <template v-else-if="activeView === 'settings'">
-      <header class="settings-header">
-        <button class="settings-back-button" type="button" aria-label="Back to workouts" @click="openWorkoutLog">←</button>
-        <h1>Settings</h1>
-        <span class="settings-header-spacer" aria-hidden="true"></span>
-      </header>
-
       <section class="settings-card">
         <div class="settings-section-heading">
           <div>

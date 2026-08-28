@@ -1181,41 +1181,6 @@ body.modal-open {
   margin-top: 0;
 }
 
-.settings-header {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
-}
-
-.settings-header h1 {
-  text-align: center;
-  font-size: clamp(30px, 7vw, 42px);
-}
-
-.settings-back-button,
-.settings-header-spacer {
-  width: 48px;
-  height: 48px;
-}
-
-.settings-back-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #303030;
-  border-radius: 14px;
-  background: #171717;
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.settings-back-button:active {
-  transform: scale(.97);
-}
-
 .settings-card {
   padding: 18px;
   border: 1px solid #242424;
