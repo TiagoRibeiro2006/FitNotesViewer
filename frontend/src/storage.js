@@ -175,14 +175,16 @@ export async function getSummary() {
 
 export async function getBodyTrackerData() {
   const db = await openAppDatabase()
-  const transaction = db.transaction(['bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
+  const transaction = db.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
 
+  const favoritesRequest = transaction.objectStore('metadata').get('bodyFavoriteIds')
   const bodyWeightsRequest = transaction.objectStore('bodyWeights').getAll()
   const measurementsRequest = transaction.objectStore('measurements').getAll()
   const unitsRequest = transaction.objectStore('measurementUnits').getAll()
   const recordsRequest = transaction.objectStore('measurementRecords').getAll()
-  const [bodyWeights, measurements, units, records] = await Promise.all([
+  const [favoritesRecord, bodyWeights, measurements, units, records] = await Promise.all([
+    requestResult(favoritesRequest),
     requestResult(bodyWeightsRequest),
     requestResult(measurementsRequest),
     requestResult(unitsRequest),
@@ -190,7 +192,15 @@ export async function getBodyTrackerData() {
   ])
   await done
 
-  return buildBodyTrackerData(bodyWeights, measurements, units, records)
+  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value)
+}
+
+export async function saveBodyFavoriteIds(ids) {
+  const uniqueIds = [...new Set(ids.map(String))]
+  const db = await openAppDatabase()
+  const transaction = db.transaction('metadata', 'readwrite')
+  transaction.objectStore('metadata').put({ key: 'bodyFavoriteIds', value: uniqueIds })
+  await transactionComplete(transaction)
 }
 
 export async function getWorkoutDateSet() {
@@ -527,7 +537,7 @@ function compareSourceRows(a, b) {
   return String(a.id).localeCompare(String(b.id))
 }
 
-function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = []) {
+function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds) {
   const unitsById = new Map(units.map((unit) => [unit.id, normalizeMeasurementUnit(unit.shortName)]))
   const measurementItems = measurements.map((measurement) => buildMeasurementItem(
     measurement,
@@ -543,7 +553,7 @@ function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], r
     { id: 'visceral-fat', name: 'Visceral Fat', aliases: ['Visceral Fat'], unit: '%' },
   ]
 
-  const favorites = favoriteDefinitions.map((definition) => {
+  const defaultFavorites = favoriteDefinitions.map((definition) => {
     const measurementItem = definition.aliases
       .map((name) => itemsByName.get(normalizeBodyName(name)))
       .find(Boolean)
@@ -563,14 +573,23 @@ function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], r
     }
   })
 
-  const favoritesById = new Map(favorites.map((item) => [item.id, item]))
-  const allMeasurements = measurementItems
+  const defaultFavoritesById = new Map(defaultFavorites.map((item) => [item.id, item]))
+  let allMeasurements = measurementItems
     .filter((item) => item.enabled)
-    .map((item) => favoritesById.get(item.id) ?? { ...item, favorite: false })
+    .map((item) => defaultFavoritesById.get(item.id) ?? { ...item, favorite: false })
 
   const allMeasurementIds = new Set(allMeasurements.map((item) => item.id))
-  allMeasurements.push(...favorites.filter((item) => !allMeasurementIds.has(item.id)))
+  allMeasurements.push(...defaultFavorites.filter((item) => !allMeasurementIds.has(item.id)))
   allMeasurements.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+
+  const itemsById = new Map(allMeasurements.map((item) => [item.id, item]))
+  const favoriteIds = Array.isArray(savedFavoriteIds)
+    ? [...new Set(savedFavoriteIds.map(String))].filter((id) => itemsById.has(id))
+    : defaultFavorites.map((item) => item.id)
+  const favoriteIdSet = new Set(favoriteIds)
+
+  allMeasurements = allMeasurements.map((item) => ({ ...item, favorite: favoriteIdSet.has(item.id) }))
+  const favorites = favoriteIds.map((id) => ({ ...itemsById.get(id), favorite: true }))
 
   return { favorites, measurements: allMeasurements }
 }

@@ -1116,7 +1116,7 @@ body.modal-open {
 .body-measurement-row {
   min-height: 126px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
+  grid-template-columns: minmax(0, 1fr) 42px;
   align-items: center;
   gap: 18px;
   padding: 20px 18px;
@@ -1169,12 +1169,35 @@ body.modal-open {
   font-size: 13px;
 }
 
+.body-favorite-button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #4b9cff;
+  cursor: pointer;
+}
+
+.body-favorite-button:active {
+  background: #202020;
+}
+
+.body-favorite-button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
 .body-measurement-heart {
   width: 30px;
   height: 30px;
   fill: none;
-  stroke: #4b9cff;
+  stroke: currentColor;
   stroke-width: 1.8;
+  pointer-events: none;
 }
 
 .body-measurement-heart.is-favorite {
