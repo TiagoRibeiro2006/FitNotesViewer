@@ -1129,3 +1129,95 @@ body.modal-open {
     font-size: 13px;
   }
 }
+
+/* V9: keep the workout home focused; backup management lives in Settings. */
+.home-upload-card {
+  margin-top: 0;
+}
+
+.home-day-card {
+  margin-top: 0;
+}
+
+.settings-header {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.settings-header h1 {
+  text-align: center;
+  font-size: clamp(30px, 7vw, 42px);
+}
+
+.settings-back-button,
+.settings-header-spacer {
+  width: 48px;
+  height: 48px;
+}
+
+.settings-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #303030;
+  border-radius: 14px;
+  background: #171717;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.settings-back-button:active {
+  transform: scale(.97);
+}
+
+.settings-card {
+  padding: 18px;
+  border: 1px solid #242424;
+  border-radius: 18px;
+  background: #101010;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
+}
+
+.settings-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.settings-section-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+}
+
+.settings-upload-card {
+  border-radius: 14px;
+  background: #151515;
+  box-shadow: none;
+}
+
+.settings-data-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 13px;
+  color: #777780;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bottom-item.is-action {
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .settings-card { padding: 14px; }
+  .settings-section-heading { align-items: flex-end; }
+}
