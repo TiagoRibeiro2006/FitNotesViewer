@@ -87,7 +87,9 @@ const currentMonthKey = computed(() => {
 
 const calendarMonths = computed(() => {
   const months = []
-  const cursor = new Date(2022, 0, 1)
+  const firstWorkoutDate = [...calendarWorkoutDates.value].sort()[0] ?? todayKey()
+  const [firstYear, firstMonth] = firstWorkoutDate.split('-').map(Number)
+  const cursor = new Date(firstYear, firstMonth - 1, 1)
   const now = new Date()
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
