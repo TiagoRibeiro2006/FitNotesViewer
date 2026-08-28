@@ -423,14 +423,22 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   border: 1px solid #2a2a2a;
   border-radius: 50%;
   background: #171717;
   color: #b7b7bd;
-  font-size: 31px;
-  font-weight: 300;
-  line-height: 1;
   cursor: pointer;
+}
+
+.modal-icon-button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 .modal-icon-button:active {
@@ -712,7 +720,7 @@ body.modal-open {
 }
 
 .sets-grid-header {
-  padding: 0 4px 8px;
+  padding: 16px 4px 8px;
   color: #64646b;
   font-size: 10px;
   font-weight: 800;

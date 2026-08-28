@@ -788,7 +788,11 @@ async function deleteCurrentData() {
       <section class="workout-modal" role="dialog" aria-modal="true" :aria-label="modalStep === 'exercise' ? 'Choose exercise' : editorTitle">
         <template v-if="modalStep === 'exercise'">
           <header class="modal-header">
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
+            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m7 7 10 10M17 7 7 17" />
+              </svg>
+            </button>
             <div class="modal-heading">
               <p>{{ selectedDateLong }}</p>
               <h2>Choose exercise</h2>
@@ -862,7 +866,11 @@ async function deleteCurrentData() {
 
         <template v-else>
           <header class="modal-header">
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">×</button>
+            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m7 7 10 10M17 7 7 17" />
+              </svg>
+            </button>
             <div class="modal-heading">
               <p>{{ selectedDateLong }}</p>
               <h2>{{ editorTitle }}</h2>
