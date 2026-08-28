@@ -1,28 +1,20 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import { warmUpSqliteEngine } from './fitnotes'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
 import SettingsView from './features/settings/SettingsView.vue'
 import CopyWorkoutDayModal from './features/workouts/components/CopyWorkoutDayModal.vue'
-import { exerciseMeta } from './features/workouts/exerciseFormatters'
-import BaseModal from './shared/components/BaseModal.vue'
+import WorkoutExerciseModal from './features/workouts/components/WorkoutExerciseModal.vue'
 import { createEmptySummary } from './shared/models/summary'
-import { androidColorToCss } from './shared/utils/colors'
 import { formatDate, shiftDateKey, todayKey } from './shared/utils/dates'
-import { friendlyError } from './shared/utils/errors'
 import { formatNumber as formatBodyNumber } from './shared/utils/numbers'
 import {
-  deleteWorkoutExercise,
-  getExerciseCatalog,
-  getPreviousWorkoutSetsForExercise,
   getSummary,
   getWorkoutSetsForDate,
-  getWorkoutSetsForDateExercise,
   migrateLegacyLocalStorage,
   requestPersistentStorage,
-  saveWorkoutExercise,
 } from './storage'
 
 const data = ref(createEmptySummary())
@@ -33,19 +25,7 @@ const copyDayModalOpen = ref(false)
 let dayLoadSequence = 0
 
 const workoutModalOpen = ref(false)
-const modalStep = ref('exercise')
-const modalLoading = ref(false)
-const editorSaving = ref(false)
-const editorError = ref('')
-const searchQuery = ref('')
-const selectedCategoryId = ref(null)
-const exerciseCatalog = ref([])
-const categories = ref([])
-const selectedExercise = ref(null)
-const draftSets = ref([])
-const previousSets = ref([])
-const editorHasExistingSets = ref(false)
-const deleteConfirming = ref(false)
+const workoutModalExercise = ref(null)
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -62,36 +42,6 @@ const selectedDateLabel = computed(() => {
 const selectedDateLong = computed(() => formatDate(selectedDate.value))
 
 
-const filteredExercises = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-
-  return exerciseCatalog.value.filter((exercise) => {
-    const matchesCategory = selectedCategoryId.value === null || exercise.categoryId === selectedCategoryId.value
-    const matchesSearch = !query || exercise.name.toLowerCase().includes(query)
-    return matchesCategory && matchesSearch
-  })
-})
-
-const editorTitle = computed(() => editorHasExistingSets.value ? 'Edit exercise' : 'Log exercise')
-
-const canSaveExercise = computed(() => {
-  let completeSets = 0
-
-  for (const set of draftSets.value) {
-    const weightBlank = set.weight === '' || set.weight === null || set.weight === undefined
-    const repsBlank = set.reps === '' || set.reps === null || set.reps === undefined
-
-    if (weightBlank && repsBlank) continue
-    if (weightBlank || repsBlank) return false
-
-    const weight = Number(String(set.weight).replace(',', '.'))
-    const reps = Number(set.reps)
-    if (!Number.isFinite(weight) || weight < 0 || !Number.isInteger(reps) || reps <= 0) return false
-    completeSets += 1
-  }
-
-  return completeSets > 0
-})
 
 onMounted(async () => {
   try {
@@ -105,10 +55,6 @@ onMounted(async () => {
 
   void requestPersistentStorage()
   void warmUpSqliteEngine().catch(() => {})
-})
-
-onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
 })
 
 watch(selectedDate, () => {
@@ -192,189 +138,29 @@ async function loadDayExercises() {
   dayExercises.value = [...exercises.values()]
 }
 
-async function openWorkoutModal() {
+function openWorkoutModal() {
+  workoutModalExercise.value = null
   workoutModalOpen.value = true
-  modalStep.value = 'exercise'
-  editorError.value = ''
-  searchQuery.value = ''
-  selectedCategoryId.value = null
-  selectedExercise.value = null
-  deleteConfirming.value = false
-
-  await loadExerciseCatalog()
 }
 
-async function loadExerciseCatalog() {
-  modalLoading.value = true
-  try {
-    const catalog = await getExerciseCatalog()
-    exerciseCatalog.value = catalog.exercises
-    categories.value = catalog.categories
-  } catch {
-    editorError.value = 'Exercises could not be loaded from local storage.'
-  } finally {
-    modalLoading.value = false
-  }
-}
-
-async function chooseExercise(exercise) {
-  await openExerciseEditor(exercise)
-}
-
-async function editDayExercise(dayExercise) {
+function editDayExercise(dayExercise) {
+  workoutModalExercise.value = dayExercise
   workoutModalOpen.value = true
-  editorError.value = ''
-
-  try {
-    if (!exerciseCatalog.value.length) {
-      const catalog = await getExerciseCatalog()
-      exerciseCatalog.value = catalog.exercises
-      categories.value = catalog.categories
-    }
-
-    const fullExercise = exerciseCatalog.value.find((exercise) => exercise.id === dayExercise.id) ?? {
-      id: dayExercise.id,
-      name: dayExercise.name,
-      categoryName: 'Exercise',
-      categoryColor: null,
-    }
-
-    await openExerciseEditor(fullExercise)
-  } catch {
-    await openExerciseEditor({
-      id: dayExercise.id,
-      name: dayExercise.name,
-      categoryName: 'Exercise',
-      categoryColor: null,
-    })
-  }
 }
 
-async function openExerciseEditor(exercise) {
-  selectedExercise.value = exercise
-  modalStep.value = 'sets'
-  editorLoadingReset()
-
-  try {
-    const [currentSets, previous] = await Promise.all([
-      getWorkoutSetsForDateExercise(selectedDate.value, exercise.id),
-      getPreviousWorkoutSetsForExercise(exercise.id, selectedDate.value),
-    ])
-
-    editorHasExistingSets.value = currentSets.length > 0
-    previousSets.value = previous.sets
-
-    if (currentSets.length) {
-      draftSets.value = currentSets.map((set) => ({
-        weight: set.weight ?? '',
-        reps: set.reps ?? '',
-      }))
-      return
-    }
-
-    if (previous.sets.length) {
-      draftSets.value = previous.sets.map((set) => ({
-        weight: set.weight ?? '',
-        reps: set.reps ?? '',
-      }))
-      return
-    }
-
-    draftSets.value = Array.from({ length: 3 }, () => ({ weight: '', reps: '' }))
-  } catch {
-    editorError.value = 'Workout history for this exercise could not be loaded.'
-    draftSets.value = Array.from({ length: 3 }, () => ({ weight: '', reps: '' }))
-  }
-}
-
-function editorLoadingReset() {
-  editorError.value = ''
-  editorHasExistingSets.value = false
-  deleteConfirming.value = false
-  draftSets.value = []
-  previousSets.value = []
-}
-
-function closeWorkoutModal(force = false) {
-  if (editorSaving.value && !force) return
+function closeWorkoutModal() {
   workoutModalOpen.value = false
-  modalStep.value = 'exercise'
-  selectedExercise.value = null
-  editorLoadingReset()
+  workoutModalExercise.value = null
 }
 
-function addSet() {
-  const index = draftSets.value.length
-  const previous = previousSets.value[index]
-  const last = draftSets.value[index - 1]
-
-  draftSets.value.push({
-    weight: previous?.weight ?? last?.weight ?? '',
-    reps: previous?.reps ?? last?.reps ?? '',
-  })
-}
-
-function removeSet(index) {
-  if (draftSets.value.length <= 1) {
-    draftSets.value[0] = { weight: '', reps: '' }
-    return
-  }
-  draftSets.value.splice(index, 1)
-}
-
-
-async function deleteExerciseFromDay() {
-  if (!selectedExercise.value || !editorHasExistingSets.value) return
-
-  if (!deleteConfirming.value) {
-    deleteConfirming.value = true
-    return
-  }
-
-  editorSaving.value = true
-  editorError.value = ''
-
-  try {
-    data.value = await deleteWorkoutExercise(selectedDate.value, selectedExercise.value.id)
-    await Promise.all([loadDayExercises(), loadExerciseCatalog()])
-    closeWorkoutModal(true)
-  } catch (err) {
-    editorError.value = friendlyError(err)
-  } finally {
-    editorSaving.value = false
-  }
-}
-
-async function saveExercise() {
-  if (!selectedExercise.value || !canSaveExercise.value) return
-
-  editorSaving.value = true
-  editorError.value = ''
-
-  try {
-    data.value = await saveWorkoutExercise(selectedDate.value, selectedExercise.value, draftSets.value)
-    await Promise.all([loadDayExercises(), loadExerciseCatalog()])
-    closeWorkoutModal(true)
-  } catch (err) {
-    editorError.value = friendlyError(err)
-  } finally {
-    editorSaving.value = false
-  }
-}
-
-function categoryStyle(category) {
-  return { '--category-color': androidColorToCss(category?.colour) }
-}
-
-function exerciseStyle(exercise) {
-  return { '--category-color': androidColorToCss(exercise?.categoryColor) }
+async function handleWorkoutChanged(summary) {
+  data.value = summary
+  await loadDayExercises()
 }
 
 async function handleDataImported(summary) {
   data.value = summary
   selectedDate.value = todayKey()
-  exerciseCatalog.value = []
-  categories.value = []
   await loadDayExercises()
 }
 
@@ -382,11 +168,6 @@ function handleDataDeleted() {
   dayLoadSequence += 1
   data.value = createEmptySummary()
   dayExercises.value = []
-  exerciseCatalog.value = []
-  categories.value = []
-  selectedExercise.value = null
-  previousSets.value = []
-  editorHasExistingSets.value = false
   selectedDate.value = todayKey()
 }
 </script>
@@ -466,149 +247,14 @@ function handleDataDeleted() {
 
   <AppBottomNavigation :active-view="activeView" @navigate="navigateTo" />
 
-  <BaseModal
+  <WorkoutExerciseModal
     :open="workoutModalOpen"
-    :aria-label="modalStep === 'exercise' ? 'Choose exercise' : editorTitle"
+    :date="selectedDate"
+    :date-label="selectedDateLong"
+    :exercise="workoutModalExercise"
     @close="closeWorkoutModal"
-  >
-        <template v-if="modalStep === 'exercise'">
-          <header class="modal-header">
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m7 7 10 10M17 7 7 17" />
-              </svg>
-            </button>
-            <div class="modal-heading">
-              <p>{{ selectedDateLong }}</p>
-              <h2>Choose exercise</h2>
-            </div>
-            <span class="modal-header-spacer" aria-hidden="true"></span>
-          </header>
-
-          <div class="exercise-picker-controls">
-              <label class="search-field">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="6.5" />
-                  <path d="m16 16 4 4" />
-                </svg>
-                <input v-model="searchQuery" type="search" placeholder="Search exercises" autocomplete="off" />
-              </label>
-
-              <div class="category-strip" aria-label="Exercise categories">
-                <button
-                  class="category-chip"
-                  :class="{ 'is-selected': selectedCategoryId === null }"
-                  type="button"
-                  @click="selectedCategoryId = null"
-                >
-                  All
-                </button>
-                <button
-                  v-for="category in categories"
-                  :key="category.id"
-                  class="category-chip"
-                  :class="{ 'is-selected': selectedCategoryId === category.id }"
-                  :style="categoryStyle(category)"
-                  type="button"
-                  @click="selectedCategoryId = selectedCategoryId === category.id ? null : category.id"
-                >
-                  <span class="category-dot"></span>
-                  {{ category.name }}
-                </button>
-              </div>
-          </div>
-
-          <div v-if="modalLoading" class="modal-list-status">Loading exercises…</div>
-          <div v-else-if="!filteredExercises.length" class="modal-list-status">No exercises available yet.</div>
-
-          <div v-else class="exercise-picker-list">
-            <button
-              v-for="exercise in filteredExercises"
-              :key="exercise.id"
-              class="exercise-picker-row"
-              :style="exerciseStyle(exercise)"
-              type="button"
-              @click="chooseExercise(exercise)"
-            >
-              <span class="exercise-color-dot"></span>
-              <span class="exercise-picker-copy">
-                <strong>{{ exercise.name }}</strong>
-                <small>{{ exercise.categoryName }} · {{ exerciseMeta(exercise) }}</small>
-              </span>
-              <span class="exercise-chevron">›</span>
-            </button>
-          </div>
-        </template>
-
-        <template v-else>
-          <header class="modal-header">
-            <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m7 7 10 10M17 7 7 17" />
-              </svg>
-            </button>
-            <div class="modal-heading">
-              <p>{{ selectedDateLong }}</p>
-              <h2>{{ editorTitle }}</h2>
-            </div>
-            <span class="modal-header-spacer" aria-hidden="true"></span>
-          </header>
-
-          <div v-if="selectedExercise" class="set-editor">
-            <div class="selected-exercise-card" :style="exerciseStyle(selectedExercise)">
-              <span class="exercise-color-dot"></span>
-              <div>
-                <strong>{{ selectedExercise.name }}</strong>
-                <small>{{ selectedExercise.categoryName }}</small>
-              </div>
-            </div>
-
-            <div class="sets-grid sets-grid-header" aria-hidden="true">
-              <span>Set</span>
-              <span>kg</span>
-              <span>Reps</span>
-              <span></span>
-            </div>
-
-            <div class="sets-editor-list">
-              <div v-for="(set, index) in draftSets" :key="index" class="sets-grid set-input-row">
-                <span class="set-number">{{ index + 1 }}</span>
-                <input v-model="set.weight" class="set-input" type="text" inputmode="decimal" placeholder="0" aria-label="Weight in kilograms" @input="deleteConfirming = false" />
-                <input v-model="set.reps" class="set-input" type="number" inputmode="numeric" min="1" step="1" placeholder="0" aria-label="Repetitions" @input="deleteConfirming = false" />
-                <button class="remove-set-button" type="button" aria-label="Remove set" @click="removeSet(index)">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="m7 7 10 10M17 7 7 17" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <button class="add-set-button" type="button" @click="addSet">
-              <span>+</span>
-              Add set
-            </button>
-
-            <p v-if="editorError" class="editor-error">{{ editorError }}</p>
-
-            <div class="editor-actions">
-              <button
-                v-if="editorHasExistingSets"
-                class="delete-exercise-button"
-                :class="{ 'is-confirming': deleteConfirming }"
-                type="button"
-                :disabled="editorSaving"
-                @click="deleteExerciseFromDay"
-              >
-                {{ deleteConfirming ? 'Tap again to delete' : 'Delete exercise' }}
-              </button>
-
-              <button class="save-workout-button" type="button" :disabled="editorSaving || !canSaveExercise" @click="saveExercise">
-                {{ editorSaving ? 'Saving…' : editorHasExistingSets ? 'Save changes' : 'Save exercise' }}
-              </button>
-            </div>
-          </div>
-        </template>
-  </BaseModal>
+    @data-changed="handleWorkoutChanged"
+  />
 
   <CopyWorkoutDayModal
     :open="copyDayModalOpen"
