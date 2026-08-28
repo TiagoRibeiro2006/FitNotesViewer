@@ -1,0 +1,71 @@
+.bottom-bar {
+  position: fixed;
+  z-index: 50;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  padding: 9px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  border-top: 1px solid #242424;
+  background: rgba(8, 8, 8, .96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.bottom-item {
+  min-width: 0;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #77777f;
+  cursor: default;
+}
+
+.bottom-item svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bottom-item span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.bottom-item.is-action {
+  cursor: pointer;
+}
+
+.bottom-item:disabled {
+  color: #4a4a51;
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.bottom-item.is-active {
+  color: #fff;
+}
+
+.bottom-item.is-active svg {
+  fill: currentColor;
+  stroke-width: 1.5;
+}
+

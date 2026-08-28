@@ -1,0 +1,144 @@
+.day-card { margin-top: 18px; padding: 18px; }
+
+.day-navigation {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #292929;
+}
+
+.nav-button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #303030;
+  border-radius: 14px;
+  background: #1b1b1b;
+  color: #fff;
+  font-size: 22px;
+}
+
+.nav-button:active { transform: scale(.97); }
+.day-title { text-align: center; }
+.day-title h2 { margin-bottom: 0; font-size: 22px; color: #fff; }
+
+.exercise-list { padding-top: 8px; }
+.exercise-row {
+  width: 100%;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #242424;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.exercise-row:last-child { border-bottom: 0; }
+.exercise-row:active { opacity: .62; }
+.exercise-row-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px 4px 10px;
+}
+.exercise-row-heading strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  color: #f7f7f7;
+}
+.exercise-set-list {
+  display: block;
+  padding: 0 4px 12px;
+}
+.exercise-set-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 72px;
+  align-items: center;
+  min-height: 32px;
+  color: #8f8f96;
+  font-size: 13px;
+}
+.exercise-set-number { text-align: left; }
+.exercise-set-weight { text-align: center; color: #d7d7dc; }
+.exercise-set-reps { text-align: right; }
+.exercise-row-chevron {
+  flex: 0 0 auto;
+  color: #55555d;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.empty-state {
+  text-align: center;
+  color: #8f8f96;
+}
+
+.day-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 12px 4px;
+}
+
+.day-actions.is-empty {
+  padding-top: 32px;
+  padding-bottom: 18px;
+}
+
+.empty-state p { margin: 0; }
+.empty-state { margin-top: 18px; padding: 30px 20px; }
+
+.day-action {
+  width: min(100%, 300px);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 16px;
+  border-radius: 13px;
+  font-weight: 800;
+}
+
+.day-action svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.day-add-exercise {
+  border: 0;
+  background: #f5f5f5;
+  color: #080808;
+  cursor: pointer;
+}
+
+.day-add-exercise:active {
+  transform: scale(.98);
+}
+
+.day-copy-previous {
+  border: 1px solid #292929;
+  background: #171717;
+  color: #b8b8bf;
+  cursor: pointer;
+}
+
+.day-copy-previous:active { transform: scale(.98); }
+
+.home-day-card {
+  margin-top: 0;
+}
+
