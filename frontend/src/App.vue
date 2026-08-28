@@ -395,10 +395,14 @@ async function loadDayExercises() {
       exercises.set(set.exerciseId, {
         id: set.exerciseId,
         name: set.exerciseName,
-        sets: 0,
+        sets: [],
       })
     }
-    exercises.get(set.exerciseId).sets += 1
+    exercises.get(set.exerciseId).sets.push({
+      id: set.id,
+      weight: set.weight,
+      reps: set.reps,
+    })
   }
 
   dayExercises.value = [...exercises.values()]
@@ -724,12 +728,16 @@ async function deleteCurrentData() {
             :aria-label="`Edit ${exercise.name}`"
             @click="editDayExercise(exercise)"
           >
-            <span class="exercise-row-copy">
+            <span class="exercise-row-heading">
               <strong>{{ exercise.name }}</strong>
-            </span>
-            <span class="exercise-row-meta">
-              <span>{{ exercise.sets }} {{ exercise.sets === 1 ? 'set' : 'sets' }}</span>
               <span class="exercise-row-chevron" aria-hidden="true">›</span>
+            </span>
+            <span class="exercise-set-list">
+              <span v-for="(set, index) in exercise.sets" :key="set.id" class="exercise-set-row">
+                <span class="exercise-set-number">{{ index + 1 }}</span>
+                <span class="exercise-set-weight">{{ formatBodyNumber(set.weight) }} kg</span>
+                <span class="exercise-set-reps">{{ set.reps }} reps</span>
+              </span>
             </span>
           </button>
         </div>

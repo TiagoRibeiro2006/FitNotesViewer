@@ -154,12 +154,8 @@ h1 {
 .exercise-list { padding-top: 8px; }
 .exercise-row {
   width: 100%;
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 4px;
+  display: block;
+  padding: 0;
   border: 0;
   border-bottom: 1px solid #242424;
   background: transparent;
@@ -169,25 +165,38 @@ h1 {
 }
 .exercise-row:last-child { border-bottom: 0; }
 .exercise-row:active { opacity: .62; }
-.exercise-row-copy {
+.exercise-row-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   min-width: 0;
+  padding: 16px 4px 10px;
 }
-.exercise-row-copy strong {
+.exercise-row-heading strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 16px;
   color: #f7f7f7;
 }
-.exercise-row-meta {
-  flex: 0 0 auto;
-  display: flex;
+.exercise-set-list {
+  display: block;
+  padding: 0 4px 12px;
+}
+.exercise-set-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 72px;
   align-items: center;
-  gap: 8px;
+  min-height: 32px;
   color: #8f8f96;
   font-size: 13px;
 }
+.exercise-set-number { text-align: left; }
+.exercise-set-weight { text-align: center; color: #d7d7dc; }
+.exercise-set-reps { text-align: right; }
 .exercise-row-chevron {
+  flex: 0 0 auto;
   color: #55555d;
   font-size: 24px;
   font-weight: 300;
