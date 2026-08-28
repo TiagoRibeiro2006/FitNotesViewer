@@ -1,9 +1,12 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
 import { formatBodyEntryDate, formatBodyValue } from './features/body/bodyFormatters'
-import { createCalendarMonths, isToday, monthKey } from './features/calendar/calendarUtils'
+import CalendarList from './features/calendar/components/CalendarList.vue'
+import { createCalendarMonths, monthKey } from './features/calendar/calendarUtils'
 import { exerciseMeta } from './features/workouts/exerciseFormatters'
+import BaseModal from './shared/components/BaseModal.vue'
 import { createEmptySummary } from './shared/models/summary'
 import { androidColorToCss } from './shared/utils/colors'
 import { formatDate, shiftDateKey, todayKey } from './shared/utils/dates'
@@ -171,10 +174,6 @@ watch(selectedDate, () => {
 watch(() => workoutModalOpen.value || copyDayModalOpen.value || bodyValueModalOpen.value, (open) => {
   document.body.classList.toggle('modal-open', open)
 })
-
-function hasWorkout(dateKey) {
-  return calendarWorkoutDates.value.has(dateKey)
-}
 
 async function openBody() {
   activeView.value = 'body'
@@ -368,6 +367,13 @@ function openWorkoutLog() {
   activeView.value = 'workouts'
   error.value = ''
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+}
+
+function navigateTo(view) {
+  if (view === 'body') return openBody()
+  if (view === 'calendar') return openCalendar()
+  if (view === 'settings') return openSettings()
+  return openWorkoutLog()
 }
 
 function changeDay(amount) {
@@ -779,50 +785,15 @@ async function deleteCurrentData() {
         <p>Choose a day to open it. Scroll up for previous months.</p>
       </section>
 
-      <section class="calendar-stack" aria-label="Workout calendar">
-        <article
-          v-for="month in calendarMonths"
-          :id="month.key === currentMonthKey ? 'calendar-current-month' : undefined"
-          :key="month.key"
-          class="calendar-month"
-        >
-          <div class="calendar-month-heading">
-            <h2>{{ month.label }}</h2>
-            <span v-if="month.key === currentMonthKey">Current month</span>
-          </div>
-
-          <div class="calendar-weekdays" aria-hidden="true">
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span>Sat</span>
-            <span>Sun</span>
-          </div>
-
-          <div class="calendar-grid">
-            <template v-for="day in month.days" :key="day.key">
-              <span v-if="day.blank" class="calendar-day is-blank" aria-hidden="true"></span>
-              <button
-                v-else
-                class="calendar-day"
-                :class="{
-                  'is-selected': selectedDate === day.key,
-                  'is-today': isToday(day.key),
-                  'has-workout': hasWorkout(day.key),
-                }"
-                type="button"
-                :aria-label="formatDate(day.key)"
-                @click="selectCalendarDate(day.key)"
-              >
-                <span class="calendar-day-number">{{ day.day }}</span>
-                <span v-if="hasWorkout(day.key)" class="calendar-workout-dot" aria-hidden="true"></span>
-              </button>
-            </template>
-          </div>
-        </article>
-      </section>
+      <CalendarList
+        :months="calendarMonths"
+        :current-month-key="currentMonthKey"
+        current-month-element-id="calendar-current-month"
+        :selected-date="selectedDate"
+        :workout-dates="calendarWorkoutDates"
+        aria-label="Workout calendar"
+        @select="selectCalendarDate"
+      />
     </template>
 
     <template v-else-if="activeView === 'settings'">
@@ -890,53 +861,13 @@ async function deleteCurrentData() {
     </template>
   </main>
 
-  <nav class="bottom-bar" aria-label="App navigation">
-    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'body' }" type="button" aria-label="Body" @click="openBody">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="5" r="2.25" />
-        <path d="M8.5 10.2c.9-1.7 2-2.7 3.5-2.7s2.6 1 3.5 2.7M9 10.5l-1 4.5m7-4.5 1 4.5M10.4 13.5 10 21m3.6-7.5.4 7.5" />
-      </svg>
-      <span>Body</span>
-    </button>
+  <AppBottomNavigation :active-view="activeView" @navigate="navigateTo" />
 
-    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'calendar' }" type="button" aria-label="Calendar" @click="openCalendar">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3.5" y="5.5" width="17" height="15" rx="2.5" />
-        <path d="M7.5 3.5v4m9-4v4M3.5 10h17" />
-      </svg>
-      <span>Calendar</span>
-    </button>
-
-    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'workouts' }" type="button" aria-label="Workout log" @click="openWorkoutLog">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="2.5" y="9.5" width="3" height="5" rx=".75" />
-        <rect x="5.5" y="7.5" width="3" height="9" rx=".75" />
-        <path d="M8.5 12h7" />
-        <rect x="15.5" y="7.5" width="3" height="9" rx=".75" />
-        <rect x="18.5" y="9.5" width="3" height="5" rx=".75" />
-      </svg>
-      <span>Log</span>
-    </button>
-
-    <button class="bottom-item" type="button" aria-label="Charts" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 20V10m5 10V4m6 16v-7m5 7V7" />
-      </svg>
-      <span>Charts</span>
-    </button>
-
-    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'settings' }" type="button" aria-label="Settings" @click="openSettings">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21h-4v-.09a1.65 1.65 0 0 0-1.08-1.5 1.65 1.65 0 0 0-1.82.33l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3v-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3h4v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 19.4 9c.16.38.5.72.91.88.2.08.41.12.63.12H21v4h-.09c-.66 0-1.26.4-1.51 1Z" />
-      </svg>
-      <span>Settings</span>
-    </button>
-  </nav>
-
-  <Teleport to="body">
-    <div v-if="workoutModalOpen" class="modal-layer" @click.self="closeWorkoutModal">
-      <section class="workout-modal" role="dialog" aria-modal="true" :aria-label="modalStep === 'exercise' ? 'Choose exercise' : editorTitle">
+  <BaseModal
+    :open="workoutModalOpen"
+    :aria-label="modalStep === 'exercise' ? 'Choose exercise' : editorTitle"
+    @close="closeWorkoutModal"
+  >
         <template v-if="modalStep === 'exercise'">
           <header class="modal-header">
             <button class="modal-icon-button" type="button" aria-label="Close" @click="closeWorkoutModal">
@@ -1074,13 +1005,14 @@ async function deleteCurrentData() {
             </div>
           </div>
         </template>
-      </section>
-    </div>
-  </Teleport>
+  </BaseModal>
 
-  <Teleport to="body">
-    <div v-if="copyDayModalOpen" class="modal-layer" @click.self="closeCopyDayModal">
-      <section class="workout-modal copy-calendar-modal" role="dialog" aria-modal="true" aria-label="Copy workout from another day">
+  <BaseModal
+    :open="copyDayModalOpen"
+    aria-label="Copy workout from another day"
+    modal-class="copy-calendar-modal"
+    @close="closeCopyDayModal"
+  >
         <header class="modal-header">
           <button class="modal-icon-button" type="button" aria-label="Close" @click="closeCopyDayModal">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1097,60 +1029,29 @@ async function deleteCurrentData() {
         <div class="copy-calendar-content">
           <p class="copy-calendar-intro">Choose any day. Empty days will copy an empty log.</p>
 
-          <section class="calendar-stack copy-calendar-stack" aria-label="Choose a workout day to copy">
-            <article
-              v-for="month in copyCalendarMonths"
-              :id="month.key === currentMonthKey ? 'copy-calendar-current-month' : undefined"
-              :key="month.key"
-              class="calendar-month"
-            >
-              <div class="calendar-month-heading">
-                <h2>{{ month.label }}</h2>
-                <span v-if="month.key === currentMonthKey">Current month</span>
-              </div>
-
-              <div class="calendar-weekdays" aria-hidden="true">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
-              </div>
-
-              <div class="calendar-grid">
-                <template v-for="day in month.days" :key="day.key">
-                  <span v-if="day.blank" class="calendar-day is-blank" aria-hidden="true"></span>
-                  <button
-                    v-else
-                    class="calendar-day"
-                    :class="{
-                      'is-today': isToday(day.key),
-                      'has-workout': hasWorkout(day.key),
-                    }"
-                    type="button"
-                    :disabled="copyingDay"
-                    :aria-label="`Copy ${formatDate(day.key)}`"
-                    @click="copyWorkoutDate(day.key)"
-                  >
-                    <span class="calendar-day-number">{{ day.day }}</span>
-                    <span v-if="hasWorkout(day.key)" class="calendar-workout-dot" aria-hidden="true"></span>
-                  </button>
-                </template>
-              </div>
-            </article>
-          </section>
+          <CalendarList
+            :months="copyCalendarMonths"
+            :current-month-key="currentMonthKey"
+            current-month-element-id="copy-calendar-current-month"
+            :workout-dates="calendarWorkoutDates"
+            action-label-prefix="Copy"
+            :disabled="copyingDay"
+            compact
+            aria-label="Choose a workout day to copy"
+            @select="copyWorkoutDate"
+          />
 
           <p v-if="copyDayError" class="editor-error copy-calendar-error">{{ copyDayError }}</p>
         </div>
-      </section>
-    </div>
-  </Teleport>
+  </BaseModal>
 
-  <Teleport to="body">
-    <div v-if="bodyValueModalOpen" class="modal-layer body-value-layer" @click.self="closeBodyValueModal">
-      <section class="workout-modal body-value-modal" role="dialog" aria-modal="true" :aria-label="`Add ${selectedBodyItem?.name ?? 'measurement'} value`">
+  <BaseModal
+    :open="bodyValueModalOpen"
+    :aria-label="`Add ${selectedBodyItem?.name ?? 'measurement'} value`"
+    layer-class="body-value-layer"
+    modal-class="body-value-modal"
+    @close="closeBodyValueModal"
+  >
         <header class="modal-header">
           <button class="modal-icon-button" type="button" aria-label="Close" @click="closeBodyValueModal">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1185,7 +1086,5 @@ async function deleteCurrentData() {
             {{ bodyValueSaving ? 'Saving…' : 'Save value' }}
           </button>
         </form>
-      </section>
-    </div>
-  </Teleport>
+  </BaseModal>
 </template>
