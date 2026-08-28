@@ -891,7 +891,11 @@ async function deleteCurrentData() {
                 <span class="set-number">{{ index + 1 }}</span>
                 <input v-model="set.weight" class="set-input" type="text" inputmode="decimal" placeholder="0" aria-label="Weight in kilograms" @input="deleteConfirming = false" />
                 <input v-model="set.reps" class="set-input" type="number" inputmode="numeric" min="1" step="1" placeholder="0" aria-label="Repetitions" @input="deleteConfirming = false" />
-                <button class="remove-set-button" type="button" aria-label="Remove set" @click="removeSet(index)">−</button>
+                <button class="remove-set-button" type="button" aria-label="Remove set" @click="removeSet(index)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m7 7 10 10M17 7 7 17" />
+                  </svg>
+                </button>
               </div>
             </div>
 
