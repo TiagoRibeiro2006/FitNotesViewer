@@ -232,6 +232,7 @@ function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories
 
 function buildWorkoutHistory(rows) {
   const rowsByDate = new Map()
+  const progressById = buildHistoricalProgress(rows)
 
   for (const row of rows) {
     if (!row.date) continue
@@ -245,8 +246,9 @@ function buildWorkoutHistory(rows) {
     .map(([date, dayRows]) => ({
       date,
       sets: dayRows.sort(compareSetRows).map((row) => ({
-        id: row.id,
-        reps: row.reps,
+         id: row.id,
+         isProgress: progressById.get(row.id) ?? false,
+         reps: row.reps,
         weight: row.weight,
       })),
     }))

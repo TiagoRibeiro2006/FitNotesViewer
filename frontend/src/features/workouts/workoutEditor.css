@@ -538,7 +538,14 @@
   text-align: center;
 }
 
-.exercise-history-set > span {
+.exercise-history-set-marker {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+}
+
+.exercise-history-set-marker > span {
   font-size: 12px;
   font-weight: 800;
 }
