@@ -18,7 +18,7 @@ import {
 } from './storage'
 
 const selectedFile = ref(null)
-const data = ref(null)
+const data = ref(createEmptySummary())
 const dayExercises = ref([])
 const error = ref('')
 const loading = ref(false)
@@ -32,8 +32,8 @@ const bodyError = ref('')
 let dayLoadSequence = 0
 
 const bodySections = computed(() => [
-  { id: 'favorites', label: 'Favorites', items: bodyFavorites.value, emptyMessage: 'No favorites in this backup.' },
-  { id: 'measurements', label: 'All Measurements', items: bodyMeasurements.value, emptyMessage: 'No other measurements in this backup.' },
+  { id: 'favorites', label: 'Favorites', items: bodyFavorites.value, emptyMessage: 'No favorites yet.' },
+  { id: 'measurements', label: 'All Measurements', items: bodyMeasurements.value, emptyMessage: 'No other measurements yet.' },
 ])
 
 const workoutModalOpen = ref(false)
@@ -55,6 +55,7 @@ const deletingData = ref(false)
 const dataDeleteError = ref('')
 
 const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
+const hasCurrentData = computed(() => data.value.isEmpty !== true)
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -126,8 +127,8 @@ const canSaveExercise = computed(() => {
 onMounted(async () => {
   try {
     await migrateLegacyLocalStorage()
-    data.value = await getSummary()
-    if (data.value) await loadDayExercises()
+    data.value = await getSummary() ?? createEmptySummary()
+    await loadDayExercises()
   } catch {
     error.value = 'Local workout data could not be opened.'
   }
@@ -143,7 +144,7 @@ onBeforeUnmount(() => {
 })
 
 watch(selectedDate, () => {
-  if (data.value) void loadDayExercises()
+  void loadDayExercises()
 })
 
 watch(workoutModalOpen, (open) => {
@@ -152,6 +153,18 @@ watch(workoutModalOpen, (open) => {
 
 function todayKey() {
   return dateToKey(new Date())
+}
+
+function createEmptySummary() {
+  return {
+    fileName: null,
+    totalSets: 0,
+    totalExercises: 0,
+    firstWorkoutDate: null,
+    lastWorkoutDate: null,
+    backupStored: false,
+    isEmpty: true,
+  }
 }
 
 function dateToKey(date) {
@@ -249,10 +262,7 @@ async function openBody() {
 
 async function openCalendar() {
   activeView.value = 'calendar'
-
-  if (data.value) {
-    calendarWorkoutDates.value = await getWorkoutDateSet()
-  }
+  calendarWorkoutDates.value = await getWorkoutDateSet()
 
   await nextTick()
   const currentMonth = document.getElementById('calendar-current-month')
@@ -350,7 +360,6 @@ async function openWorkoutModal() {
   selectedExercise.value = null
   deleteConfirming.value = false
 
-  if (!data.value) return
   await loadExerciseCatalog()
 }
 
@@ -575,7 +584,7 @@ function friendlyError(err) {
 }
 
 async function deleteCurrentData() {
-  if (!data.value || deletingData.value) return
+  if (!hasCurrentData.value || deletingData.value) return
 
   if (!dataDeleteConfirming.value) {
     dataDeleteConfirming.value = true
@@ -588,7 +597,7 @@ async function deleteCurrentData() {
   try {
     await clearLocalData()
     dayLoadSequence += 1
-    data.value = null
+    data.value = createEmptySummary()
     dayExercises.value = []
     calendarWorkoutDates.value = new Set()
     bodyFavorites.value = []
@@ -611,22 +620,7 @@ async function deleteCurrentData() {
 <template>
   <main class="page-shell">
     <template v-if="activeView === 'workouts'">
-      <section v-if="!data" class="upload-card home-upload-card">
-        <label class="file-picker">
-          <input type="file" accept=".fitnotes" @change="onFileChange" />
-          <span>Choose .fitnotes</span>
-        </label>
-
-        <p class="file-name">{{ fileLabel }}</p>
-
-        <button class="primary-button" :disabled="loading || !selectedFile" @click="analyzeFile">
-          {{ loading ? 'Importing…' : 'Import' }}
-        </button>
-
-        <p v-if="error" class="error-message">{{ error }}</p>
-      </section>
-
-      <section v-if="data" class="day-card home-day-card">
+      <section class="day-card home-day-card">
         <div class="day-navigation">
           <button class="nav-button" aria-label="Previous day" @click="changeDay(-1)">←</button>
 
@@ -780,7 +774,7 @@ async function deleteCurrentData() {
             <p class="eyebrow">DATA</p>
             <h2>FitNotes backup</h2>
           </div>
-          <span v-if="data" class="data-pill">{{ data.totalSets }} sets</span>
+          <span v-if="hasCurrentData" class="data-pill">{{ data.totalSets }} sets</span>
         </div>
 
         <section class="upload-card settings-upload-card">
@@ -792,19 +786,19 @@ async function deleteCurrentData() {
           <p class="file-name">{{ fileLabel }}</p>
 
           <button class="primary-button" :disabled="loading || !selectedFile" @click="analyzeFile">
-            {{ loading ? 'Importing…' : data ? 'Replace data' : 'Import' }}
+            {{ loading ? 'Importing…' : hasCurrentData ? 'Replace data' : 'Import' }}
           </button>
 
           <p v-if="error" class="error-message">{{ error }}</p>
         </section>
 
-        <div v-if="data" class="settings-data-meta">
+        <div v-if="hasCurrentData" class="settings-data-meta">
           <span>{{ data.totalExercises }} exercises</span>
           <span aria-hidden="true">•</span>
           <span>{{ data.firstWorkoutDate }} → {{ data.lastWorkoutDate }}</span>
         </div>
 
-        <div v-if="data" class="settings-data-action">
+        <div v-if="hasCurrentData" class="settings-data-action">
           <div>
             <strong>Export current data</strong>
             <p>Download the current workout data as a FitNotes backup.</p>
@@ -812,7 +806,7 @@ async function deleteCurrentData() {
           <button class="settings-export-button" type="button" disabled>Export .fitnotes</button>
         </div>
 
-        <div v-if="data" class="settings-data-action">
+        <div v-if="hasCurrentData" class="settings-data-action">
           <div>
             <strong>Delete current data</strong>
             <p>Remove the imported backup and all workout data stored on this device.</p>
@@ -894,15 +888,7 @@ async function deleteCurrentData() {
             <span class="modal-header-spacer" aria-hidden="true"></span>
           </header>
 
-          <div v-if="!data" class="modal-empty-state">
-            <div class="modal-empty-icon">+</div>
-            <h3>Import your backup first</h3>
-            <p>Your exercise library comes from the FitNotes backup stored on this device.</p>
-            <button class="secondary-button" type="button" @click="closeWorkoutModal">Got it</button>
-          </div>
-
-          <template v-else>
-            <div class="exercise-picker-controls">
+          <div class="exercise-picker-controls">
               <label class="search-field">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="11" cy="11" r="6.5" />
@@ -933,29 +919,28 @@ async function deleteCurrentData() {
                   {{ category.name }}
                 </button>
               </div>
-            </div>
+          </div>
 
-            <div v-if="modalLoading" class="modal-list-status">Loading exercises…</div>
-            <div v-else-if="!filteredExercises.length" class="modal-list-status">No exercises found.</div>
+          <div v-if="modalLoading" class="modal-list-status">Loading exercises…</div>
+          <div v-else-if="!filteredExercises.length" class="modal-list-status">No exercises available yet.</div>
 
-            <div v-else class="exercise-picker-list">
-              <button
-                v-for="exercise in filteredExercises"
-                :key="exercise.id"
-                class="exercise-picker-row"
-                :style="exerciseStyle(exercise)"
-                type="button"
-                @click="chooseExercise(exercise)"
-              >
-                <span class="exercise-color-dot"></span>
-                <span class="exercise-picker-copy">
-                  <strong>{{ exercise.name }}</strong>
-                  <small>{{ exercise.categoryName }} · {{ exerciseMeta(exercise) }}</small>
-                </span>
-                <span class="exercise-chevron">›</span>
-              </button>
-            </div>
-          </template>
+          <div v-else class="exercise-picker-list">
+            <button
+              v-for="exercise in filteredExercises"
+              :key="exercise.id"
+              class="exercise-picker-row"
+              :style="exerciseStyle(exercise)"
+              type="button"
+              @click="chooseExercise(exercise)"
+            >
+              <span class="exercise-color-dot"></span>
+              <span class="exercise-picker-copy">
+                <strong>{{ exercise.name }}</strong>
+                <small>{{ exercise.categoryName }} · {{ exerciseMeta(exercise) }}</small>
+              </span>
+              <span class="exercise-chevron">›</span>
+            </button>
+          </div>
         </template>
 
         <template v-else>
