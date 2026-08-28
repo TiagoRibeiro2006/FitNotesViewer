@@ -847,6 +847,19 @@
   color: #4b9cff;
 }
 
+.catalog-delete-action {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.catalog-delete-action small {
+  color: #8f8f96;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .exercise-options-popover button + button {
   border-top: 1px solid #292929;
   border-radius: 0;

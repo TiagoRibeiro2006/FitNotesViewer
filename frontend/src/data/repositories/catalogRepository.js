@@ -1,7 +1,7 @@
 import { createLocalId } from '../../shared/utils/ids'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
-import { getSummary } from './summaryRepository'
+import { getSummary, refreshSummary } from './summaryRepository'
 
 export async function getExerciseCatalog() {
   const database = await openAppDatabase()
@@ -60,7 +60,7 @@ export async function createExerciseDetails(details) {
   const catalog = await getExerciseCatalog()
   return {
     exercise: findExercise(catalog.exercises, exercise.id),
-    summary: await getSummary(),
+    summary: await refreshSummary(),
   }
 }
 
@@ -91,6 +91,67 @@ export async function createCategoryDetails(details) {
 
   const catalog = await getExerciseCatalog()
   return findCategory(catalog.categories, category.id)
+}
+
+export async function deleteExercise(exerciseId) {
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(
+    ['exercises', 'workoutSets', 'routineSectionExercises', 'routineSectionExerciseSets'],
+    'readonly',
+  )
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('exercises').get(exerciseId)),
+    requestResult(lookupTransaction.objectStore('workoutSets').getAll()),
+    requestResult(lookupTransaction.objectStore('routineSectionExercises').getAll()),
+    requestResult(lookupTransaction.objectStore('routineSectionExerciseSets').getAll()),
+  ])
+  await lookupDone
+
+  if (!results[0]) throw new Error('Exercise could not be found.')
+  const workoutSets = selectByField(results[1], 'exerciseId', exerciseId)
+  const routineExercises = selectByField(results[2], 'exerciseId', exerciseId)
+  const routineExerciseIds = new Set()
+  for (const item of routineExercises) routineExerciseIds.add(item.id)
+  const routineSets = []
+  for (const item of results[3] ?? []) {
+    if (routineExerciseIds.has(item.routineSectionExerciseId)) routineSets.push(item)
+  }
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(
+    ['exercises', 'workoutSets', 'routineSectionExercises', 'routineSectionExerciseSets', 'metadata'],
+    'readwrite',
+  )
+  transaction.objectStore('exercises').delete(exerciseId)
+  deleteRows(transaction.objectStore('workoutSets'), workoutSets)
+  deleteRows(transaction.objectStore('routineSectionExercises'), routineExercises)
+  deleteRows(transaction.objectStore('routineSectionExerciseSets'), routineSets)
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return refreshSummary()
+}
+
+export async function deleteCategory(categoryId) {
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(['categories', 'exercises'], 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('categories').get(categoryId)),
+    requestResult(lookupTransaction.objectStore('exercises').getAll()),
+  ])
+  await lookupDone
+
+  if (!results[0]) throw new Error('Muscle could not be found.')
+  if (selectByField(results[1], 'categoryId', categoryId).length) {
+    throw new Error('Move or delete this muscle’s exercises first.')
+  }
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(['categories', 'metadata'], 'readwrite')
+  transaction.objectStore('categories').delete(categoryId)
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
 }
 
 export async function updateExerciseDetails(exerciseId, details) {
@@ -230,4 +291,16 @@ function nextCategoryOrder(categories) {
     if (Number.isFinite(order) && order > largestOrder) largestOrder = order
   }
   return largestOrder + 1
+}
+
+function selectByField(rows, field, value) {
+  const selected = []
+  for (const row of rows ?? []) {
+    if (row[field] === value) selected.push(row)
+  }
+  return selected
+}
+
+function deleteRows(store, rows) {
+  for (const row of rows) store.delete(row.id)
 }

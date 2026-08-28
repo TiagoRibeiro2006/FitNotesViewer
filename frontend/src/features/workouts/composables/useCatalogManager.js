@@ -2,6 +2,8 @@ import { computed, ref } from 'vue'
 import {
   createCategoryDetails,
   createExerciseDetails,
+  deleteCategory,
+  deleteExercise,
   getExerciseCatalog,
   updateCategoryDetails,
   updateExerciseDetails,
@@ -13,12 +15,14 @@ export function useCatalogManager(callbacks = {}) {
   const categories = ref([])
   const exercises = ref([])
   const error = ref('')
+  const deleting = ref(false)
   const loading = ref(false)
   const mode = ref('muscles')
   const page = ref('list')
   const saving = ref(false)
   const searchQuery = ref('')
   const selectedItem = ref(null)
+  const selectedMuscleExerciseCount = computed(readSelectedMuscleExerciseCount)
   const filteredItems = computed(readFilteredItems)
   const title = computed(readTitle)
 
@@ -102,11 +106,49 @@ export function useCatalogManager(callbacks = {}) {
     }
   }
 
+  async function removeExercise() {
+    if (!selectedItem.value || deleting.value) return
+    deleting.value = true
+    error.value = ''
+
+    try {
+      const summary = await deleteExercise(selectedItem.value.id)
+      callbacks.onChanged?.(summary)
+      await returnToList()
+    } catch (deleteError) {
+      error.value = friendlyError(deleteError)
+    } finally {
+      deleting.value = false
+    }
+  }
+
+  async function removeMuscle() {
+    if (!selectedItem.value || deleting.value || selectedMuscleExerciseCount.value > 0) return
+    deleting.value = true
+    error.value = ''
+
+    try {
+      await deleteCategory(selectedItem.value.id)
+      await returnToList()
+    } catch (deleteError) {
+      error.value = friendlyError(deleteError)
+    } finally {
+      deleting.value = false
+    }
+  }
+
+  async function returnToList() {
+    await load()
+    selectedItem.value = null
+    page.value = 'list'
+  }
+
   function goBack() {
     if (page.value !== 'details' && page.value !== 'create') return false
     selectedItem.value = null
     page.value = 'list'
     error.value = ''
+    deleting.value = false
     return true
   }
 
@@ -139,8 +181,18 @@ export function useCatalogManager(callbacks = {}) {
     return mode.value === 'muscles' ? 'Muscles' : 'Exercises'
   }
 
+  function readSelectedMuscleExerciseCount() {
+    if (mode.value !== 'muscles' || !selectedItem.value) return 0
+    let count = 0
+    for (const exercise of exercises.value) {
+      if (exercise.categoryId === selectedItem.value.id) count += 1
+    }
+    return count
+  }
+
   return {
     categories,
+    deleting,
     error,
     filteredItems,
     loading,
@@ -149,10 +201,13 @@ export function useCatalogManager(callbacks = {}) {
     saving,
     searchQuery,
     selectedItem,
+    selectedMuscleExerciseCount,
     title,
     goBack,
     open,
     reset,
+    removeExercise,
+    removeMuscle,
     saveExercise,
     saveMuscle,
     select,
