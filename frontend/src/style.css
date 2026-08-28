@@ -1167,7 +1167,7 @@ body.modal-open {
   font-weight: 650;
 }
 
-.settings-delete-row {
+.settings-data-action {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1177,18 +1177,18 @@ body.modal-open {
   border-top: 1px solid #242424;
 }
 
-.settings-delete-row > div {
+.settings-data-action > div {
   min-width: 0;
 }
 
-.settings-delete-row strong {
+.settings-data-action strong {
   display: block;
   margin-bottom: 5px;
   color: #f5f5f5;
   font-size: 15px;
 }
 
-.settings-delete-row p {
+.settings-data-action p {
   max-width: 420px;
   margin: 0;
   color: #777780;
@@ -1196,16 +1196,28 @@ body.modal-open {
   line-height: 1.45;
 }
 
+.settings-export-button,
 .settings-delete-button {
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid #432525;
   border-radius: 12px;
-  background: #1c1111;
-  color: #d38b86;
   font-size: 13px;
   font-weight: 800;
+}
+
+.settings-export-button {
+  border: 1px solid #303036;
+  background: #1b1b1f;
+  color: #92929a;
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.settings-delete-button {
+  border: 1px solid #432525;
+  background: #1c1111;
+  color: #d38b86;
   cursor: pointer;
 }
 
@@ -1234,6 +1246,7 @@ body.modal-open {
 @media (max-width: 640px) {
   .settings-card { padding: 14px; }
   .settings-section-heading { align-items: flex-end; }
-  .settings-delete-row { align-items: stretch; flex-direction: column; gap: 14px; }
+  .settings-data-action { align-items: stretch; flex-direction: column; gap: 14px; }
+  .settings-export-button,
   .settings-delete-button { width: 100%; }
 }
