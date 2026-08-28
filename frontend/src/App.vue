@@ -1,10 +1,11 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
-import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
+import { warmUpSqliteEngine } from './fitnotes'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarList from './features/calendar/components/CalendarList.vue'
 import { createCalendarMonths, monthKey } from './features/calendar/calendarUtils'
+import SettingsView from './features/settings/SettingsView.vue'
 import { exerciseMeta } from './features/workouts/exerciseFormatters'
 import BaseModal from './shared/components/BaseModal.vue'
 import { createEmptySummary } from './shared/models/summary'
@@ -13,11 +14,9 @@ import { formatDate, shiftDateKey, todayKey } from './shared/utils/dates'
 import { friendlyError } from './shared/utils/errors'
 import { formatNumber as formatBodyNumber } from './shared/utils/numbers'
 import {
-  clearLocalData,
   copyWorkoutDay,
   deleteWorkoutExercise,
   getExerciseCatalog,
-  getFitNotesExportData,
   getPreviousWorkoutSetsForExercise,
   getSummary,
   getWorkoutDateSet,
@@ -25,15 +24,11 @@ import {
   getWorkoutSetsForDateExercise,
   migrateLegacyLocalStorage,
   requestPersistentStorage,
-  saveFitNotesImport,
   saveWorkoutExercise,
 } from './storage'
 
-const selectedFile = ref(null)
 const data = ref(createEmptySummary())
 const dayExercises = ref([])
-const error = ref('')
-const loading = ref(false)
 const selectedDate = ref(todayKey())
 const activeView = ref('workouts')
 const calendarWorkoutDates = ref(new Set())
@@ -41,7 +36,6 @@ const copyDayModalOpen = ref(false)
 const copyingDay = ref(false)
 const copyDayError = ref('')
 let dayLoadSequence = 0
-let exportPreparationSequence = 0
 
 const workoutModalOpen = ref(false)
 const modalStep = ref('exercise')
@@ -57,16 +51,6 @@ const draftSets = ref([])
 const previousSets = ref([])
 const editorHasExistingSets = ref(false)
 const deleteConfirming = ref(false)
-const dataDeleteConfirming = ref(false)
-const deletingData = ref(false)
-const dataDeleteError = ref('')
-const exportingData = ref(false)
-const exportError = ref('')
-const exportUrl = ref('')
-const exportFileName = ref('')
-
-const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
-const hasCurrentData = computed(() => data.value.isEmpty !== true)
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -128,7 +112,8 @@ onMounted(async () => {
     data.value = await getSummary() ?? createEmptySummary()
     await loadDayExercises()
   } catch {
-    error.value = 'Local workout data could not be opened.'
+    data.value = createEmptySummary()
+    dayExercises.value = []
   }
 
   void requestPersistentStorage()
@@ -137,7 +122,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   document.body.classList.remove('modal-open')
-  clearFitNotesExport()
 })
 
 watch(selectedDate, () => {
@@ -206,63 +190,11 @@ async function copyWorkoutDate(sourceDate) {
 
 function openSettings() {
   activeView.value = 'settings'
-  error.value = ''
-  exportError.value = ''
-  dataDeleteConfirming.value = false
-  dataDeleteError.value = ''
-  void prepareFitNotesExport()
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
-}
-
-async function prepareFitNotesExport() {
-  clearFitNotesExport()
-  const sequence = exportPreparationSequence
-  if (!data.value.backupStored) return
-
-  exportingData.value = true
-  exportError.value = ''
-
-  try {
-    const source = await getFitNotesExportData()
-    if (!source) throw new Error('The original FitNotes backup is not available on this device.')
-
-    const bytes = await createFitNotesExport(source.bytes, source.workoutSets)
-    if (sequence !== exportPreparationSequence) return
-
-    exportFileName.value = createExportFileName()
-    exportUrl.value = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.sqlite3' }))
-  } catch (err) {
-    if (sequence === exportPreparationSequence) exportError.value = friendlyError(err)
-  } finally {
-    if (sequence === exportPreparationSequence) exportingData.value = false
-  }
-}
-
-function clearFitNotesExport() {
-  exportPreparationSequence += 1
-  if (exportUrl.value) URL.revokeObjectURL(exportUrl.value)
-  exportUrl.value = ''
-  exportFileName.value = ''
-  exportingData.value = false
-}
-
-function createExportFileName() {
-  const now = new Date()
-  const parts = [
-    now.getFullYear(),
-    now.getMonth() + 1,
-    now.getDate(),
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds(),
-  ].map((part) => String(part).padStart(2, '0'))
-
-  return `FitNotes_Backup_${parts.join('_')}.fitnotes`
 }
 
 function openWorkoutLog() {
   activeView.value = 'workouts'
-  error.value = ''
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
@@ -279,14 +211,6 @@ function changeDay(amount) {
 
 function goToToday() {
   selectedDate.value = todayKey()
-}
-
-function onFileChange(event) {
-  selectedFile.value = event.target.files?.[0] ?? null
-  error.value = ''
-  exportError.value = ''
-  dataDeleteConfirming.value = false
-  dataDeleteError.value = ''
 }
 
 async function loadDayExercises() {
@@ -311,35 +235,6 @@ async function loadDayExercises() {
   }
 
   dayExercises.value = [...exercises.values()]
-}
-
-async function analyzeFile() {
-  if (!selectedFile.value) {
-    error.value = 'Select a .fitnotes file first.'
-    return
-  }
-
-  loading.value = true
-  error.value = ''
-  dataDeleteConfirming.value = false
-  dataDeleteError.value = ''
-
-  try {
-    void requestPersistentStorage()
-
-    const { parsed, bytes } = await parseFitNotesFile(selectedFile.value)
-    await saveFitNotesImport(parsed, selectedFile.value, bytes)
-
-    data.value = parsed.summary
-    selectedDate.value = todayKey()
-    calendarWorkoutDates.value = await getWorkoutDateSet()
-    await loadDayExercises()
-    if (activeView.value === 'settings') await prepareFitNotesExport()
-  } catch (err) {
-    error.value = friendlyError(err)
-  } finally {
-    loading.value = false
-  }
 }
 
 async function openWorkoutModal() {
@@ -522,37 +417,26 @@ function exerciseStyle(exercise) {
   return { '--category-color': androidColorToCss(exercise?.categoryColor) }
 }
 
-async function deleteCurrentData() {
-  if (!hasCurrentData.value || deletingData.value) return
+async function handleDataImported(summary) {
+  data.value = summary
+  selectedDate.value = todayKey()
+  exerciseCatalog.value = []
+  categories.value = []
+  const [, workoutDates] = await Promise.all([loadDayExercises(), getWorkoutDateSet()])
+  calendarWorkoutDates.value = workoutDates
+}
 
-  if (!dataDeleteConfirming.value) {
-    dataDeleteConfirming.value = true
-    return
-  }
-
-  deletingData.value = true
-  dataDeleteError.value = ''
-
-  try {
-    await clearLocalData()
-    dayLoadSequence += 1
-    data.value = createEmptySummary()
-    dayExercises.value = []
-    calendarWorkoutDates.value = new Set()
-    exerciseCatalog.value = []
-    categories.value = []
-    selectedExercise.value = null
-    previousSets.value = []
-    editorHasExistingSets.value = false
-    selectedDate.value = todayKey()
-    dataDeleteConfirming.value = false
-    exportError.value = ''
-    clearFitNotesExport()
-  } catch (err) {
-    dataDeleteError.value = friendlyError(err)
-  } finally {
-    deletingData.value = false
-  }
+function handleDataDeleted() {
+  dayLoadSequence += 1
+  data.value = createEmptySummary()
+  dayExercises.value = []
+  calendarWorkoutDates.value = new Set()
+  exerciseCatalog.value = []
+  categories.value = []
+  selectedExercise.value = null
+  previousSets.value = []
+  editorHasExistingSets.value = false
+  selectedDate.value = todayKey()
 }
 </script>
 
@@ -638,69 +522,12 @@ async function deleteCurrentData() {
       />
     </template>
 
-    <template v-else-if="activeView === 'settings'">
-      <section class="settings-card">
-        <div class="settings-section-heading">
-          <div>
-            <p class="eyebrow">DATA</p>
-            <h2>FitNotes backup</h2>
-          </div>
-        </div>
-
-        <section class="upload-card settings-upload-card">
-          <label class="file-picker">
-            <input type="file" accept=".fitnotes" @change="onFileChange" />
-            <span>Choose .fitnotes</span>
-          </label>
-
-          <p class="file-name">{{ fileLabel }}</p>
-
-          <button class="primary-button" :disabled="loading || !selectedFile" @click="analyzeFile">
-            {{ loading ? 'Importing…' : hasCurrentData ? 'Replace data' : 'Import' }}
-          </button>
-
-          <p v-if="error" class="error-message">{{ error }}</p>
-        </section>
-
-        <div v-if="hasCurrentData" class="settings-data-action">
-          <div>
-            <strong>Export current data</strong>
-            <p>Download the current workout data as a FitNotes backup.</p>
-          </div>
-          <a
-            v-if="exportUrl"
-            class="settings-export-button"
-            :href="exportUrl"
-            :download="exportFileName"
-          >
-            Export .fitnotes
-          </a>
-          <button v-else class="settings-export-button" type="button" disabled>
-            {{ exportingData ? 'Preparing…' : 'Export unavailable' }}
-          </button>
-        </div>
-
-        <p v-if="exportError" class="settings-export-error">{{ exportError }}</p>
-
-        <div v-if="hasCurrentData" class="settings-data-action">
-          <div>
-            <strong>Delete current data</strong>
-            <p>Remove the imported backup and all workout data stored on this device.</p>
-          </div>
-          <button
-            class="settings-delete-button"
-            :class="{ 'is-confirming': dataDeleteConfirming }"
-            type="button"
-            :disabled="deletingData"
-            @click="deleteCurrentData"
-          >
-            {{ deletingData ? 'Deleting…' : dataDeleteConfirming ? 'Tap again to delete' : 'Delete data' }}
-          </button>
-        </div>
-
-        <p v-if="dataDeleteError" class="settings-delete-error">{{ dataDeleteError }}</p>
-      </section>
-    </template>
+    <SettingsView
+      v-else-if="activeView === 'settings'"
+      :summary="data"
+      @data-imported="handleDataImported"
+      @data-deleted="handleDataDeleted"
+    />
   </main>
 
   <AppBottomNavigation :active-view="activeView" @navigate="navigateTo" />
