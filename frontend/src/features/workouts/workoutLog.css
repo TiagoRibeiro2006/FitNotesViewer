@@ -14,8 +14,8 @@
 .day-navigation-card {
   position: sticky;
   z-index: 20;
-  top: calc(env(safe-area-inset-top) + 20px);
-  margin-top: 20px;
+  top: calc(env(safe-area-inset-top) + 10px);
+  margin-top: 10px;
   padding: 12px;
   isolation: isolate;
 }
@@ -25,7 +25,7 @@
   position: absolute;
   z-index: -1;
   width: 100vw;
-  top: calc(-1 * (env(safe-area-inset-top) + 40px));
+  top: calc(-1 * (env(safe-area-inset-top) + 20px));
   bottom: -14px;
   left: 50%;
   background: #000;
@@ -170,7 +170,13 @@
   color: #8f8f96;
   font-size: 13px;
 }
-.exercise-set-number { text-align: left; }
+.exercise-set-number {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
 .exercise-progress-star {
   width: 18px;
   height: 18px;
