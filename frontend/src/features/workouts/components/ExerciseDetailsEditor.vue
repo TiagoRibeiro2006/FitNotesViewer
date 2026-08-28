@@ -6,6 +6,7 @@ const props = defineProps({
   categories: { type: Array, required: true },
   creating: { type: Boolean, default: false },
   deleting: { type: Boolean, default: false },
+  deletable: { type: Boolean, default: false },
   error: { type: String, default: '' },
   exercise: { type: Object, required: true },
   saving: { type: Boolean, default: false },
@@ -74,7 +75,7 @@ function submit() {
     </button>
 
     <CatalogDeleteButton
-      v-if="!creating"
+      v-if="deletable && !creating"
       :deleting="deleting"
       label="Delete exercise"
       @delete="emit('delete')"
