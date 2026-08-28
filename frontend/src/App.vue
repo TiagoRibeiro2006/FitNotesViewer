@@ -774,7 +774,6 @@ async function deleteCurrentData() {
             <p class="eyebrow">DATA</p>
             <h2>FitNotes backup</h2>
           </div>
-          <span v-if="hasCurrentData" class="data-pill">{{ data.totalSets }} sets</span>
         </div>
 
         <section class="upload-card settings-upload-card">
@@ -791,12 +790,6 @@ async function deleteCurrentData() {
 
           <p v-if="error" class="error-message">{{ error }}</p>
         </section>
-
-        <div v-if="hasCurrentData" class="settings-data-meta">
-          <span>{{ data.totalExercises }} exercises</span>
-          <span aria-hidden="true">•</span>
-          <span>{{ data.firstWorkoutDate }} → {{ data.lastWorkoutDate }}</span>
-        </div>
 
         <div v-if="hasCurrentData" class="settings-data-action">
           <div>

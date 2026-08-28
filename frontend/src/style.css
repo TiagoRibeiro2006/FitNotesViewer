@@ -1225,17 +1225,6 @@ body.modal-open {
   box-shadow: none;
 }
 
-.settings-data-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 7px;
-  margin-top: 13px;
-  color: #777780;
-  font-size: 12px;
-  font-weight: 650;
-}
-
 .settings-data-action {
   display: flex;
   align-items: center;
