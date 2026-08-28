@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import { createFitNotesExport, parseFitNotesFile, warmUpSqliteEngine } from './fitnotes'
-import { formatBodyEntryDate, formatBodyValue } from './features/body/bodyFormatters'
+import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarList from './features/calendar/components/CalendarList.vue'
 import { createCalendarMonths, monthKey } from './features/calendar/calendarUtils'
 import { exerciseMeta } from './features/workouts/exerciseFormatters'
@@ -16,7 +16,6 @@ import {
   clearLocalData,
   copyWorkoutDay,
   deleteWorkoutExercise,
-  getBodyTrackerData,
   getExerciseCatalog,
   getFitNotesExportData,
   getPreviousWorkoutSetsForExercise,
@@ -26,8 +25,6 @@ import {
   getWorkoutSetsForDateExercise,
   migrateLegacyLocalStorage,
   requestPersistentStorage,
-  saveBodyFavoriteIds,
-  saveBodyMeasurementValue,
   saveFitNotesImport,
   saveWorkoutExercise,
 } from './storage'
@@ -40,27 +37,11 @@ const loading = ref(false)
 const selectedDate = ref(todayKey())
 const activeView = ref('workouts')
 const calendarWorkoutDates = ref(new Set())
-const bodyFavorites = ref([])
-const bodyMeasurements = ref([])
-const bodyLoading = ref(false)
-const bodyError = ref('')
-const bodyFavoritesSaving = ref(false)
 const copyDayModalOpen = ref(false)
 const copyingDay = ref(false)
 const copyDayError = ref('')
-const bodyValueModalOpen = ref(false)
-const selectedBodyItem = ref(null)
-const bodyValue = ref('')
-const bodyValueSaving = ref(false)
-const bodyValueError = ref('')
-const bodyValueInput = ref(null)
 let dayLoadSequence = 0
 let exportPreparationSequence = 0
-
-const bodySections = computed(() => [
-  { id: 'favorites', label: 'Favorites', items: bodyFavorites.value, emptyMessage: 'No favorites yet.' },
-  { id: 'measurements', label: 'All Measurements', items: bodyMeasurements.value, emptyMessage: 'No other measurements yet.' },
-])
 
 const workoutModalOpen = ref(false)
 const modalStep = ref('exercise')
@@ -86,12 +67,6 @@ const exportFileName = ref('')
 
 const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
 const hasCurrentData = computed(() => data.value.isEmpty !== true)
-const canSaveBodyValue = computed(() => {
-  const text = String(bodyValue.value).trim()
-  if (!text) return false
-  const value = Number(text.replace(',', '.'))
-  return Number.isFinite(value) && value >= 0
-})
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -158,12 +133,10 @@ onMounted(async () => {
 
   void requestPersistentStorage()
   void warmUpSqliteEngine().catch(() => {})
-  window.addEventListener('keydown', onKeyDown)
 })
 
 onBeforeUnmount(() => {
   document.body.classList.remove('modal-open')
-  window.removeEventListener('keydown', onKeyDown)
   clearFitNotesExport()
 })
 
@@ -171,85 +144,9 @@ watch(selectedDate, () => {
   void loadDayExercises()
 })
 
-watch(() => workoutModalOpen.value || copyDayModalOpen.value || bodyValueModalOpen.value, (open) => {
-  document.body.classList.toggle('modal-open', open)
-})
-
-async function openBody() {
+function openBody() {
   activeView.value = 'body'
-  bodyLoading.value = true
-  bodyError.value = ''
-
-  try {
-    const bodyData = await getBodyTrackerData()
-    bodyFavorites.value = bodyData.favorites
-    bodyMeasurements.value = bodyData.measurements
-  } catch {
-    bodyError.value = 'Body data could not be loaded from local storage.'
-  } finally {
-    bodyLoading.value = false
-  }
-
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
-}
-
-async function toggleBodyFavorite(item) {
-  if (bodyFavoritesSaving.value) return
-
-  bodyFavoritesSaving.value = true
-  bodyError.value = ''
-
-  try {
-    const favoriteIds = bodyFavorites.value.map((favorite) => favorite.id)
-    const nextFavoriteIds = item.favorite
-      ? favoriteIds.filter((id) => id !== item.id)
-      : [...favoriteIds, item.id]
-
-    await saveBodyFavoriteIds(nextFavoriteIds)
-    const bodyData = await getBodyTrackerData()
-    bodyFavorites.value = bodyData.favorites
-    bodyMeasurements.value = bodyData.measurements
-  } catch {
-    bodyError.value = 'Favorites could not be updated in local storage.'
-  } finally {
-    bodyFavoritesSaving.value = false
-  }
-}
-
-async function openBodyValueModal(item) {
-  selectedBodyItem.value = item
-  bodyValue.value = ''
-  bodyValueError.value = ''
-  bodyValueModalOpen.value = true
-  await nextTick()
-  bodyValueInput.value?.focus()
-}
-
-function closeBodyValueModal(force = false) {
-  if (bodyValueSaving.value && !force) return
-  bodyValueModalOpen.value = false
-  selectedBodyItem.value = null
-  bodyValue.value = ''
-  bodyValueError.value = ''
-}
-
-async function saveBodyValue() {
-  if (!selectedBodyItem.value || !canSaveBodyValue.value || bodyValueSaving.value) return
-
-  bodyValueSaving.value = true
-  bodyValueError.value = ''
-  bodyError.value = ''
-
-  try {
-    const bodyData = await saveBodyMeasurementValue(selectedBodyItem.value, bodyValue.value)
-    bodyFavorites.value = bodyData.favorites
-    bodyMeasurements.value = bodyData.measurements
-    closeBodyValueModal(true)
-  } catch (err) {
-    bodyValueError.value = friendlyError(err)
-  } finally {
-    bodyValueSaving.value = false
-  }
 }
 
 async function openCalendar() {
@@ -556,13 +453,6 @@ function closeWorkoutModal(force = false) {
   editorLoadingReset()
 }
 
-function onKeyDown(event) {
-  if (event.key !== 'Escape') return
-  if (workoutModalOpen.value) closeWorkoutModal()
-  else if (copyDayModalOpen.value) closeCopyDayModal()
-  else if (bodyValueModalOpen.value) closeBodyValueModal()
-}
-
 function addSet() {
   const index = draftSets.value.length
   const previous = previousSets.value[index]
@@ -649,8 +539,6 @@ async function deleteCurrentData() {
     data.value = createEmptySummary()
     dayExercises.value = []
     calendarWorkoutDates.value = new Set()
-    bodyFavorites.value = []
-    bodyMeasurements.value = []
     exerciseCatalog.value = []
     categories.value = []
     selectedExercise.value = null
@@ -724,53 +612,7 @@ async function deleteCurrentData() {
       </section>
     </template>
 
-    <template v-else-if="activeView === 'body'">
-      <header class="app-header body-header">
-        <div>
-          <p class="eyebrow">BODY</p>
-          <h1>Body Tracker</h1>
-        </div>
-      </header>
-
-      <div v-if="bodyLoading" class="body-status">Loading body data…</div>
-      <p v-else-if="bodyError" class="body-error">{{ bodyError }}</p>
-
-      <div v-else class="body-sections">
-        <section v-for="section in bodySections" :key="section.id" class="body-section-card">
-          <p class="body-section-label">{{ section.label }}</p>
-
-          <p v-if="!section.items.length" class="body-status">{{ section.emptyMessage }}</p>
-
-          <div v-else class="body-measurement-list">
-            <article v-for="item in section.items" :key="item.id" class="body-measurement-row">
-              <button class="body-measurement-copy" type="button" :aria-label="`Add a new ${item.name} value`" @click="openBodyValueModal(item)">
-                <span class="body-measurement-name">{{ item.name }}</span>
-                <span class="body-measurement-value">
-                  <strong>{{ formatBodyValue(item) }}</strong>
-                  <span v-if="item.change !== null" class="body-measurement-change">
-                    {{ item.change < 0 ? '▼' : '▲' }} {{ formatBodyNumber(Math.abs(item.change)) }}
-                  </span>
-                </span>
-                <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
-              </button>
-
-              <button
-                class="body-favorite-button"
-                type="button"
-                :aria-label="item.favorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`"
-                :aria-pressed="item.favorite"
-                :disabled="bodyFavoritesSaving"
-                @click.stop="toggleBodyFavorite(item)"
-              >
-                <svg class="body-measurement-heart" :class="{ 'is-favorite': item.favorite }" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-                </svg>
-              </button>
-            </article>
-          </div>
-        </section>
-      </div>
-    </template>
+    <BodyTrackerView v-else-if="activeView === 'body'" />
 
     <template v-else-if="activeView === 'calendar'">
       <header class="app-header calendar-header">
@@ -1045,46 +887,4 @@ async function deleteCurrentData() {
         </div>
   </BaseModal>
 
-  <BaseModal
-    :open="bodyValueModalOpen"
-    :aria-label="`Add ${selectedBodyItem?.name ?? 'measurement'} value`"
-    layer-class="body-value-layer"
-    modal-class="body-value-modal"
-    @close="closeBodyValueModal"
-  >
-        <header class="modal-header">
-          <button class="modal-icon-button" type="button" aria-label="Close" @click="closeBodyValueModal">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m7 7 10 10M17 7 7 17" />
-            </svg>
-          </button>
-          <div class="modal-heading">
-            <p>New value</p>
-            <h2>{{ selectedBodyItem?.name }}</h2>
-          </div>
-          <span class="modal-header-spacer" aria-hidden="true"></span>
-        </header>
-
-        <form class="body-value-form" @submit.prevent="saveBodyValue">
-          <label for="body-value-input">Value</label>
-          <div class="body-value-field">
-            <input
-              id="body-value-input"
-              ref="bodyValueInput"
-              v-model="bodyValue"
-              type="text"
-              inputmode="decimal"
-              autocomplete="off"
-              placeholder="0"
-            />
-            <span v-if="selectedBodyItem?.unit">{{ selectedBodyItem.unit }}</span>
-          </div>
-
-          <p v-if="bodyValueError" class="editor-error body-value-error">{{ bodyValueError }}</p>
-
-          <button class="body-value-save" type="submit" :disabled="bodyValueSaving || !canSaveBodyValue">
-            {{ bodyValueSaving ? 'Saving…' : 'Save value' }}
-          </button>
-        </form>
-  </BaseModal>
 </template>
