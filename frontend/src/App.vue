@@ -251,7 +251,7 @@ function openSettings() {
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
 }
 
-function backToWorkouts() {
+function openWorkoutLog() {
   activeView.value = 'workouts'
   error.value = ''
   void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
@@ -667,7 +667,20 @@ async function deleteCurrentData() {
         </div>
 
         <div v-else class="empty-day">
-          <p>No workout on this day.</p>
+          <button class="empty-day-action empty-day-add" type="button" @click="openWorkoutModal">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>Add Exercise</span>
+          </button>
+
+          <button class="empty-day-action empty-day-copy" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8" y="8" width="11" height="11" rx="2" />
+              <path d="M16 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+            </svg>
+            <span>Copy Previous Day</span>
+          </button>
         </div>
       </section>
     </template>
@@ -733,7 +746,7 @@ async function deleteCurrentData() {
 
     <template v-else-if="activeView === 'settings'">
       <header class="settings-header">
-        <button class="settings-back-button" type="button" aria-label="Back to workouts" @click="backToWorkouts">←</button>
+        <button class="settings-back-button" type="button" aria-label="Back to workouts" @click="openWorkoutLog">←</button>
         <h1>Settings</h1>
         <span class="settings-header-spacer" aria-hidden="true"></span>
       </header>
@@ -806,9 +819,13 @@ async function deleteCurrentData() {
       <span>Calendar</span>
     </button>
 
-    <button class="bottom-item is-log-trigger" type="button" aria-label="Log workout" aria-haspopup="dialog" @click="openWorkoutModal">
+    <button class="bottom-item is-action" :class="{ 'is-active': activeView === 'workouts' }" type="button" aria-label="Workout log" @click="openWorkoutLog">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M2.5 10v4M5 8v8m3-5v2m8-2v2m3-5v8m2.5-6v4M8 12h8" />
+        <rect x="2.5" y="9.5" width="3" height="5" rx=".75" />
+        <rect x="5.5" y="7.5" width="3" height="9" rx=".75" />
+        <path d="M8.5 12h7" />
+        <rect x="15.5" y="7.5" width="3" height="9" rx=".75" />
+        <rect x="18.5" y="9.5" width="3" height="5" rx=".75" />
       </svg>
       <span>Log</span>
     </button>

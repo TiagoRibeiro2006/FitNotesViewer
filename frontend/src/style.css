@@ -204,10 +204,58 @@ h1 {
   text-align: center;
   color: #8f8f96;
 }
-.empty-day { padding: 36px 12px 20px; }
-.empty-day p,
+
+.empty-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 12px 18px;
+}
+
 .empty-state p { margin: 0; }
 .empty-state { margin-top: 18px; padding: 30px 20px; }
+
+.empty-day-action {
+  width: min(100%, 300px);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 16px;
+  border-radius: 13px;
+  font-weight: 800;
+}
+
+.empty-day-action svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.empty-day-add {
+  border: 0;
+  background: #f5f5f5;
+  color: #080808;
+  cursor: pointer;
+}
+
+.empty-day-add:active {
+  transform: scale(.98);
+}
+
+.empty-day-copy {
+  border: 1px solid #292929;
+  background: #171717;
+  color: #62626a;
+  cursor: not-allowed;
+  opacity: .55;
+}
 
 .bottom-bar {
   position: fixed;
@@ -301,16 +349,6 @@ h1 {
 
 body.modal-open {
   overflow: hidden;
-}
-
-.bottom-item.is-log-trigger {
-  color: #55555d;
-  cursor: pointer;
-  opacity: .72;
-}
-
-.bottom-item.is-log-trigger:active {
-  transform: scale(.96);
 }
 
 .modal-layer {
