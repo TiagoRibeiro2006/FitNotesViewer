@@ -171,6 +171,29 @@ export async function getSummary() {
   return record?.value ?? null
 }
 
+export async function getBodyFavorites() {
+  const db = await openAppDatabase()
+  const transaction = db.transaction(['bodyWeights', 'measurements', 'measurementRecords'], 'readonly')
+  const done = transactionComplete(transaction)
+
+  const bodyWeightsRequest = transaction.objectStore('bodyWeights').getAll()
+  const measurementsRequest = transaction.objectStore('measurements').getAll()
+  const recordsRequest = transaction.objectStore('measurementRecords').getAll()
+  const [bodyWeights, measurements, records] = await Promise.all([
+    requestResult(bodyWeightsRequest),
+    requestResult(measurementsRequest),
+    requestResult(recordsRequest),
+  ])
+  await done
+
+  return [
+    buildBodyWeightFavorite('body-fat', 'Body Fat', '%', bodyWeights, 'bodyFat'),
+    buildBodyWeightFavorite('body-weight', 'Body Weight', 'kg', bodyWeights, 'bodyWeightMetric'),
+    buildMeasurementFavorite('muscle-mass', 'Muscle Mass', 'kg', measurements, records),
+    buildMeasurementFavorite('visceral-fat', 'Visceral Fat', '%', measurements, records),
+  ]
+}
+
 export async function getWorkoutDateSet() {
   const db = await openAppDatabase()
   const transaction = db.transaction('workoutSets', 'readonly')
@@ -499,6 +522,55 @@ function compareSourceRows(a, b) {
 
   const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
   if (updatedAtComparison !== 0) return updatedAtComparison
+  return String(a.id).localeCompare(String(b.id))
+}
+
+function buildBodyWeightFavorite(id, name, unit, rows = [], field) {
+  const entries = rows
+    .filter((row) => row[field] !== null && row[field] !== undefined && Number.isFinite(Number(row[field])))
+    .sort(compareBodyEntries)
+
+  return buildBodyFavorite(id, name, unit, entries, (entry) => entry[field])
+}
+
+function buildMeasurementFavorite(id, name, unit, measurements = [], records = []) {
+  const measurement = measurements.find((item) => String(item.name).trim().toLowerCase() === name.toLowerCase())
+  const entries = measurement
+    ? records
+      .filter((record) => record.measurementId === measurement.id && Number.isFinite(Number(record.value)))
+      .sort(compareBodyEntries)
+    : []
+
+  return buildBodyFavorite(id, name, unit, entries, (entry) => entry.value)
+}
+
+function buildBodyFavorite(id, name, unit, entries, getValue) {
+  const latest = entries.at(-1)
+  const previous = entries.at(-2)
+  const value = latest ? Number(getValue(latest)) : null
+  const previousValue = previous ? Number(getValue(previous)) : null
+
+  return {
+    id,
+    name,
+    unit,
+    value,
+    change: value !== null && previousValue !== null ? value - previousValue : null,
+    date: latest?.date ?? null,
+    time: latest?.time ?? null,
+  }
+}
+
+function compareBodyEntries(a, b) {
+  const dateComparison = String(a.date ?? '').localeCompare(String(b.date ?? ''))
+  if (dateComparison !== 0) return dateComparison
+
+  const timeComparison = String(a.time ?? '').localeCompare(String(b.time ?? ''))
+  if (timeComparison !== 0) return timeComparison
+
+  const idA = Number(a.id)
+  const idB = Number(b.id)
+  if (Number.isFinite(idA) && Number.isFinite(idB)) return idA - idB
   return String(a.id).localeCompare(String(b.id))
 }
 
