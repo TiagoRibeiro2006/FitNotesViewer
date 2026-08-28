@@ -16,6 +16,7 @@ import {
   migrateLegacyLocalStorage,
   requestPersistentStorage,
   saveBodyFavoriteIds,
+  saveBodyMeasurementValue,
   saveFitNotesImport,
   saveWorkoutExercise,
 } from './storage'
@@ -36,6 +37,12 @@ const bodyFavoritesSaving = ref(false)
 const copyDayModalOpen = ref(false)
 const copyingDay = ref(false)
 const copyDayError = ref('')
+const bodyValueModalOpen = ref(false)
+const selectedBodyItem = ref(null)
+const bodyValue = ref('')
+const bodyValueSaving = ref(false)
+const bodyValueError = ref('')
+const bodyValueInput = ref(null)
 let dayLoadSequence = 0
 let exportPreparationSequence = 0
 
@@ -68,6 +75,12 @@ const exportFileName = ref('')
 
 const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
 const hasCurrentData = computed(() => data.value.isEmpty !== true)
+const canSaveBodyValue = computed(() => {
+  const text = String(bodyValue.value).trim()
+  if (!text) return false
+  const value = Number(text.replace(',', '.'))
+  return Number.isFinite(value) && value >= 0
+})
 
 const selectedDateLabel = computed(() => {
   const today = todayKey()
@@ -147,7 +160,7 @@ watch(selectedDate, () => {
   void loadDayExercises()
 })
 
-watch(() => workoutModalOpen.value || copyDayModalOpen.value, (open) => {
+watch(() => workoutModalOpen.value || copyDayModalOpen.value || bodyValueModalOpen.value, (open) => {
   document.body.classList.toggle('modal-open', open)
 })
 
@@ -298,6 +311,42 @@ async function toggleBodyFavorite(item) {
     bodyError.value = 'Favorites could not be updated in local storage.'
   } finally {
     bodyFavoritesSaving.value = false
+  }
+}
+
+async function openBodyValueModal(item) {
+  selectedBodyItem.value = item
+  bodyValue.value = ''
+  bodyValueError.value = ''
+  bodyValueModalOpen.value = true
+  await nextTick()
+  bodyValueInput.value?.focus()
+}
+
+function closeBodyValueModal(force = false) {
+  if (bodyValueSaving.value && !force) return
+  bodyValueModalOpen.value = false
+  selectedBodyItem.value = null
+  bodyValue.value = ''
+  bodyValueError.value = ''
+}
+
+async function saveBodyValue() {
+  if (!selectedBodyItem.value || !canSaveBodyValue.value || bodyValueSaving.value) return
+
+  bodyValueSaving.value = true
+  bodyValueError.value = ''
+  bodyError.value = ''
+
+  try {
+    const bodyData = await saveBodyMeasurementValue(selectedBodyItem.value, bodyValue.value)
+    bodyFavorites.value = bodyData.favorites
+    bodyMeasurements.value = bodyData.measurements
+    closeBodyValueModal(true)
+  } catch (err) {
+    bodyValueError.value = friendlyError(err)
+  } finally {
+    bodyValueSaving.value = false
   }
 }
 
@@ -598,6 +647,7 @@ function onKeyDown(event) {
   if (event.key !== 'Escape') return
   if (workoutModalOpen.value) closeWorkoutModal()
   else if (copyDayModalOpen.value) closeCopyDayModal()
+  else if (bodyValueModalOpen.value) closeBodyValueModal()
 }
 
 function addSet() {
@@ -828,16 +878,16 @@ async function deleteCurrentData() {
 
           <div v-else class="body-measurement-list">
             <article v-for="item in section.items" :key="item.id" class="body-measurement-row">
-              <div class="body-measurement-copy">
-                <h2>{{ item.name }}</h2>
-                <p class="body-measurement-value">
+              <button class="body-measurement-copy" type="button" :aria-label="`Add a new ${item.name} value`" @click="openBodyValueModal(item)">
+                <span class="body-measurement-name">{{ item.name }}</span>
+                <span class="body-measurement-value">
                   <strong>{{ formatBodyValue(item) }}</strong>
                   <span v-if="item.change !== null" class="body-measurement-change">
                     {{ item.change < 0 ? '▼' : '▲' }} {{ formatBodyNumber(Math.abs(item.change)) }}
                   </span>
-                </p>
+                </span>
                 <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
-              </div>
+              </button>
 
               <button
                 class="body-favorite-button"
@@ -845,7 +895,7 @@ async function deleteCurrentData() {
                 :aria-label="item.favorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`"
                 :aria-pressed="item.favorite"
                 :disabled="bodyFavoritesSaving"
-                @click="toggleBodyFavorite(item)"
+                @click.stop="toggleBodyFavorite(item)"
               >
                 <svg class="body-measurement-heart" :class="{ 'is-favorite': item.favorite }" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
@@ -1235,6 +1285,47 @@ async function deleteCurrentData() {
 
           <p v-if="copyDayError" class="editor-error copy-calendar-error">{{ copyDayError }}</p>
         </div>
+      </section>
+    </div>
+  </Teleport>
+
+  <Teleport to="body">
+    <div v-if="bodyValueModalOpen" class="modal-layer body-value-layer" @click.self="closeBodyValueModal">
+      <section class="workout-modal body-value-modal" role="dialog" aria-modal="true" :aria-label="`Add ${selectedBodyItem?.name ?? 'measurement'} value`">
+        <header class="modal-header">
+          <button class="modal-icon-button" type="button" aria-label="Close" @click="closeBodyValueModal">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m7 7 10 10M17 7 7 17" />
+            </svg>
+          </button>
+          <div class="modal-heading">
+            <p>New value</p>
+            <h2>{{ selectedBodyItem?.name }}</h2>
+          </div>
+          <span class="modal-header-spacer" aria-hidden="true"></span>
+        </header>
+
+        <form class="body-value-form" @submit.prevent="saveBodyValue">
+          <label for="body-value-input">Value</label>
+          <div class="body-value-field">
+            <input
+              id="body-value-input"
+              ref="bodyValueInput"
+              v-model="bodyValue"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              placeholder="0"
+            />
+            <span v-if="selectedBodyItem?.unit">{{ selectedBodyItem.unit }}</span>
+          </div>
+
+          <p v-if="bodyValueError" class="editor-error body-value-error">{{ bodyValueError }}</p>
+
+          <button class="body-value-save" type="submit" :disabled="bodyValueSaving || !canSaveBodyValue">
+            {{ bodyValueSaving ? 'Saving…' : 'Save value' }}
+          </button>
+        </form>
       </section>
     </div>
   </Teleport>
