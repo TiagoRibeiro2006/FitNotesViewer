@@ -471,6 +471,10 @@ function changeDay(amount) {
   selectedDate.value = shiftDateKey(selectedDate.value, amount)
 }
 
+function goToToday() {
+  selectedDate.value = todayKey()
+}
+
 function onFileChange(event) {
   selectedFile.value = event.target.files?.[0] ?? null
   error.value = ''
@@ -811,7 +815,7 @@ async function deleteCurrentData() {
           <button class="nav-button" aria-label="Previous day" @click="changeDay(-1)">←</button>
 
           <div class="day-title">
-            <h2>{{ selectedDateLabel }}</h2>
+            <h2 @click="goToToday">{{ selectedDateLabel }}</h2>
           </div>
 
           <button class="nav-button" aria-label="Next day" @click="changeDay(1)">→</button>
