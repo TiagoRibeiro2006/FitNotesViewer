@@ -9,9 +9,7 @@ body.modal-open {
   display: grid;
   place-items: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, .76);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #fff;
 }
 
 .workout-modal {
