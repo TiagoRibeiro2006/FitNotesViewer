@@ -149,10 +149,6 @@
   transform: scale(.94);
 }
 
-.bottom-item.is-action {
-  cursor: pointer;
-}
-
 @media (max-width: 640px) {
   .calendar-month {
     padding: 15px 12px;
