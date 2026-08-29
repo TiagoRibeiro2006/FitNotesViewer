@@ -378,6 +378,13 @@
   margin-top: 0;
 }
 
+.training-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(190px, .5fr);
+  align-items: end;
+  gap: 14px;
+}
+
 .training-metric-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -811,6 +818,7 @@
   .chart-control-card,
   .chart-visual-card { padding: 14px; }
   .chart-control-grid { grid-template-columns: 1fr; }
+  .training-filter-grid { grid-template-columns: 1fr; }
   .chart-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .training-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .training-dashboard-grid { grid-template-columns: 1fr; }

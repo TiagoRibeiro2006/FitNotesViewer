@@ -33,15 +33,21 @@ const RANKING_METRICS = [
 ]
 
 const selectedRange = ref('90d')
+const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const activityMetric = ref('sets')
 const rankingMetric = ref('volume')
 const analytics = computed(buildAnalytics)
+const availableMuscles = computed(readAvailableMuscles)
 const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
 
 function buildAnalytics() {
-  return createTrainingAnalytics(props.data, selectedRange.value)
+  return createTrainingAnalytics(props.data, selectedRange.value, selectedMuscleId.value)
+}
+
+function readAvailableMuscles() {
+  return createTrainingAnalytics(props.data, 'all').muscleDistribution
 }
 
 function readDistributionLabel() {
@@ -79,9 +85,21 @@ function formatRate(value) {
         </div>
         <span class="chart-data-count">{{ analytics.totalSets }} sets</span>
       </div>
-      <div class="chart-range-control chart-range-control-first">
-        <span>Analysis period</span>
-        <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+      <div class="training-filter-grid">
+        <div class="chart-range-control chart-range-control-first">
+          <span>Analysis period</span>
+          <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+        </div>
+
+        <label class="chart-select-field">
+          <span>Muscle focus</span>
+          <select v-model="selectedMuscleId">
+            <option value="all">All muscles</option>
+            <option v-for="muscle in availableMuscles" :key="muscle.id" :value="String(muscle.id)">
+              {{ muscle.name }}
+            </option>
+          </select>
+        </label>
       </div>
     </section>
 

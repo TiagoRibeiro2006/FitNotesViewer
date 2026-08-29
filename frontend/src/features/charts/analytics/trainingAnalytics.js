@@ -2,12 +2,12 @@ import { androidColorToCss } from '../../../shared/utils/colors.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
 import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
 
-export function createTrainingAnalytics(data, rangeId) {
+export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
   const allSets = normalizeSets(data.workoutSets)
   const progressById = buildHistoricalProgress(allSets)
   const sets = filterByDateRange(allSets, rangeId)
   const lookups = createLookups(data.exercises, data.categories)
-  const enrichedSets = enrichSets(sets, lookups, progressById)
+  const enrichedSets = filterByMuscle(enrichSets(sets, lookups, progressById), muscleId)
   const workoutDays = uniqueValues(enrichedSets, 'date')
   const activeExercises = uniqueValues(enrichedSets, 'exerciseId')
   const totalVolume = sumValues(enrichedSets, 'volume')
@@ -33,6 +33,16 @@ export function createTrainingAnalytics(data, rangeId) {
     weeklyActivity: buildWeeklyActivity(enrichedSets),
     weekdayDistribution: buildWeekdayDistribution(enrichedSets),
   }
+}
+
+function filterByMuscle(sets, muscleId) {
+  if (muscleId === 'all') return sets
+
+  const filtered = []
+  for (const set of sets) {
+    if (String(set.muscleId) === String(muscleId)) filtered.push(set)
+  }
+  return filtered
 }
 
 function normalizeSets(rows) {
