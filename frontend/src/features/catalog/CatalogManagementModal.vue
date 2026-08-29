@@ -87,6 +87,7 @@ function goBack() {
       :exercise="manager.selectedItem.value"
       :creating="manager.page.value === 'create'"
       :deleting="manager.deleting.value"
+      :deletable="manager.page.value === 'details'"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveExercise"

@@ -204,6 +204,7 @@ function selectOption(option) {
         :exercise="catalogManager.selectedItem.value"
         :creating="catalogManager.page.value === 'create'"
         :deleting="catalogManager.deleting.value"
+        :deletable="catalogManager.page.value === 'details'"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveExercise"
