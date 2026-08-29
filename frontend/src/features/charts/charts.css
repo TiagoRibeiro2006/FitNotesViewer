@@ -1,0 +1,87 @@
+.charts-section-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border: 1px solid #242424;
+  border-radius: var(--box-radius);
+  background: #101010;
+}
+
+.charts-section-tabs button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #777780;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.charts-section-tabs button.is-active {
+  background: #242428;
+  color: #fff;
+}
+
+.charts-status-card,
+.charts-placeholder-card {
+  min-height: 230px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 32px;
+  border: 1px solid #242424;
+  border-radius: var(--box-radius);
+  background: #101010;
+  text-align: center;
+}
+
+.charts-status-card strong,
+.charts-placeholder-card h2 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 22px;
+}
+
+.charts-status-card p,
+.charts-placeholder-card > p:last-child {
+  max-width: 430px;
+  margin: 0;
+  color: #85858e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.charts-loading-indicator {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 18px;
+  border: 3px solid #24242a;
+  border-top-color: #3f96ff;
+  border-radius: 50%;
+  animation: charts-spin .8s linear infinite;
+}
+
+.charts-status-error strong,
+.charts-status-error p {
+  color: #ff7066;
+}
+
+.charts-status-error button {
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: 1px solid #34343a;
+  border-radius: 6px;
+  background: #1c1c20;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@keyframes charts-spin {
+  to { transform: rotate(360deg); }
+}

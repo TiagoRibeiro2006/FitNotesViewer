@@ -1,0 +1,68 @@
+<script setup>
+import { onMounted, ref } from 'vue'
+import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import { useChartsData } from './composables/useChartsData.js'
+
+const activeSection = ref('body')
+const { data, error, loading, load } = useChartsData()
+
+onMounted(initializeCharts)
+
+async function initializeCharts() {
+  await load()
+  window.scrollTo({ top: 0, behavior: 'auto' })
+}
+
+function showBodyCharts() {
+  activeSection.value = 'body'
+}
+
+function showTrainingCharts() {
+  activeSection.value = 'training'
+}
+</script>
+
+<template>
+  <AppSectionHeader title="Charts" />
+
+  <nav class="charts-section-tabs" aria-label="Chart category">
+    <button
+      type="button"
+      :class="{ 'is-active': activeSection === 'body' }"
+      @click="showBodyCharts"
+    >
+      Body
+    </button>
+    <button
+      type="button"
+      :class="{ 'is-active': activeSection === 'training' }"
+      @click="showTrainingCharts"
+    >
+      Training
+    </button>
+  </nav>
+
+  <section v-if="loading" class="charts-status-card">
+    <span class="charts-loading-indicator" aria-hidden="true"></span>
+    <strong>Building your analytics</strong>
+    <p>Reading your measurements and workout history…</p>
+  </section>
+
+  <section v-else-if="error" class="charts-status-card charts-status-error">
+    <strong>Charts are unavailable</strong>
+    <p>{{ error }}</p>
+    <button type="button" @click="load">Try again</button>
+  </section>
+
+  <section v-else-if="activeSection === 'body'" class="charts-placeholder-card">
+    <p class="eyebrow">BODY ANALYTICS</p>
+    <h2>{{ data.bodyMeasurements.length }} measurements ready</h2>
+    <p>Select a measurement and follow every value through time.</p>
+  </section>
+
+  <section v-else class="charts-placeholder-card">
+    <p class="eyebrow">TRAINING ANALYTICS</p>
+    <h2>{{ data.workoutSets.length }} sets ready</h2>
+    <p>Explore volume, frequency, muscle balance and workout consistency.</p>
+  </section>
+</template>

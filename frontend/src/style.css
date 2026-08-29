@@ -6,4 +6,5 @@
 @import './features/workouts/workoutEditor.css';
 @import './features/calendar/calendar.css';
 @import './features/body/body.css';
+@import './features/charts/charts.css';
 @import './features/settings/settings.css';
