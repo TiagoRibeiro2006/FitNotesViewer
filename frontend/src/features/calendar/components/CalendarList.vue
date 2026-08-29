@@ -7,6 +7,7 @@ defineProps({
   currentMonthElementId: { type: String, default: '' },
   selectedDate: { type: String, default: '' },
   workoutDates: { type: Set, required: true },
+  workoutColors: { type: Map, default: () => new Map() },
   actionLabelPrefix: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   compact: { type: Boolean, default: false },
@@ -26,6 +27,7 @@ const emit = defineEmits(['select'])
       :current-month-element-id="currentMonthElementId"
       :selected-date="selectedDate"
       :workout-dates="workoutDates"
+      :workout-colors="workoutColors"
       :action-label-prefix="actionLabelPrefix"
       :disabled="disabled"
       @select="emit('select', $event)"
