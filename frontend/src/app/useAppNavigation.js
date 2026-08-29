@@ -1,5 +1,5 @@
-import { computed, nextTick, ref } from 'vue'
-import { formatDate, todayKey } from '../shared/utils/dates'
+import { nextTick, ref } from 'vue'
+import { todayKey } from '../shared/utils/dates'
 
 const DEFAULT_VIEW = 'workouts'
 const APP_VIEWS = new Set(['workouts', 'body', 'calendar', 'settings'])
@@ -8,14 +8,8 @@ export function useAppNavigation() {
   const activeView = ref(DEFAULT_VIEW)
   const selectedDate = ref(todayKey())
 
-  const selectedDateLong = computed(readSelectedDate)
-
   function scrollToTop() {
     void nextTick(moveWindowToTop)
-  }
-
-  function readSelectedDate() {
-    return formatDate(selectedDate.value)
   }
 
   function moveWindowToTop() {
@@ -41,7 +35,6 @@ export function useAppNavigation() {
   return {
     activeView,
     selectedDate,
-    selectedDateLong,
     navigateTo,
     resetSelectedDate,
     selectCalendarDate,
