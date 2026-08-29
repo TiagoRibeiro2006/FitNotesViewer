@@ -1,4 +1,6 @@
-.bottom-bar {
+.base-bottom-bar {
+  --bottom-bar-columns: 5;
+
   position: fixed;
   z-index: 50;
   left: 0;
@@ -6,7 +8,7 @@
   bottom: 0;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--bottom-bar-columns), minmax(0, 1fr));
   align-items: stretch;
   padding: 9px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   border-top: 1px solid #242424;
@@ -15,7 +17,11 @@
   -webkit-backdrop-filter: blur(18px);
 }
 
-.bottom-item {
+.base-bottom-bar.is-contained {
+  position: absolute;
+}
+
+.base-bottom-bar-item {
   min-width: 0;
   min-height: 58px;
   display: flex;
@@ -23,14 +29,15 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  padding: 0 4px;
   border: 0;
   border-radius: 13px;
   background: transparent;
   color: #77777f;
-  cursor: default;
+  cursor: pointer;
 }
 
-.bottom-item svg {
+.base-bottom-bar-item svg {
   width: 23px;
   height: 23px;
   fill: none;
@@ -40,7 +47,7 @@
   stroke-linejoin: round;
 }
 
-.bottom-item span {
+.base-bottom-bar-item span {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -50,22 +57,30 @@
   letter-spacing: .01em;
 }
 
-.bottom-item.is-action {
-  cursor: pointer;
+.base-bottom-bar-item:active:not(:disabled) {
+  background: rgba(255, 255, 255, .04);
 }
 
-.bottom-item:disabled {
+.base-bottom-bar-item:disabled {
   color: #4a4a51;
   cursor: not-allowed;
   opacity: .5;
 }
 
-.bottom-item.is-active {
+.base-bottom-bar-item.is-active {
   color: #fff;
 }
 
-.bottom-item.is-active svg {
+.base-bottom-bar-item.is-active svg {
   fill: currentColor;
   stroke-width: 1.5;
 }
 
+.base-bottom-bar .base-bottom-bar-item.is-active {
+  color: inherit;
+}
+
+.base-bottom-bar .base-bottom-bar-item.is-active svg {
+  fill: none;
+  stroke-width: 1.8;
+}

@@ -6,7 +6,8 @@ import { useExerciseEditor } from '../composables/useExerciseEditor'
 import CatalogItemList from './CatalogItemList.vue'
 import ExerciseDetailsEditor from './ExerciseDetailsEditor.vue'
 import ExercisePicker from './ExercisePicker.vue'
-import ExerciseOptionsMenu from './ExerciseOptionsMenu.vue'
+import ExerciseBottomNavigation from './ExerciseBottomNavigation.vue'
+import ExerciseCatalogMenu from './ExerciseCatalogMenu.vue'
 import ExerciseSetEditor from './ExerciseSetEditor.vue'
 import MuscleDetailsEditor from './MuscleDetailsEditor.vue'
 
@@ -158,10 +159,8 @@ function selectOption(option) {
         <p>{{ dateLabel }}</p>
         <h2>{{ modalTitle }}</h2>
       </div>
-      <ExerciseOptionsMenu
-        v-if="!catalogActive && (step === 'exercise' || step === 'sets')"
-        :mode="step"
-        :selected-option="selectedOption"
+      <ExerciseCatalogMenu
+        v-if="!catalogActive && step === 'exercise'"
         @select="selectOption"
       />
       <button
@@ -231,26 +230,31 @@ function selectOption(option) {
       @save="saveExerciseDetails"
     />
 
-    <ExerciseSetEditor
-      v-else-if="step === 'sets' && selectedExercise"
-      :exercise="selectedExercise"
-      :sets="draftSets"
-      :set-progress="draftProgress"
-      :has-existing-sets="hasExistingSets"
-      :delete-confirming="deleteConfirming"
-      :saving="saving"
-      :can-save="canSave"
-      :error="error"
-      :show-calculator="selectedOption === 'one-rep-max'"
-      :show-history="selectedOption === 'history'"
-      :show-records="selectedOption === 'records'"
-      @update-set="updateSet"
-      @move-set="moveSet"
-      @remove-set="removeSet"
-      @add-set="addSet"
-      @delete="removeExercise"
-      @edit-details="openExerciseDetails"
-      @save="save"
-    />
+    <template v-else-if="step === 'sets' && selectedExercise">
+      <ExerciseSetEditor
+        :exercise="selectedExercise"
+        :sets="draftSets"
+        :set-progress="draftProgress"
+        :has-existing-sets="hasExistingSets"
+        :delete-confirming="deleteConfirming"
+        :saving="saving"
+        :can-save="canSave"
+        :error="error"
+        :show-calculator="selectedOption === 'one-rep-max'"
+        :show-history="selectedOption === 'history'"
+        :show-records="selectedOption === 'records'"
+        @update-set="updateSet"
+        @move-set="moveSet"
+        @remove-set="removeSet"
+        @add-set="addSet"
+        @delete="removeExercise"
+        @edit-details="openExerciseDetails"
+        @save="save"
+      />
+      <ExerciseBottomNavigation
+        :selected-option="selectedOption"
+        @select="selectOption"
+      />
+    </template>
   </BaseModal>
 </template>

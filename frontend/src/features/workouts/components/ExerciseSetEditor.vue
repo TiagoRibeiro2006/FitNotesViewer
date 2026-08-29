@@ -44,7 +44,7 @@ function exerciseStyle(exercise) {
 </script>
 
 <template>
-  <div class="set-editor" :class="{ 'has-details': showHistory || showRecords || showCalculator }">
+  <div class="set-editor">
     <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
       <span class="exercise-color-dot"></span>
       <div>

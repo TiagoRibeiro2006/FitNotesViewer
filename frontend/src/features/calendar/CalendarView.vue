@@ -35,7 +35,7 @@ function scrollToCurrentMonth() {
   const currentMonth = document.getElementById('calendar-current-month')
   if (!currentMonth) return
 
-  const bottomNavigation = document.querySelector('.bottom-bar')
+  const bottomNavigation = document.querySelector('.app-bottom-navigation')
   const sectionHeader = document.querySelector('.section-sticky-header')
   const bottomNavigationHeight = bottomNavigation?.getBoundingClientRect().height ?? 0
   const sectionHeaderHeight = sectionHeader?.getBoundingClientRect().height ?? 0

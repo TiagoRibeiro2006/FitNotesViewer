@@ -138,12 +138,11 @@
   justify-content: space-between;
   gap: 16px;
   min-width: 0;
-  padding: 12px 16px;
+  padding: 6px 16px;
   background: #2b2b2e;
 }
 .exercise-row-title {
   min-width: 0;
-  padding: 6px 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -206,9 +205,53 @@
   padding: 18px 12px 4px;
 }
 
+.workout-day.is-empty {
+  min-height: calc(100dvh - max(32px, env(safe-area-inset-top)) - 118px - env(safe-area-inset-bottom));
+}
+
+.workout-day.is-empty .day-content-card {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
 .day-actions.is-empty {
-  padding-top: 32px;
-  padding-bottom: 18px;
+  width: 100%;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 148px);
+  align-content: center;
+  justify-content: center;
+  gap: 74px;
+  padding: 18px 0;
+}
+
+.day-actions.is-empty .day-action {
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 14px;
+  border: 1px solid #67676e;
+  background: #35353a;
+  color: #fff;
+  text-align: center;
+}
+
+.day-actions.is-empty .day-copy-previous {
+  border: 1px solid #48484d;
+  background: #19191b;
+}
+
+.day-actions.is-empty .day-action svg {
+  width: 42px;
+  height: 42px;
+}
+
+.day-actions.is-empty .day-action span {
+  max-width: 112px;
+  line-height: 1.2;
 }
 
 .empty-state p { margin: 0; }
