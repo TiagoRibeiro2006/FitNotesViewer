@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue'
-import { getExerciseCatalog, updateCategoryDetails } from '../../../data/repositories/catalogRepository'
+import { getExerciseCatalog, updateCategoryDetails, updateExerciseDetails } from '../../../data/repositories/catalogRepository'
 import { cssColorToAndroid } from '../../../shared/utils/colors'
 import { friendlyError } from '../../../shared/utils/errors'
 
-export function useCatalogManager() {
+export function useCatalogManager(callbacks = {}) {
   const categories = ref([])
   const exercises = ref([])
   const error = ref('')
@@ -53,6 +53,24 @@ export function useCatalogManager() {
         name: details.name,
         colour: cssColorToAndroid(details.colour),
       })
+      await load()
+      selectedItem.value = null
+      page.value = 'list'
+    } catch (saveError) {
+      error.value = friendlyError(saveError)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function saveExercise(details) {
+    if (!selectedItem.value || saving.value) return
+    saving.value = true
+    error.value = ''
+
+    try {
+      const result = await updateExerciseDetails(selectedItem.value.id, details)
+      callbacks.onChanged?.(result.summary)
       await load()
       selectedItem.value = null
       page.value = 'list'
@@ -113,6 +131,7 @@ export function useCatalogManager() {
     goBack,
     open,
     reset,
+    saveExercise,
     saveMuscle,
     select,
   }
