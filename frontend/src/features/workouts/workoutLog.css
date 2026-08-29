@@ -14,18 +14,22 @@
 .day-navigation-card {
   position: sticky;
   z-index: 20;
-  top: max(8px, env(safe-area-inset-top));
+  top: calc(env(safe-area-inset-top) + 20px);
+  margin-top: 20px;
   padding: 12px;
+  isolation: isolate;
 }
 
 .day-navigation-card::before {
   content: '';
-  width: 100vw;
-  height: max(8px, env(safe-area-inset-top));
   position: absolute;
+  z-index: -1;
+  width: 100vw;
+  top: calc(-1 * (env(safe-area-inset-top) + 40px));
+  bottom: -14px;
   left: 50%;
-  bottom: 100%;
   background: #000;
+  border-radius: 0 0 var(--box-radius) var(--box-radius);
   transform: translateX(-50%);
   pointer-events: none;
 }
