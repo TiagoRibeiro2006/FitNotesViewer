@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
 import { useBodyMeasurementDetails } from '../composables/useBodyMeasurementDetails'
+import BodyRecordModal from './BodyRecordModal.vue'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -9,13 +10,19 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'changed'])
 const value = ref('')
+const selectedRecord = ref(null)
 const {
   error,
   history,
   loading,
+  recordError,
+  recordSaving,
   saving,
   addValue,
+  clearRecordError,
+  deleteValue,
   load,
+  updateValue,
 } = useBodyMeasurementDetails()
 
 const canSave = computed(() => {
@@ -36,6 +43,31 @@ async function submit() {
 
 function displayValue(record) {
   return formatBodyValue({ ...props.item, value: record.value })
+}
+
+function openRecord(record) {
+  clearRecordError()
+  selectedRecord.value = record
+}
+
+function closeRecord() {
+  if (recordSaving.value) return
+  selectedRecord.value = null
+  clearRecordError()
+}
+
+async function saveRecord(value) {
+  if (!selectedRecord.value) return
+  if (!await updateValue(props.item, selectedRecord.value, value)) return
+  closeRecord()
+  emit('changed')
+}
+
+async function removeRecord() {
+  if (!selectedRecord.value) return
+  if (!await deleteValue(props.item, selectedRecord.value)) return
+  closeRecord()
+  emit('changed')
 }
 </script>
 
@@ -81,11 +113,22 @@ function displayValue(record) {
       <p v-if="loading" class="body-status">Loading history…</p>
       <p v-else-if="!history.length" class="body-status">No data yet.</p>
       <div v-else class="body-history-list">
-        <article v-for="record in history" :key="record.id" class="body-history-row">
+        <button v-for="record in history" :key="record.id" class="body-history-row" type="button" @click="openRecord(record)">
           <strong>{{ displayValue(record) }}</strong>
           <span>{{ formatBodyEntryDate(record) }}</span>
-        </article>
+        </button>
       </div>
     </section>
+
+    <BodyRecordModal
+      :open="Boolean(selectedRecord)"
+      :item="item"
+      :record="selectedRecord"
+      :saving="recordSaving"
+      :error="recordError"
+      @close="closeRecord"
+      @save="saveRecord"
+      @delete="removeRecord"
+    />
   </div>
 </template>

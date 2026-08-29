@@ -77,6 +77,71 @@ export async function saveBodyMeasurementValue(item, rawValue) {
   return getBodyTrackerData()
 }
 
+export async function updateBodyMeasurementRecord(record, rawValue) {
+  const value = normalizeNonNegativeNumber(rawValue)
+  if (value === null) throw new Error('Enter a valid value.')
+
+  const database = await openAppDatabase()
+  const storedRecord = await getStoredBodyRecord(database, record)
+  if (!storedRecord) throw new Error('This value no longer exists.')
+
+  const updatedAt = new Date().toISOString()
+  const updatedRecord = record.sourceType === 'bodyWeight'
+    ? { ...storedRecord, [record.sourceField]: value, localUpdatedAt: updatedAt }
+    : { ...storedRecord, value, localUpdatedAt: updatedAt }
+  await saveStoredBodyRecord(database, record, updatedRecord, updatedAt)
+  return getBodyTrackerData()
+}
+
+export async function deleteBodyMeasurementRecord(record) {
+  const database = await openAppDatabase()
+  const storedRecord = await getStoredBodyRecord(database, record)
+  if (!storedRecord) return getBodyTrackerData()
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction([bodyRecordStoreName(record), 'metadata'], 'readwrite')
+  const store = transaction.objectStore(bodyRecordStoreName(record))
+
+  if (record.sourceType === 'bodyWeight') {
+    const updatedRecord = { ...storedRecord, [record.sourceField]: null, localUpdatedAt: updatedAt }
+    if (hasBodyWeightContent(updatedRecord)) store.put(updatedRecord)
+    else store.delete(record.id)
+  } else {
+    store.delete(record.id)
+  }
+
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
+async function getStoredBodyRecord(database, record) {
+  const storeName = bodyRecordStoreName(record)
+  const transaction = database.transaction(storeName, 'readonly')
+  const done = transactionComplete(transaction)
+  const storedRecord = await requestResult(transaction.objectStore(storeName).get(record.id))
+  await done
+  return storedRecord
+}
+
+async function saveStoredBodyRecord(database, record, updatedRecord, updatedAt) {
+  const storeName = bodyRecordStoreName(record)
+  const transaction = database.transaction([storeName, 'metadata'], 'readwrite')
+  transaction.objectStore(storeName).put(updatedRecord)
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+}
+
+function bodyRecordStoreName(record) {
+  return record?.sourceType === 'bodyWeight' ? 'bodyWeights' : 'measurementRecords'
+}
+
+function hasBodyWeightContent(record) {
+  return hasMeasurementValue(record.bodyWeightMetric)
+    || hasMeasurementValue(record.bodyFat)
+    || String(record.comments ?? '').trim() !== ''
+}
+
 async function saveMeasurementRecord(database, record) {
   const transaction = database.transaction(['measurementRecords', 'metadata'], 'readwrite')
   transaction.objectStore('measurementRecords').put(record)
