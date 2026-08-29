@@ -67,7 +67,11 @@
 .exercise-set-number { text-align: left; }
 .exercise-set-weight { text-align: center; color: #d7d7dc; }
 .exercise-set-reps { text-align: right; }
-.exercise-set-value { color: #fff; }
+.exercise-set-value {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+}
 .exercise-row-chevron {
   flex: 0 0 auto;
   color: #55555d;

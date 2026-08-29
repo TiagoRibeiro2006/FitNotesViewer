@@ -3,6 +3,7 @@ import { computed, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseEditor } from '../composables/useExerciseEditor'
 import ExercisePicker from './ExercisePicker.vue'
+import ExerciseOptionsMenu from './ExerciseOptionsMenu.vue'
 import ExerciseSetEditor from './ExerciseSetEditor.vue'
 
 const props = defineProps({
@@ -92,7 +93,8 @@ function close(force = false) {
         <p>{{ dateLabel }}</p>
         <h2>{{ step === 'exercise' ? 'Choose exercise' : title }}</h2>
       </div>
-      <span class="modal-header-spacer" aria-hidden="true"></span>
+      <ExerciseOptionsMenu v-if="step === 'sets'" />
+      <span v-else class="modal-header-spacer" aria-hidden="true"></span>
     </header>
 
     <ExercisePicker
