@@ -202,6 +202,36 @@ export async function deleteBodyMeasurement(item) {
   return getBodyTrackerData()
 }
 
+export async function updateBodyMeasurementName(item, rawName) {
+  const name = normalizeMeasurementName(rawName)
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('measurements', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const measurements = await requestResult(lookupTransaction.objectStore('measurements').getAll())
+  await lookupDone
+
+  const measurementId = findMeasurementId(item, measurements ?? [])
+  if (measurementId === null) throw new Error('Measurement could not be found.')
+
+  let measurement = null
+  for (const candidate of measurements ?? []) {
+    if (candidate.id === measurementId) measurement = candidate
+  }
+  if (!measurement) throw new Error('Measurement could not be found.')
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(['measurements', 'metadata'], 'readwrite')
+  transaction.objectStore('measurements').put({
+    ...measurement,
+    name,
+    bodyNameEdited: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 async function getStoredBodyRecord(database, record) {
   const storeName = bodyRecordStoreName(record)
   const transaction = database.transaction(storeName, 'readonly')
@@ -332,7 +362,7 @@ function buildDefaultFavorite(definition, itemsByName, bodyWeights) {
   return {
     ...(source ?? buildBodyItem(definition.id, definition.name, definition.unit, [], () => null)),
     id: measurementItem?.id ?? definition.id,
-    name: definition.name,
+    name: measurementItem?.bodyNameEdited ? measurementItem.name : definition.name,
     favorite: true,
   }
 }
@@ -423,6 +453,14 @@ function normalizeBodyName(value) {
 function normalizeMeasurementUnit(value) {
   const unit = String(value ?? '').trim()
   return unit.toLowerCase() === 'kgs' ? 'kg' : unit
+}
+
+function normalizeMeasurementName(value) {
+  const name = String(value ?? '').trim().replace(/\s+/g, ' ')
+  if (!name) throw new Error('Enter a measurement name.')
+  if (name.length > 100) throw new Error('Measurement name must have 100 characters or fewer.')
+  if (/[<>]/.test(name)) throw new Error('Measurement name cannot include < or >.')
+  return name
 }
 
 function measurementUnitFallback(unitId) {
