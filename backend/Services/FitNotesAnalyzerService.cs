@@ -1,36 +1,28 @@
+using FitNotesViewer.Api.Files;
 using FitNotesViewer.Api.Models;
+using FitNotesViewer.Api.Validation;
 using Microsoft.Data.Sqlite;
 
 namespace FitNotesViewer.Api.Services;
 
 public sealed class FitNotesAnalyzerService
 {
-    private static readonly byte[] SqliteHeader = "SQLite format 3\0"u8.ToArray();
+    private readonly FitNotesFileValidator _fileValidator;
+
+    public FitNotesAnalyzerService(FitNotesFileValidator fileValidator)
+    {
+        _fileValidator = fileValidator;
+    }
 
     public async Task<FitNotesSummary> AnalyzeAsync(IFormFile file, CancellationToken cancellationToken)
     {
-        if (file.Length <= 0)
-            throw new InvalidDataException("The file is empty.");
-
-        if (!string.Equals(Path.GetExtension(file.FileName), ".fitnotes", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("The file must use the .fitnotes extension.");
-
-        const long maxFileSize = 25 * 1024 * 1024;
-        if (file.Length > maxFileSize)
-            throw new InvalidDataException("The file exceeds the 25 MB limit.");
-
-        var tempPath = Path.Combine(Path.GetTempPath(), $"fitnotes-{Guid.NewGuid():N}.fitnotes");
-
-        try
-        {
-            await using (var output = File.Create(tempPath))
-                await file.CopyToAsync(output, cancellationToken);
-
-            await EnsureSqliteAsync(tempPath, cancellationToken);
+        _fileValidator.ValidateUpload(file);
+        using var temporaryFile = await TemporaryFitNotesFile.CreateAsync(file, cancellationToken);
+        await _fileValidator.ValidateSqliteAsync(temporaryFile.Path, cancellationToken);
 
             var connectionString = new SqliteConnectionStringBuilder
             {
-                DataSource = tempPath,
+                DataSource = temporaryFile.Path,
                 Mode = SqliteOpenMode.ReadOnly,
                 Cache = SqliteCacheMode.Private,
                 Pooling = false
@@ -101,7 +93,7 @@ public sealed class FitNotesAnalyzerService
                 }
             }
 
-            return new FitNotesSummary
+        return new FitNotesSummary
             {
                 FileName = Path.GetFileName(file.FileName),
                 TotalSets = totalSets,
@@ -111,29 +103,6 @@ public sealed class FitNotesAnalyzerService
                 TopExercises = topExercises,
                 WorkoutSets = workoutSets
             };
-        }
-        finally
-        {
-            try
-            {
-                if (File.Exists(tempPath))
-                    File.Delete(tempPath);
-            }
-            catch
-            {
-                // Do not block the response if temporary file cleanup fails.
-            }
-        }
-    }
-
-    private static async Task EnsureSqliteAsync(string path, CancellationToken cancellationToken)
-    {
-        var buffer = new byte[SqliteHeader.Length];
-        await using var stream = File.OpenRead(path);
-        var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
-
-        if (bytesRead != SqliteHeader.Length || !buffer.SequenceEqual(SqliteHeader))
-            throw new InvalidDataException("The file does not contain a valid SQLite database.");
     }
 
     private static async Task EnsureRequiredTablesAsync(SqliteConnection connection, CancellationToken cancellationToken)
