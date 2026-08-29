@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseEditor } from '../composables/useExerciseEditor'
 import ExercisePicker from './ExercisePicker.vue'
@@ -14,6 +14,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'data-changed'])
+const selectedOption = ref('')
 const callbacks = {
   onChanged: notifyDataChanged,
   onClose: closeAfterSave,
@@ -59,6 +60,7 @@ function isModalOpen() {
 
 function handleOpenChange(open) {
   if (!open) return
+  selectedOption.value = ''
   if (props.exercise) {
     void startEditor(props.exercise)
     return
@@ -77,8 +79,13 @@ function closeAfterSave() {
 
 function close(force = false) {
   if (!force && saving.value) return
+  selectedOption.value = ''
   reset()
   emit('close')
+}
+
+function selectOption(option) {
+  selectedOption.value = selectedOption.value === option ? '' : option
 }
 </script>
 
@@ -94,7 +101,11 @@ function close(force = false) {
         <p>{{ dateLabel }}</p>
         <h2>{{ step === 'exercise' ? 'Choose exercise' : title }}</h2>
       </div>
-      <ExerciseOptionsMenu :mode="step" />
+      <ExerciseOptionsMenu
+        :mode="step"
+        :selected-option="selectedOption"
+        @select="selectOption"
+      />
     </header>
 
     <ExercisePicker
@@ -116,6 +127,7 @@ function close(force = false) {
       :saving="saving"
       :can-save="canSave"
       :error="error"
+      :show-history="selectedOption === 'history'"
       @update-set="updateSet"
       @move-set="moveSet"
       @remove-set="removeSet"
