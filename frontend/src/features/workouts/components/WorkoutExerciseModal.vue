@@ -1,11 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
+import { useCatalogManager } from '../composables/useCatalogManager'
 import { useExerciseEditor } from '../composables/useExerciseEditor'
+import CatalogItemList from './CatalogItemList.vue'
 import ExerciseDetailsEditor from './ExerciseDetailsEditor.vue'
 import ExercisePicker from './ExercisePicker.vue'
 import ExerciseOptionsMenu from './ExerciseOptionsMenu.vue'
 import ExerciseSetEditor from './ExerciseSetEditor.vue'
+import MuscleDetailsEditor from './MuscleDetailsEditor.vue'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -15,7 +18,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'data-changed'])
+const catalogActive = ref(false)
 const selectedOption = ref('')
+const catalogManager = useCatalogManager()
 const callbacks = {
   onChanged: notifyDataChanged,
   onClose: closeAfterSave,
@@ -67,6 +72,7 @@ function isModalOpen() {
 }
 
 function readModalTitle() {
+  if (catalogActive.value) return catalogManager.title.value
   if (step.value === 'exercise') return 'Choose exercise'
   if (step.value === 'exercise-details') return 'Exercise details'
   return title.value
@@ -74,6 +80,8 @@ function readModalTitle() {
 
 function handleOpenChange(open) {
   if (!open) return
+  catalogActive.value = false
+  catalogManager.reset()
   selectedOption.value = ''
   if (props.exercise) {
     void startEditor(props.exercise)
@@ -93,14 +101,24 @@ function closeAfterSave() {
 
 function close(force = false) {
   if (!force && saving.value) return
+  catalogActive.value = false
+  catalogManager.reset()
   selectedOption.value = ''
   reset()
   emit('close')
 }
 
 function goBack() {
-  if (saving.value || detailsSaving.value) return
+  if (saving.value || detailsSaving.value || catalogManager.saving.value) return
   selectedOption.value = ''
+
+  if (catalogActive.value) {
+    if (catalogManager.goBack()) return
+    catalogActive.value = false
+    catalogManager.reset()
+    void startPicker()
+    return
+  }
 
   if (step.value === 'exercise-details') {
     returnToSets()
@@ -116,6 +134,13 @@ function goBack() {
 }
 
 function selectOption(option) {
+  if (step.value === 'exercise' && option === 'muscles') {
+    selectedOption.value = ''
+    catalogActive.value = true
+    void catalogManager.open('muscles')
+    return
+  }
+
   selectedOption.value = selectedOption.value === option ? '' : option
 }
 </script>
@@ -133,7 +158,7 @@ function selectOption(option) {
         <h2>{{ modalTitle }}</h2>
       </div>
       <ExerciseOptionsMenu
-        v-if="step === 'exercise' || step === 'sets'"
+        v-if="!catalogActive && (step === 'exercise' || step === 'sets')"
         :mode="step"
         :selected-option="selectedOption"
         @select="selectOption"
@@ -141,8 +166,26 @@ function selectOption(option) {
       <span v-else class="modal-header-spacer"></span>
     </header>
 
+    <template v-if="catalogActive">
+      <CatalogItemList
+        v-if="catalogManager.page.value === 'list'"
+        v-model:search-query="catalogManager.searchQuery.value"
+        :items="catalogManager.filteredItems.value"
+        :loading="catalogManager.loading.value"
+        :mode="catalogManager.mode.value"
+        @select="catalogManager.select"
+      />
+      <MuscleDetailsEditor
+        v-else-if="catalogManager.selectedItem.value"
+        :muscle="catalogManager.selectedItem.value"
+        :error="catalogManager.error.value"
+        :saving="catalogManager.saving.value"
+        @save="catalogManager.saveMuscle"
+      />
+    </template>
+
     <ExercisePicker
-      v-if="step === 'exercise'"
+      v-else-if="step === 'exercise'"
       v-model:search-query="searchQuery"
       v-model:selected-category-id="selectedCategoryId"
       :categories="categories"

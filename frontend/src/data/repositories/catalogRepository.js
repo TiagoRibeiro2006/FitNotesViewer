@@ -32,7 +32,7 @@ export async function getExerciseCatalog() {
 }
 
 export async function updateExerciseDetails(exerciseId, details) {
-  const name = normalizeName(details.name)
+  const name = normalizeName(details.name, 'Exercise')
   const categoryId = details.categoryId
   const database = await openAppDatabase()
   const lookupTransaction = database.transaction(['exercises', 'categories', 'workoutSets'], 'readonly')
@@ -75,17 +75,51 @@ export async function updateExerciseDetails(exerciseId, details) {
   }
 }
 
-function normalizeName(value) {
+export async function updateCategoryDetails(categoryId, details) {
+  const name = normalizeName(details.name, 'Muscle')
+  const colour = details.colour
+  if (!Number.isInteger(colour)) throw new Error('Choose a valid muscle colour.')
+
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('categories', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const category = await requestResult(lookupTransaction.objectStore('categories').get(categoryId))
+  await lookupDone
+  if (!category) throw new Error('Muscle could not be found.')
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(['categories', 'metadata'], 'readwrite')
+  transaction.objectStore('categories').put({
+    ...category,
+    name,
+    colour,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+
+  const catalog = await getExerciseCatalog()
+  return findCategory(catalog.categories, categoryId)
+}
+
+function normalizeName(value, label) {
   const name = String(value ?? '').trim().replace(/\s+/g, ' ')
-  if (!name) throw new Error('Enter an exercise name.')
-  if (name.length > 100) throw new Error('Exercise name must have 100 characters or fewer.')
-  if (/[<>]/.test(name)) throw new Error('Exercise name cannot include < or >.')
+  if (!name) throw new Error(`Enter a ${label.toLowerCase()} name.`)
+  if (name.length > 100) throw new Error(`${label} name must have 100 characters or fewer.`)
+  if (/[<>]/.test(name)) throw new Error(`${label} name cannot include < or >.`)
   return name
 }
 
 function findExercise(exercises, exerciseId) {
   for (const exercise of exercises) {
     if (exercise.id === exerciseId) return exercise
+  }
+  return null
+}
+
+function findCategory(categories, categoryId) {
+  for (const category of categories) {
+    if (category.id === categoryId) return category
   }
   return null
 }

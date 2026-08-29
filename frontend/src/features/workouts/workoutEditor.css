@@ -271,6 +271,34 @@
   margin-top: auto;
 }
 
+.muscle-colour-field {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border: 1px solid #303030;
+  border-radius: var(--box-radius);
+  background: #151515;
+}
+
+.muscle-colour-field input {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.muscle-colour-field strong {
+  color: #f5f5f5;
+  font-size: 15px;
+}
+
 .sets-grid {
   display: grid;
   grid-template-columns: 36px minmax(80px, 1fr) minmax(80px, 1fr) 38px;
