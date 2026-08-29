@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import {
+  deleteBodyMeasurement,
   getBodyTrackerData,
   saveBodyFavoriteIds,
 } from '../../../data/repositories/bodyRepository'
@@ -10,6 +11,7 @@ export function useBodyTracker() {
   const loading = ref(false)
   const error = ref('')
   const favoritesSaving = ref(false)
+  const managementSaving = ref(false)
 
   const sections = computed(() => [
     { id: 'favorites', label: 'Favorites', items: favorites.value, emptyMessage: 'No favorites yet.' },
@@ -48,6 +50,20 @@ export function useBodyTracker() {
     }
   }
 
+  async function removeMeasurement(item) {
+    if (managementSaving.value) return
+    managementSaving.value = true
+    error.value = ''
+
+    try {
+      applyTrackerData(await deleteBodyMeasurement(item))
+    } catch {
+      error.value = 'Measurement could not be deleted from local storage.'
+    } finally {
+      managementSaving.value = false
+    }
+  }
+
   function applyTrackerData(data) {
     favorites.value = data.favorites
     measurements.value = data.measurements
@@ -57,6 +73,8 @@ export function useBodyTracker() {
     error,
     favoritesSaving,
     loading,
+    managementSaving,
+    removeMeasurement,
     sections,
     load,
     toggleFavorite,

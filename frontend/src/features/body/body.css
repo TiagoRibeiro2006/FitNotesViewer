@@ -176,6 +176,11 @@
   color: #ff7066;
 }
 
+.body-item-action-menu button:disabled {
+  cursor: wait;
+  opacity: .45;
+}
+
 .body-item-action-menu svg {
   width: 18px;
   height: 18px;
