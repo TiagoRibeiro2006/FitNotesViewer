@@ -15,6 +15,7 @@ body.modal-open {
 }
 
 .workout-modal {
+  position: relative;
   width: min(720px, 100%);
   max-height: min(860px, calc(100dvh - 32px));
   display: flex;
