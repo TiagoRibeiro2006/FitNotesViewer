@@ -16,9 +16,6 @@ function readExerciseId() {
   return props.exerciseId
 }
 
-function setCountLabel(count) {
-  return `${count} ${count === 1 ? 'set' : 'sets'}`
-}
 </script>
 
 <template>
@@ -32,7 +29,6 @@ function setCountLabel(count) {
     <article v-for="day in days" v-else :key="day.date" class="exercise-history-day">
       <header>
         <strong>{{ formatDate(day.date) }}</strong>
-        <span>{{ setCountLabel(day.sets.length) }}</span>
       </header>
 
       <div v-for="(set, index) in day.sets" :key="set.id" class="exercise-history-set">
