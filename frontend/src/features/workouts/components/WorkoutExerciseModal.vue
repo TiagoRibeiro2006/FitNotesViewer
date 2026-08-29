@@ -191,18 +191,23 @@ function selectOption(option) {
         v-else-if="catalogManager.mode.value === 'muscles' && catalogManager.selectedItem.value"
         :muscle="catalogManager.selectedItem.value"
         :creating="catalogManager.page.value === 'create'"
+        :deleting="catalogManager.deleting.value"
+        :exercise-count="catalogManager.selectedMuscleExerciseCount.value"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveMuscle"
+        @delete="catalogManager.removeMuscle"
       />
       <ExerciseDetailsEditor
         v-else-if="catalogManager.selectedItem.value"
         :categories="catalogManager.categories.value"
         :exercise="catalogManager.selectedItem.value"
         :creating="catalogManager.page.value === 'create'"
+        :deleting="catalogManager.deleting.value"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveExercise"
+        @delete="catalogManager.removeExercise"
       />
     </template>
 

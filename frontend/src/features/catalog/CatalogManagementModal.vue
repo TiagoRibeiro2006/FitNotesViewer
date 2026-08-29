@@ -74,18 +74,23 @@ function goBack() {
       v-else-if="manager.mode.value === 'muscles' && manager.selectedItem.value"
       :muscle="manager.selectedItem.value"
       :creating="manager.page.value === 'create'"
+      :deleting="manager.deleting.value"
+      :exercise-count="manager.selectedMuscleExerciseCount.value"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveMuscle"
+      @delete="manager.removeMuscle"
     />
     <ExerciseDetailsEditor
       v-else-if="manager.selectedItem.value"
       :categories="manager.categories.value"
       :exercise="manager.selectedItem.value"
       :creating="manager.page.value === 'create'"
+      :deleting="manager.deleting.value"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveExercise"
+      @delete="manager.removeExercise"
     />
   </BaseModal>
 </template>

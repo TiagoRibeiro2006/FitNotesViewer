@@ -1,15 +1,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import CatalogDeleteButton from './CatalogDeleteButton.vue'
 
 const props = defineProps({
   categories: { type: Array, required: true },
   creating: { type: Boolean, default: false },
+  deleting: { type: Boolean, default: false },
   error: { type: String, default: '' },
   exercise: { type: Object, required: true },
   saving: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['save'])
+const emit = defineEmits(['delete', 'save'])
 const name = ref('')
 const categoryId = ref(null)
 const canSave = computed(readCanSave)
@@ -70,5 +72,12 @@ function submit() {
     <button class="save-workout-button exercise-details-save" type="submit" :disabled="saving || !canSave">
       {{ saving ? 'Saving…' : creating ? 'Add exercise' : 'Save exercise' }}
     </button>
+
+    <CatalogDeleteButton
+      v-if="!creating"
+      :deleting="deleting"
+      label="Delete exercise"
+      @delete="emit('delete')"
+    />
   </form>
 </template>
