@@ -44,7 +44,7 @@ function toggleMenu(sectionId, itemId) {
 }
 
 function openMeasurement(item) {
-  if (!props.managing) emit('open-measurement', item)
+  emit('open-measurement', item)
 }
 
 function chooseAction(action, item, sectionId) {
