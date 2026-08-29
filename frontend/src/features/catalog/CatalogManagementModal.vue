@@ -48,7 +48,18 @@ function goBack() {
       <div class="modal-heading">
         <h2>{{ title }}</h2>
       </div>
-      <span class="modal-header-spacer"></span>
+      <button
+        v-if="manager.page.value === 'list'"
+        class="modal-icon-button catalog-add-button"
+        type="button"
+        :aria-label="manager.mode.value === 'muscles' ? 'Add muscle' : 'Add exercise'"
+        @click="manager.startCreate"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
+      <span v-else class="modal-header-spacer"></span>
     </header>
 
     <CatalogItemList
@@ -62,6 +73,7 @@ function goBack() {
     <MuscleDetailsEditor
       v-else-if="manager.mode.value === 'muscles' && manager.selectedItem.value"
       :muscle="manager.selectedItem.value"
+      :creating="manager.page.value === 'create'"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveMuscle"
@@ -70,6 +82,7 @@ function goBack() {
       v-else-if="manager.selectedItem.value"
       :categories="manager.categories.value"
       :exercise="manager.selectedItem.value"
+      :creating="manager.page.value === 'create'"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveExercise"

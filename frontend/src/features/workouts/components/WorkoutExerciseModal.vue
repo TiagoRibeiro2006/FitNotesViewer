@@ -164,6 +164,17 @@ function selectOption(option) {
         :selected-option="selectedOption"
         @select="selectOption"
       />
+      <button
+        v-else-if="catalogActive && catalogManager.page.value === 'list'"
+        class="modal-icon-button catalog-add-button"
+        type="button"
+        :aria-label="catalogManager.mode.value === 'muscles' ? 'Add muscle' : 'Add exercise'"
+        @click="catalogManager.startCreate"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
       <span v-else class="modal-header-spacer"></span>
     </header>
 
@@ -179,6 +190,7 @@ function selectOption(option) {
       <MuscleDetailsEditor
         v-else-if="catalogManager.mode.value === 'muscles' && catalogManager.selectedItem.value"
         :muscle="catalogManager.selectedItem.value"
+        :creating="catalogManager.page.value === 'create'"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveMuscle"
@@ -187,6 +199,7 @@ function selectOption(option) {
         v-else-if="catalogManager.selectedItem.value"
         :categories="catalogManager.categories.value"
         :exercise="catalogManager.selectedItem.value"
+        :creating="catalogManager.page.value === 'create'"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveExercise"

@@ -1,3 +1,4 @@
+import { createLocalId } from '../../shared/utils/ids'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary } from './summaryRepository'
@@ -29,6 +30,67 @@ export async function getExerciseCatalog() {
   catalogExercises.sort(compareExerciseNames)
   categories.sort(compareCategories)
   return { exercises: catalogExercises, categories }
+}
+
+export async function createExerciseDetails(details) {
+  const name = normalizeName(details.name, 'Exercise')
+  const categoryId = details.categoryId
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('categories', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const category = await requestResult(lookupTransaction.objectStore('categories').get(categoryId))
+  await lookupDone
+  if (!category) throw new Error('Choose a valid muscle.')
+
+  const updatedAt = new Date().toISOString()
+  const exercise = {
+    id: createLocalId('exercise'),
+    name,
+    categoryId,
+    exerciseTypeId: null,
+    notes: null,
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  }
+  const transaction = database.transaction(['exercises', 'metadata'], 'readwrite')
+  transaction.objectStore('exercises').put(exercise)
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+
+  const catalog = await getExerciseCatalog()
+  return {
+    exercise: findExercise(catalog.exercises, exercise.id),
+    summary: await getSummary(),
+  }
+}
+
+export async function createCategoryDetails(details) {
+  const name = normalizeName(details.name, 'Muscle')
+  const colour = details.colour
+  if (!Number.isInteger(colour)) throw new Error('Choose a valid muscle colour.')
+
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('categories', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const categories = await requestResult(lookupTransaction.objectStore('categories').getAll())
+  await lookupDone
+
+  const updatedAt = new Date().toISOString()
+  const category = {
+    id: createLocalId('muscle'),
+    name,
+    colour,
+    sortOrder: nextCategoryOrder(categories ?? []),
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  }
+  const transaction = database.transaction(['categories', 'metadata'], 'readwrite')
+  transaction.objectStore('categories').put(category)
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+
+  const catalog = await getExerciseCatalog()
+  return findCategory(catalog.categories, category.id)
 }
 
 export async function updateExerciseDetails(exerciseId, details) {
@@ -159,4 +221,13 @@ function compareCategories(first, second) {
   const firstOrder = Number.isFinite(Number(first.sortOrder)) ? Number(first.sortOrder) : 9999
   const secondOrder = Number.isFinite(Number(second.sortOrder)) ? Number(second.sortOrder) : 9999
   return firstOrder - secondOrder || String(first.name).localeCompare(String(second.name))
+}
+
+function nextCategoryOrder(categories) {
+  let largestOrder = -1
+  for (const category of categories) {
+    const order = Number(category.sortOrder)
+    if (Number.isFinite(order) && order > largestOrder) largestOrder = order
+  }
+  return largestOrder + 1
 }

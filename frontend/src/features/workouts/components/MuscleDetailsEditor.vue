@@ -4,6 +4,7 @@ import { androidColorToCss } from '../../../shared/utils/colors'
 
 const props = defineProps({
   error: { type: String, default: '' },
+  creating: { type: Boolean, default: false },
   muscle: { type: Object, required: true },
   saving: { type: Boolean, default: false },
 })
@@ -52,7 +53,7 @@ function submit() {
     <p v-if="error" class="editor-error">{{ error }}</p>
 
     <button class="save-workout-button exercise-details-save" type="submit" :disabled="saving || !canSave">
-      {{ saving ? 'Saving…' : 'Save muscle' }}
+      {{ saving ? 'Saving…' : creating ? 'Add muscle' : 'Save muscle' }}
     </button>
   </form>
 </template>
