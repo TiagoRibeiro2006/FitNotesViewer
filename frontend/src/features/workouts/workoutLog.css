@@ -1,12 +1,33 @@
-.day-card { margin-top: 18px; padding: 18px; }
+.workout-day {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-navigation-card,
+.day-content-card {
+  border: 1px solid #242424;
+  border-radius: 18px;
+  background: #101010;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
+}
+
+.day-navigation-card {
+  position: sticky;
+  z-index: 20;
+  top: max(8px, env(safe-area-inset-top));
+  padding: 12px;
+}
+
+.day-content-card {
+  padding: 18px;
+}
 
 .day-navigation {
   display: grid;
   grid-template-columns: 48px 1fr 48px;
   align-items: center;
   gap: 12px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #292929;
 }
 
 .nav-button {
@@ -186,7 +207,3 @@
 }
 
 .day-copy-previous:active { transform: scale(.98); }
-
-.home-day-card {
-  margin-top: 0;
-}

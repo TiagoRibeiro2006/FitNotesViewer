@@ -24,14 +24,18 @@ function saveExerciseOrder() {
 </script>
 
 <template>
-  <section class="day-card home-day-card">
-    <div class="day-navigation">
-      <button class="nav-button" aria-label="Previous day" @click="emit('previous')">←</button>
-      <div class="day-title">
-        <h2 @click="emit('today')">{{ dateLabel }}</h2>
+  <section class="workout-day">
+    <header class="day-navigation-card">
+      <div class="day-navigation">
+        <button class="nav-button" aria-label="Previous day" @click="emit('previous')">←</button>
+        <div class="day-title">
+          <h2 @click="emit('today')">{{ dateLabel }}</h2>
+        </div>
+        <button class="nav-button" aria-label="Next day" @click="emit('next')">→</button>
       </div>
-      <button class="nav-button" aria-label="Next day" @click="emit('next')">→</button>
-    </div>
+    </header>
+
+    <div class="day-content-card">
 
     <p v-if="loading" class="modal-list-status">Loading workout…</p>
     <p v-else-if="error" class="editor-error">{{ error }}</p>
@@ -97,6 +101,7 @@ function saveExerciseOrder() {
         </svg>
         <span>Copy Previous Day</span>
       </button>
+    </div>
     </div>
   </section>
 </template>
