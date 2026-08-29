@@ -1,6 +1,7 @@
 import { androidColorToCss } from '../../../shared/utils/colors.js'
+import { normalizeDateKey, shiftDateKey } from '../../../shared/utils/dates.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
-import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
+import { dateRangeBounds, differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
 
 export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
   const allSets = normalizeSets(data.workoutSets)
@@ -30,7 +31,7 @@ export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
     longestStreak: calculateLongestStreak(workoutDays),
     muscleDistribution,
     exerciseRanking: buildExerciseRanking(enrichedSets),
-    weeklyActivity: buildWeeklyActivity(enrichedSets),
+    weeklyActivity: buildWeeklyActivity(enrichedSets, rangeId),
     weekdayDistribution: buildWeekdayDistribution(enrichedSets),
   }
 }
@@ -51,8 +52,9 @@ function normalizeSets(rows) {
   for (const row of rows ?? []) {
     const weight = Number(row.weight)
     const reps = Number(row.reps)
-    if (!row.date || !Number.isFinite(weight) || !Number.isFinite(reps) || reps < 1) continue
-    sets.push({ ...row, weight, reps })
+    const date = normalizeDateKey(row.date)
+    if (!date || !Number.isFinite(weight) || !Number.isFinite(reps) || reps < 1) continue
+    sets.push({ ...row, date, weight, reps })
   }
 
   return sets
@@ -194,7 +196,7 @@ function createExerciseSummary(set) {
   }
 }
 
-function buildWeeklyActivity(sets) {
+function buildWeeklyActivity(sets, rangeId) {
   const weeks = new Map()
 
   for (const set of sets) {
@@ -207,9 +209,17 @@ function buildWeeklyActivity(sets) {
     weeks.set(weekKey, week)
   }
 
+  const bounds = dateRangeBounds(rangeId, sets)
+  const firstWeek = startOfWeek(bounds.startDate)
+  const lastWeek = startOfWeek(bounds.endDate)
   const activity = []
-  for (const week of weeks.values()) activity.push({ ...week, workouts: week.dates.size })
-  activity.sort(compareDates)
+  let weekKey = firstWeek
+
+  while (weekKey <= lastWeek) {
+    const week = weeks.get(weekKey) ?? { date: weekKey, sets: 0, reps: 0, volume: 0, dates: new Set() }
+    activity.push({ ...week, workouts: week.dates.size })
+    weekKey = shiftDateKey(weekKey, 7)
+  }
   return activity
 }
 
@@ -261,8 +271,4 @@ function calculateLongestStreak(workoutDays) {
 
 function compareSetCount(first, second) {
   return second.sets - first.sets || first.name.localeCompare(second.name)
-}
-
-function compareDates(first, second) {
-  return first.date.localeCompare(second.date)
 }

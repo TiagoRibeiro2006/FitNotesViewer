@@ -34,6 +34,22 @@ export function rangeDayCount(rangeId, rows = []) {
   return differenceInDays(firstDate, lastDate) + 1
 }
 
+export function dateRangeBounds(rangeId, rows = [], endDate = todayKey()) {
+  const range = findRange(rangeId)
+  if (range.days !== null) {
+    return { startDate: shiftDateKey(endDate, 1 - range.days), endDate }
+  }
+  if (!rows.length) return { startDate: endDate, endDate }
+
+  let startDate = rows[0].date
+  let lastDate = rows[0].date
+  for (const row of rows) {
+    if (row.date < startDate) startDate = row.date
+    if (row.date > lastDate) lastDate = row.date
+  }
+  return { startDate, endDate: lastDate }
+}
+
 export function differenceInDays(firstDate, secondDate) {
   return Math.max(0, Math.round((dateKeyToTime(secondDate) - dateKeyToTime(firstDate)) / 86400000))
 }

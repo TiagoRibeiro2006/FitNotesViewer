@@ -1,3 +1,4 @@
+import { normalizeDateKey } from '../../shared/utils/dates.js'
 import { openAppDatabase } from '../indexedDb/database.js'
 import { requestResult, transactionComplete } from '../indexedDb/transactions.js'
 import { getBodyTrackerData } from './bodyRepository.js'
@@ -8,7 +9,7 @@ export async function getAnalyticsData() {
   const catalog = await getExerciseCatalog()
   const database = await openAppDatabase()
   const transaction = database.transaction(
-    ['workoutSets', 'bodyWeights', 'measurementRecords', 'workoutTimes'],
+    ['workoutSets', 'bodyWeights', 'measurementRecords'],
     'readonly',
   )
   const done = transactionComplete(transaction)
@@ -16,7 +17,6 @@ export async function getAnalyticsData() {
     requestResult(transaction.objectStore('workoutSets').getAll()),
     requestResult(transaction.objectStore('bodyWeights').getAll()),
     requestResult(transaction.objectStore('measurementRecords').getAll()),
-    requestResult(transaction.objectStore('workoutTimes').getAll()),
   ])
   await done
 
@@ -25,7 +25,6 @@ export async function getAnalyticsData() {
     categories: catalog.categories,
     exercises: catalog.exercises,
     workoutSets: results[0] ?? [],
-    workoutTimes: results[3] ?? [],
   }
 }
 
@@ -56,8 +55,9 @@ function buildBodyWeightHistory(item, bodyWeights) {
 
   for (const row of bodyWeights ?? []) {
     const value = Number(row[item.sourceField])
-    if (!row.date || !Number.isFinite(value)) continue
-    records.push(createBodyRecord(row, value))
+    const date = normalizeDateKey(row.date)
+    if (!date || !Number.isFinite(value)) continue
+    records.push(createBodyRecord(row, date, value))
   }
 
   return records
@@ -68,17 +68,18 @@ function buildMeasurementHistory(item, measurementRecords) {
 
   for (const row of measurementRecords ?? []) {
     const value = Number(row.value)
-    if (row.measurementId !== item.sourceId || !row.date || !Number.isFinite(value)) continue
-    records.push(createBodyRecord(row, value))
+    const date = normalizeDateKey(row.date)
+    if (row.measurementId !== item.sourceId || !date || !Number.isFinite(value)) continue
+    records.push(createBodyRecord(row, date, value))
   }
 
   return records
 }
 
-function createBodyRecord(row, value) {
+function createBodyRecord(row, date, value) {
   return {
     id: row.id,
-    date: String(row.date),
+    date,
     time: String(row.time ?? '00:00:00'),
     value,
   }
