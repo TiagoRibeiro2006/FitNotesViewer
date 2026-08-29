@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import {
+  createBodyMeasurement,
   deleteBodyMeasurement,
   getBodyTrackerData,
   saveBodyFavoriteIds,
@@ -29,6 +30,22 @@ export function useBodyTracker() {
       error.value = 'Body data could not be loaded from local storage.'
     } finally {
       loading.value = false
+    }
+  }
+
+  async function addMeasurement(details) {
+    if (managementSaving.value) return false
+    managementSaving.value = true
+    error.value = ''
+
+    try {
+      applyTrackerData(await createBodyMeasurement(details))
+      return true
+    } catch (createError) {
+      error.value = createError instanceof Error ? createError.message : 'Measurement could not be created.'
+      return false
+    } finally {
+      managementSaving.value = false
     }
   }
 
@@ -85,6 +102,7 @@ export function useBodyTracker() {
   }
 
   return {
+    addMeasurement,
     error,
     favoritesSaving,
     loading,

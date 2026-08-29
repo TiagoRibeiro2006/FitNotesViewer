@@ -232,6 +232,63 @@ export async function updateBodyMeasurementName(item, rawName) {
   return getBodyTrackerData()
 }
 
+export async function createBodyMeasurement(details) {
+  const name = normalizeMeasurementName(details?.name)
+  const unit = normalizeNewMeasurementUnit(details?.unit)
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(['measurements', 'measurementUnits'], 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('measurements').getAll()),
+    requestResult(lookupTransaction.objectStore('measurementUnits').getAll()),
+  ])
+  await lookupDone
+
+  for (const measurement of results[0] ?? []) {
+    if (normalizeBodyName(measurement.name) === normalizeBodyName(name)) {
+      throw new Error('A measurement with this name already exists.')
+    }
+  }
+
+  let storedUnit = null
+  for (const candidate of results[1] ?? []) {
+    if (normalizeMeasurementUnit(candidate.shortName) === unit) storedUnit = candidate
+  }
+
+  const updatedAt = new Date().toISOString()
+  const unitDefinition = newMeasurementUnitDefinition(unit)
+  const unitId = storedUnit?.id ?? createLocalId('body-unit')
+  const measurementId = createLocalId('body-measurement')
+  const localBodyId = createLocalId('body-item')
+  const transaction = database.transaction(['measurements', 'measurementUnits', 'metadata'], 'readwrite')
+
+  if (!storedUnit) {
+    transaction.objectStore('measurementUnits').put({
+      id: unitId,
+      ...unitDefinition,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+  }
+
+  transaction.objectStore('measurements').put({
+    id: measurementId,
+    localBodyId,
+    name,
+    unitId,
+    goalType: 0,
+    goalValue: 0,
+    custom: 1,
+    enabled: 1,
+    sortOrder: nextMeasurementOrder(results[0] ?? []),
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 async function getStoredBodyRecord(database, record) {
   const storeName = bodyRecordStoreName(record)
   const transaction = database.transaction(storeName, 'readonly')
@@ -461,6 +518,27 @@ function normalizeMeasurementName(value) {
   if (name.length > 100) throw new Error('Measurement name must have 100 characters or fewer.')
   if (/[<>]/.test(name)) throw new Error('Measurement name cannot include < or >.')
   return name
+}
+
+function normalizeNewMeasurementUnit(value) {
+  const unit = String(value ?? '').trim()
+  if (unit === 'kg' || unit === 'cm' || unit === '%') return unit
+  throw new Error('Choose kg, cm or %.')
+}
+
+function newMeasurementUnitDefinition(unit) {
+  if (unit === 'kg') return { type: 1, longName: 'Kilograms', shortName: 'kg' }
+  if (unit === 'cm') return { type: 2, longName: 'Centimetres', shortName: 'cm' }
+  return { type: 3, longName: 'Percent', shortName: '%' }
+}
+
+function nextMeasurementOrder(measurements) {
+  let largestOrder = -1
+  for (const measurement of measurements) {
+    const order = Number(measurement.sortOrder)
+    if (Number.isFinite(order) && order > largestOrder) largestOrder = order
+  }
+  return largestOrder + 1
 }
 
 function measurementUnitFallback(unitId) {
