@@ -83,14 +83,24 @@
 }
 
 .charts-panel-stack {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   display: grid;
   gap: 16px;
+}
+
+.charts-panel-stack > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .chart-control-card,
 .chart-visual-card,
 .chart-empty-card,
 .chart-metric-grid article {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #242424;
   border-radius: var(--box-radius);
   background: #101010;
@@ -446,6 +456,8 @@
 }
 
 .training-dashboard-grid {
+  min-width: 0;
+  max-width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
@@ -651,13 +663,19 @@
 }
 
 .activity-chart-scroll {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  contain: inline-size;
   padding-bottom: 4px;
   scrollbar-width: thin;
   scrollbar-color: #35353b transparent;
 }
 
 .activity-chart {
+  min-width: 100%;
   height: 205px;
   display: grid;
   grid-auto-columns: minmax(20px, 1fr);
