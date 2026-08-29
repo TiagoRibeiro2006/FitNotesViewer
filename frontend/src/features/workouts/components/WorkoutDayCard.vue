@@ -1,6 +1,6 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
-import { usePressDragList } from '../../../shared/composables/usePressDragList'
+import { useDragList } from '../../../shared/composables/useDragList'
 
 defineProps({
   dateLabel: { type: String, required: true },
@@ -11,7 +11,7 @@ defineProps({
 })
 
 const emit = defineEmits(['add', 'copy', 'edit', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
-const { draggingIndex, consumeClick, startDrag } = usePressDragList(moveExercise, saveExerciseOrder)
+const { draggingIndex, startDrag } = useDragList(moveExercise, saveExerciseOrder)
 
 function moveExercise(fromIndex, toIndex) {
   emit('move-exercise', fromIndex, toIndex)
@@ -21,9 +21,6 @@ function saveExerciseOrder() {
   emit('save-exercise-order')
 }
 
-function openExercise(event, exercise) {
-  if (!consumeClick(event)) emit('edit', exercise)
-}
 </script>
 
 <template>
@@ -43,33 +40,45 @@ function openExercise(event, exercise) {
       v-else-if="exercises.length"
       class="exercise-list"
       :class="{ 'is-reordering': draggingIndex >= 0 }"
-      data-press-drag-list
+      data-drag-list
     >
-      <button
+      <article
         v-for="(exercise, index) in exercises"
         :key="exercise.id"
         class="exercise-row"
         :class="{ 'is-dragging': draggingIndex === index }"
-        type="button"
-        :aria-label="`Edit ${exercise.name}`"
-        :aria-pressed="draggingIndex === index"
-        data-press-drag-item
-        @contextmenu.prevent
-        @pointerdown="startDrag($event, index, reordering)"
-        @click="openExercise($event, exercise)"
+        data-drag-item
       >
-        <span class="exercise-row-heading">
-          <strong>{{ exercise.name }}</strong>
-          <span class="exercise-row-chevron" aria-hidden="true">›</span>
-        </span>
-        <span class="exercise-set-list">
-          <span v-for="(set, index) in exercise.sets" :key="set.id" class="exercise-set-row">
-            <span class="exercise-set-number">{{ index + 1 }}</span>
-            <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
-            <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
+        <button
+          class="exercise-drag-handle"
+          type="button"
+          :aria-label="`Move ${exercise.name}`"
+          @contextmenu.prevent
+          @pointerdown="startDrag($event, index, reordering)"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="8" cy="7" r="1.4" />
+            <circle cx="16" cy="7" r="1.4" />
+            <circle cx="8" cy="12" r="1.4" />
+            <circle cx="16" cy="12" r="1.4" />
+            <circle cx="8" cy="17" r="1.4" />
+            <circle cx="16" cy="17" r="1.4" />
+          </svg>
+        </button>
+        <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
+          <span class="exercise-row-heading">
+            <strong>{{ exercise.name }}</strong>
+            <span class="exercise-row-chevron" aria-hidden="true">›</span>
           </span>
-        </span>
-      </button>
+          <span class="exercise-set-list">
+            <span v-for="(set, setIndex) in exercise.sets" :key="set.id" class="exercise-set-row">
+              <span class="exercise-set-number">{{ setIndex + 1 }}</span>
+              <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
+              <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
+            </span>
+          </span>
+        </button>
+      </article>
     </div>
 
     <div class="day-actions" :class="{ 'is-empty': !exercises.length }">
