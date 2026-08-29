@@ -3,6 +3,58 @@
   gap: 18px;
 }
 
+.body-create-page {
+  display: grid;
+  gap: 18px;
+}
+
+.body-create-form {
+  display: grid;
+  gap: 18px;
+  padding: 22px 20px 20px;
+}
+
+.body-create-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.body-create-form label > span {
+  color: #8f8f96;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.body-create-form input,
+.body-create-form select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid #303030;
+  border-radius: var(--box-radius);
+  outline: 0;
+  background: #151515;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.body-create-form input:focus,
+.body-create-form select:focus {
+  border-color: #4b9cff;
+}
+
+.body-create-error {
+  padding: 0;
+  text-align: left;
+}
+
+.body-create-form .body-value-save {
+  margin-top: 0;
+}
+
 .body-manage-toggle {
   width: 44px;
   height: 44px;
