@@ -24,7 +24,9 @@ const {
   selectCalendarDate,
 } = useAppNavigation()
 
-onMounted(async () => {
+onMounted(initializeApp)
+
+async function initializeApp() {
   try {
     await migrateLegacyLocalStorage()
     summary.value = await getSummary() ?? createEmptySummary()
@@ -35,8 +37,17 @@ onMounted(async () => {
   }
 
   void requestPersistentStorage()
-  void warmUpSqliteEngine().catch(() => {})
-})
+  void warmUpDatabaseEngine()
+}
+
+async function warmUpDatabaseEngine() {
+  try {
+    await warmUpSqliteEngine()
+    return true
+  } catch {
+    return false
+  }
+}
 
 function handleWorkoutChanged(updatedSummary) {
   summary.value = updatedSummary

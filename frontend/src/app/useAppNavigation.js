@@ -8,16 +8,23 @@ export function useAppNavigation() {
   const activeView = ref(DEFAULT_VIEW)
   const selectedDate = ref(todayKey())
 
-  const selectedDateLong = computed(() => formatDate(selectedDate.value))
+  const selectedDateLong = computed(readSelectedDate)
 
   function scrollToTop() {
-    void nextTick(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+    void nextTick(moveWindowToTop)
+  }
+
+  function readSelectedDate() {
+    return formatDate(selectedDate.value)
+  }
+
+  function moveWindowToTop() {
+    window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
   function navigateTo(view) {
     activeView.value = APP_VIEWS.has(view) ? view : DEFAULT_VIEW
 
-    // Calendar owns its own scroll position so it can focus the current month.
     if (activeView.value !== 'calendar') scrollToTop()
   }
 
