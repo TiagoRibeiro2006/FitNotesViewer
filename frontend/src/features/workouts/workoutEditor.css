@@ -250,6 +250,25 @@
   border-bottom: 0;
 }
 
+.sets-editor-list.is-reordering {
+  overflow: visible;
+}
+
+.sets-editor-list.is-reordering .set-input-row {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.set-input-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: transparent;
+  border-radius: 13px;
+  background: #202020;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .52);
+  transform: scale(1.012);
+}
+
 .set-number {
   width: 30px;
   height: 30px;

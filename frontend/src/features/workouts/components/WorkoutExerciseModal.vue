@@ -36,6 +36,7 @@ const {
   step,
   title,
   addSet,
+  moveSet,
   openEditor,
   removeExercise,
   removeSet,
@@ -117,6 +118,7 @@ function close(force = false) {
       :can-save="canSave"
       :error="error"
       @update-set="updateSet"
+      @move-set="moveSet"
       @remove-set="removeSet"
       @add-set="addSet"
       @delete="removeExercise"

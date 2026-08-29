@@ -60,6 +60,13 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     draftSets.value.splice(index, 1)
   }
 
+  function moveSet(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return
+    const [set] = draftSets.value.splice(fromIndex, 1)
+    draftSets.value.splice(toIndex, 0, set)
+    deleteConfirming.value = false
+  }
+
   function updateSet(index, field, value) {
     const set = draftSets.value[index]
     if (!set || !isEditableField(field)) return
@@ -145,6 +152,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     title,
     addSet,
     open,
+    moveSet,
     removeExercise,
     removeSet,
     reset,
