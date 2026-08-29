@@ -26,9 +26,7 @@
 .exercise-list { padding-top: 8px; }
 .exercise-row {
   width: 100%;
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  align-items: start;
+  display: block;
   padding: 0;
   border: 0;
   border-bottom: 1px solid #242424;
@@ -54,17 +52,17 @@
   height: 36px;
   display: grid;
   place-items: center;
-  margin-top: 10px;
+  flex: 0 0 auto;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #65656d;
+  color: #4b9cff;
   cursor: grab;
   touch-action: none;
   -webkit-touch-callout: none;
   user-select: none;
 }
-.exercise-drag-handle:active { color: #b5b5bc; cursor: grabbing; }
+.exercise-drag-handle:active { color: #7bb7ff; cursor: grabbing; }
 .exercise-drag-handle svg {
   width: 21px;
   height: 21px;
@@ -87,9 +85,19 @@
   justify-content: space-between;
   gap: 16px;
   min-width: 0;
-  padding: 16px 4px 10px;
+  padding: 10px 4px 4px;
 }
-.exercise-row-heading strong {
+.exercise-row-title {
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.exercise-row-title strong {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -116,14 +124,6 @@
   font-size: 14px;
   font-weight: 650;
 }
-.exercise-row-chevron {
-  flex: 0 0 auto;
-  color: #55555d;
-  font-size: 24px;
-  font-weight: 300;
-  line-height: 1;
-}
-
 .empty-state {
   text-align: center;
   color: #8f8f96;

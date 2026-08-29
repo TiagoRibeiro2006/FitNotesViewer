@@ -49,27 +49,28 @@ function saveExerciseOrder() {
         :class="{ 'is-dragging': draggingIndex === index }"
         data-drag-item
       >
-        <button
-          class="exercise-drag-handle"
-          type="button"
-          :aria-label="`Move ${exercise.name}`"
-          @contextmenu.prevent
-          @pointerdown="startDrag($event, index, reordering)"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="8" cy="7" r="1.4" />
-            <circle cx="16" cy="7" r="1.4" />
-            <circle cx="8" cy="12" r="1.4" />
-            <circle cx="16" cy="12" r="1.4" />
-            <circle cx="8" cy="17" r="1.4" />
-            <circle cx="16" cy="17" r="1.4" />
-          </svg>
-        </button>
-        <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
-          <span class="exercise-row-heading">
+        <div class="exercise-row-heading">
+          <button class="exercise-row-title" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
             <strong>{{ exercise.name }}</strong>
-            <span class="exercise-row-chevron" aria-hidden="true">›</span>
-          </span>
+          </button>
+          <button
+            class="exercise-drag-handle"
+            type="button"
+            :aria-label="`Move ${exercise.name}`"
+            @contextmenu.prevent
+            @pointerdown="startDrag($event, index, reordering)"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="7" r="1.4" />
+              <circle cx="16" cy="7" r="1.4" />
+              <circle cx="8" cy="12" r="1.4" />
+              <circle cx="16" cy="12" r="1.4" />
+              <circle cx="8" cy="17" r="1.4" />
+              <circle cx="16" cy="17" r="1.4" />
+            </svg>
+          </button>
+        </div>
+        <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
           <span class="exercise-set-list">
             <span v-for="(set, setIndex) in exercise.sets" :key="set.id" class="exercise-set-row">
               <span class="exercise-set-number">{{ setIndex + 1 }}</span>
