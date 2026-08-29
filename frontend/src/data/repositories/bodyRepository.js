@@ -1,4 +1,4 @@
-import { dateToKey, timeToKey } from '../../shared/utils/dates'
+import { dateToKey, normalizeDateKey, normalizeTimeKey, timeToKey } from '../../shared/utils/dates'
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber } from '../../shared/utils/validation'
 import { openAppDatabase } from '../indexedDb/database'
@@ -51,16 +51,20 @@ export async function getBodyMeasurementHistory(item) {
   return buildMeasurementHistory(measurementId, records)
 }
 
-export async function saveBodyMeasurementValue(item, rawValue) {
+export async function saveBodyMeasurementValue(item, rawValue, selectedDate, selectedTime) {
   const value = normalizeNonNegativeNumber(rawValue)
   if (value === null) throw new Error('Enter a valid value.')
 
   const database = await openAppDatabase()
   const now = new Date()
+  const date = selectedDate === undefined ? dateToKey(now) : normalizeDateKey(selectedDate)
+  const time = selectedTime === undefined ? timeToKey(now) : normalizeTimeKey(selectedTime)
+  if (!date || !time) throw new Error('Choose a valid date and time.')
+
   const record = {
     id: createLocalId('local-body-record'),
-    date: dateToKey(now),
-    time: timeToKey(now),
+    date,
+    time,
     value,
     createdLocally: true,
     localUpdatedAt: now.toISOString(),

@@ -28,13 +28,13 @@ export function useBodyMeasurementDetails() {
     }
   }
 
-  async function addValue(item, value) {
+  async function addValue(item, value, date, time) {
     if (saving.value) return false
     saving.value = true
     error.value = ''
 
     try {
-      await saveBodyMeasurementValue(item, value)
+      await saveBodyMeasurementValue(item, value, date, time)
       await load(item)
       return true
     } catch (saveError) {

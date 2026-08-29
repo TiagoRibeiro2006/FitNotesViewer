@@ -12,6 +12,22 @@ export function timeToKey(date) {
   return `${hours}:${minutes}:${seconds}`
 }
 
+export function normalizeDateKey(value) {
+  const dateKey = String(value ?? '').trim()
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey)
+  if (!match) return null
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return dateToKey(date) === dateKey ? dateKey : null
+}
+
+export function normalizeTimeKey(value) {
+  const timeKey = String(value ?? '').trim()
+  const match = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(timeKey)
+  if (!match) return null
+  return `${match[1]}:${match[2]}:${match[3] ?? '00'}`
+}
+
 export function todayKey() {
   return dateToKey(new Date())
 }
