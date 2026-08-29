@@ -13,7 +13,6 @@ export function useFitNotesBackup(summary) {
   const selectedFile = ref(null)
   const importError = ref('')
   const importing = ref(false)
-  const deleteConfirming = ref(false)
   const deleting = ref(false)
   const deleteError = ref('')
   const exporting = ref(false)
@@ -31,7 +30,7 @@ export function useFitNotesBackup(summary) {
     selectedFile.value = file
     importError.value = ''
     exportError.value = ''
-    resetDelete()
+    deleteError.value = ''
   }
 
   async function importSelectedFile() {
@@ -42,7 +41,7 @@ export function useFitNotesBackup(summary) {
 
     importing.value = true
     importError.value = ''
-    resetDelete()
+    deleteError.value = ''
 
     try {
       void requestPersistentStorage()
@@ -84,17 +83,12 @@ export function useFitNotesBackup(summary) {
   async function deleteCurrentData() {
     if (!hasCurrentData.value || deleting.value) return false
 
-    if (!deleteConfirming.value) {
-      deleteConfirming.value = true
-      return false
-    }
-
     deleting.value = true
     deleteError.value = ''
 
     try {
       await clearLocalData()
-      resetDelete()
+      deleteError.value = ''
       clearExport()
       return true
     } catch (error) {
@@ -103,11 +97,6 @@ export function useFitNotesBackup(summary) {
     } finally {
       deleting.value = false
     }
-  }
-
-  function resetDelete() {
-    deleteConfirming.value = false
-    deleteError.value = ''
   }
 
   function clearExport() {
@@ -119,7 +108,6 @@ export function useFitNotesBackup(summary) {
   }
 
   return {
-    deleteConfirming,
     deleteError,
     deleting,
     exportError,
