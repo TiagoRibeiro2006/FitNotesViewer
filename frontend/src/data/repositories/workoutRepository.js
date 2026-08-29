@@ -1,6 +1,6 @@
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber, normalizePositiveInteger } from '../../shared/utils/validation'
-import { buildHistoricalProgress, buildProgressBaseline } from '../../features/workouts/exerciseProgress'
+import { buildHistoricalProgress, buildProgressBaseline } from '../../shared/utils/exerciseProgress'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'

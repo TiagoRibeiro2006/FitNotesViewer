@@ -13,7 +13,7 @@ import {
   createSetDrafts,
   validateSetDrafts,
 } from '../exerciseSetDrafts'
-import { calculateDraftProgress } from '../exerciseProgress'
+import { calculateDraftProgress } from '../../../shared/utils/exerciseProgress'
 
 export function useExerciseSets(selectedDate, callbacks = {}) {
   const saving = ref(false)
