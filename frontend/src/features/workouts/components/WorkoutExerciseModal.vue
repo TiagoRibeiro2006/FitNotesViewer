@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseEditor } from '../composables/useExerciseEditor'
+import ExerciseDetailsEditor from './ExerciseDetailsEditor.vue'
 import ExercisePicker from './ExercisePicker.vue'
 import ExerciseOptionsMenu from './ExerciseOptionsMenu.vue'
 import ExerciseSetEditor from './ExerciseSetEditor.vue'
@@ -25,6 +26,8 @@ const {
   canSave,
   categories,
   deleteConfirming,
+  detailsError,
+  detailsSaving,
   draftSets,
   error,
   filteredExercises,
@@ -39,14 +42,19 @@ const {
   addSet,
   moveSet,
   openEditor,
+  openExerciseDetails,
   removeExercise,
   removeSet,
   reset,
+  returnToSets,
   save,
+  saveExerciseDetails,
   startEditor,
   startPicker,
   updateSet,
 } = useExerciseEditor(selectedDate, callbacks)
+
+const modalTitle = computed(readModalTitle)
 
 watch(isModalOpen, handleOpenChange)
 
@@ -56,6 +64,12 @@ function readSelectedDate() {
 
 function isModalOpen() {
   return props.open
+}
+
+function readModalTitle() {
+  if (step.value === 'exercise') return 'Choose exercise'
+  if (step.value === 'exercise-details') return 'Exercise details'
+  return title.value
 }
 
 function handleOpenChange(open) {
@@ -90,7 +104,7 @@ function selectOption(option) {
 </script>
 
 <template>
-  <BaseModal :open="open" :aria-label="step === 'exercise' ? 'Choose exercise' : title" @close="close">
+  <BaseModal :open="open" :aria-label="modalTitle" @close="close">
     <header class="modal-header">
       <button class="modal-icon-button" type="button" aria-label="Close" @click="close">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -99,13 +113,15 @@ function selectOption(option) {
       </button>
       <div class="modal-heading">
         <p>{{ dateLabel }}</p>
-        <h2>{{ step === 'exercise' ? 'Choose exercise' : title }}</h2>
+        <h2>{{ modalTitle }}</h2>
       </div>
       <ExerciseOptionsMenu
+        v-if="step === 'exercise' || step === 'sets'"
         :mode="step"
         :selected-option="selectedOption"
         @select="selectOption"
       />
+      <span v-else class="modal-header-spacer"></span>
     </header>
 
     <ExercisePicker
@@ -118,8 +134,17 @@ function selectOption(option) {
       @select="openEditor"
     />
 
+    <ExerciseDetailsEditor
+      v-else-if="step === 'exercise-details' && selectedExercise"
+      :categories="categories"
+      :exercise="selectedExercise"
+      :error="detailsError"
+      :saving="detailsSaving"
+      @save="saveExerciseDetails"
+    />
+
     <ExerciseSetEditor
-      v-else-if="selectedExercise"
+      v-else-if="step === 'sets' && selectedExercise"
       :exercise="selectedExercise"
       :sets="draftSets"
       :has-existing-sets="hasExistingSets"
@@ -134,6 +159,7 @@ function selectOption(option) {
       @remove-set="removeSet"
       @add-set="addSet"
       @delete="removeExercise"
+      @edit-details="openExerciseDetails"
       @save="save"
     />
   </BaseModal>
