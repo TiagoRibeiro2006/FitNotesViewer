@@ -391,12 +391,12 @@
   -webkit-backdrop-filter: blur(16px);
 }
 
-.set-editor.has-history .editor-actions {
+.set-editor.has-details .editor-actions {
   position: static;
   margin-bottom: 0;
 }
 
-.exercise-history-card {
+.exercise-details-card {
   margin-top: 18px;
   overflow: hidden;
   border: 1px solid #252525;
@@ -404,7 +404,7 @@
   background: #111;
 }
 
-.exercise-history-title {
+.exercise-details-title {
   margin: 0;
   padding: 15px 16px;
   border-bottom: 1px solid #242424;
@@ -462,7 +462,7 @@
   font-weight: 650;
 }
 
-.exercise-history-status {
+.exercise-details-status {
   margin: 0;
   padding: 28px 16px;
   color: #777780;
@@ -470,8 +470,76 @@
   font-size: 13px;
 }
 
-.exercise-history-status.is-error {
+.exercise-details-status.is-error {
   color: #ff7066;
+}
+
+.exercise-record-list {
+  display: grid;
+}
+
+.exercise-record-row {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #242424;
+}
+
+.exercise-record-row:last-child {
+  border-bottom: 0;
+}
+
+.exercise-record-label {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.exercise-record-label strong {
+  color: #f4f4f4;
+  font-size: 25px;
+  font-weight: 650;
+}
+
+.exercise-record-label span {
+  color: #777780;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.exercise-record-result {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.exercise-record-result strong {
+  color: #f4f4f4;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.exercise-record-result small,
+.exercise-record-result time {
+  color: #777780;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.exercise-record-result.is-higher-reps strong {
+  color: #696970;
+}
+
+.exercise-record-empty {
+  color: #55555d;
+  text-align: right;
+  font-size: 20px;
 }
 
 .delete-exercise-button {
