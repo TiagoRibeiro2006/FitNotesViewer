@@ -119,12 +119,23 @@ async function removeRecord() {
 
         <div class="body-date-time-fields">
           <label>
-            <span>Date</span>
-            <input v-model="selectedDate" type="date" required />
+            <span class="body-date-time-label">Date</span>
+            <span class="body-date-time-control">
+              <input v-model="selectedDate" type="date" required />
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" />
+              </svg>
+            </span>
           </label>
           <label>
-            <span>Time</span>
-            <input v-model="selectedTime" type="time" required />
+            <span class="body-date-time-label">Time</span>
+            <span class="body-date-time-control">
+              <input v-model="selectedTime" type="time" required />
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <path d="M12 8v4l3 2" />
+              </svg>
+            </span>
           </label>
         </div>
 

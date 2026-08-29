@@ -265,7 +265,7 @@
   gap: 8px;
 }
 
-.body-date-time-fields label > span {
+.body-date-time-label {
   margin-left: 2px;
   color: #8f8f96;
   font-size: 12px;
@@ -274,20 +274,63 @@
   text-transform: uppercase;
 }
 
-.body-date-time-fields input {
+.body-date-time-control {
   width: 100%;
   min-width: 0;
   min-height: 50px;
-  padding: 0 13px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
   border: 1px solid #303030;
   border-radius: 13px;
-  outline: 0;
   background: #151515;
-  color: #f5f5f5;
 }
 
-.body-date-time-fields input:focus {
+.body-date-time-control:focus-within {
   border-color: #66666e;
+}
+
+.body-date-time-control input {
+  width: 0;
+  min-width: 0;
+  min-height: 48px;
+  flex: 1 1 0;
+  padding: 0 48px 0 13px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.body-date-time-control input::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
+
+.body-date-time-control input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 46px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.body-date-time-control svg {
+  width: 19px;
+  height: 19px;
+  position: absolute;
+  right: 14px;
+  fill: none;
+  stroke: #a5a5ac;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .body-value-error {
