@@ -470,8 +470,6 @@
 }
 
 .editor-actions {
-  position: sticky;
-  bottom: calc(75px + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr);
   gap: 10px;
@@ -481,11 +479,6 @@
   background: rgba(9, 9, 9, .96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-}
-
-.set-editor.has-details .editor-actions {
-  position: static;
-  margin-bottom: 0;
 }
 
 .exercise-details-card {
@@ -885,15 +878,6 @@
 
 .exercise-bottom-navigation {
   z-index: 60;
-}
-
-.exercise-bottom-navigation .base-bottom-bar-item.is-active {
-  color: #4b9cff;
-}
-
-.exercise-bottom-navigation .base-bottom-bar-item.is-active svg {
-  fill: none;
-  stroke-width: 1.8;
 }
 
 .exercise-bottom-navigation-number rect {

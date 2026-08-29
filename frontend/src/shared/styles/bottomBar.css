@@ -75,3 +75,12 @@
   fill: currentColor;
   stroke-width: 1.5;
 }
+
+.base-bottom-bar .base-bottom-bar-item.is-active {
+  color: inherit;
+}
+
+.base-bottom-bar .base-bottom-bar-item.is-active svg {
+  fill: none;
+  stroke-width: 1.8;
+}
