@@ -12,6 +12,7 @@ export function groupWorkoutSetsByExercise(sets) {
 
     exercises.get(set.exerciseId).sets.push({
       id: set.id,
+      isProgress: set.isProgress,
       weight: set.weight,
       reps: set.reps,
     })

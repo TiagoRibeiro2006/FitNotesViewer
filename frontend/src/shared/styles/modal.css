@@ -21,7 +21,7 @@ body.modal-open {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #2a2a2a;
-  border-radius: 24px;
+  border-radius: var(--box-radius);
   background: #090909;
   box-shadow: 0 30px 90px rgba(0, 0, 0, .65);
 }
@@ -98,3 +98,71 @@ body.modal-open {
   background: #202020;
 }
 
+.confirmation-modal {
+  width: min(460px, 100%);
+  height: auto;
+}
+
+.confirmation-form {
+  display: grid;
+  gap: 18px;
+  padding: 22px 18px 18px;
+}
+
+.confirmation-form > p {
+  margin: 0;
+  color: #a0a0a8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.confirmation-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.confirmation-form label > span {
+  color: #8f8f96;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.confirmation-form input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid #303030;
+  border-radius: var(--box-radius);
+  outline: 0;
+  background: #151515;
+  color: #f5f5f5;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.confirmation-form input:focus {
+  border-color: #66666e;
+}
+
+.confirmation-submit {
+  min-height: 50px;
+  border: 0;
+  border-radius: var(--box-radius);
+  background: #f5f5f5;
+  color: #080808;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.confirmation-submit.is-danger {
+  border: 1px solid #612d2d;
+  background: #2a1212;
+  color: #ff8179;
+}
+
+.confirmation-submit:disabled {
+  cursor: not-allowed;
+  opacity: .3;
+}

@@ -24,14 +24,18 @@ function saveExerciseOrder() {
 </script>
 
 <template>
-  <section class="day-card home-day-card">
-    <div class="day-navigation">
-      <button class="nav-button" aria-label="Previous day" @click="emit('previous')">←</button>
-      <div class="day-title">
-        <h2 @click="emit('today')">{{ dateLabel }}</h2>
+  <section class="workout-day">
+    <header class="day-navigation-card">
+      <div class="day-navigation">
+        <button class="nav-button" aria-label="Previous day" @click="emit('previous')">←</button>
+        <div class="day-title">
+          <h2 @click="emit('today')">{{ dateLabel }}</h2>
+        </div>
+        <button class="nav-button" aria-label="Next day" @click="emit('next')">→</button>
       </div>
-      <button class="nav-button" aria-label="Next day" @click="emit('next')">→</button>
-    </div>
+    </header>
+
+    <div class="day-content-card">
 
     <p v-if="loading" class="modal-list-status">Loading workout…</p>
     <p v-else-if="error" class="editor-error">{{ error }}</p>
@@ -49,30 +53,36 @@ function saveExerciseOrder() {
         :class="{ 'is-dragging': draggingIndex === index }"
         data-drag-item
       >
-        <button
-          class="exercise-drag-handle"
-          type="button"
-          :aria-label="`Move ${exercise.name}`"
-          @contextmenu.prevent
-          @pointerdown="startDrag($event, index, reordering)"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="8" cy="7" r="1.4" />
-            <circle cx="16" cy="7" r="1.4" />
-            <circle cx="8" cy="12" r="1.4" />
-            <circle cx="16" cy="12" r="1.4" />
-            <circle cx="8" cy="17" r="1.4" />
-            <circle cx="16" cy="17" r="1.4" />
-          </svg>
-        </button>
-        <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
-          <span class="exercise-row-heading">
+        <div class="exercise-row-heading">
+          <button class="exercise-row-title" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
             <strong>{{ exercise.name }}</strong>
-            <span class="exercise-row-chevron" aria-hidden="true">›</span>
-          </span>
+          </button>
+          <button
+            class="exercise-drag-handle"
+            type="button"
+            :aria-label="`Move ${exercise.name}`"
+            @contextmenu.prevent
+            @pointerdown="startDrag($event, index, reordering)"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="7" r="1.4" />
+              <circle cx="16" cy="7" r="1.4" />
+              <circle cx="8" cy="12" r="1.4" />
+              <circle cx="16" cy="12" r="1.4" />
+              <circle cx="8" cy="17" r="1.4" />
+              <circle cx="16" cy="17" r="1.4" />
+            </svg>
+          </button>
+        </div>
+        <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
           <span class="exercise-set-list">
             <span v-for="(set, setIndex) in exercise.sets" :key="set.id" class="exercise-set-row">
-              <span class="exercise-set-number">{{ setIndex + 1 }}</span>
+              <span class="exercise-set-number">
+                <svg v-if="set.isProgress" class="exercise-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+                </svg>
+                <span v-else>{{ setIndex + 1 }}</span>
+              </span>
               <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
               <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
             </span>
@@ -81,7 +91,7 @@ function saveExerciseOrder() {
       </article>
     </div>
 
-    <div class="day-actions" :class="{ 'is-empty': !exercises.length }">
+    <div v-if="!loading && !error" class="day-actions" :class="{ 'is-empty': !exercises.length }">
       <button class="day-action day-add-exercise" type="button" @click="emit('add')">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14M5 12h14" />
@@ -96,6 +106,7 @@ function saveExerciseOrder() {
         </svg>
         <span>Copy Previous Day</span>
       </button>
+    </div>
     </div>
   </section>
 </template>

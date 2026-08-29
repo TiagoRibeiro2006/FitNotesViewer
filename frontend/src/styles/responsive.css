@@ -5,6 +5,7 @@
     padding-bottom: calc(108px + env(safe-area-inset-bottom));
   }
   .app-header { align-items: center; }
+  .section-sticky-header-inner { width: min(100% - 24px, 760px); }
   .upload-card { grid-template-columns: 1fr auto; }
   .file-picker { grid-column: 1 / 2; }
   .file-name { grid-column: 1 / -1; grid-row: 2; }
@@ -16,9 +17,6 @@
   .data-pill { display: none; }
   .file-picker span { padding: 0 12px; }
   .primary-button { padding: 0 13px; }
-  .day-card { padding: 14px; }
   .bottom-bar { padding-left: 4px; padding-right: 4px; }
   .bottom-item span { font-size: 9px; }
 }
-
-

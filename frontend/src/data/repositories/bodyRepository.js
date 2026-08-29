@@ -1,6 +1,7 @@
 import { dateToKey, normalizeDateKey, normalizeTimeKey, timeToKey } from '../../shared/utils/dates'
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber } from '../../shared/utils/validation'
+import { DEFAULT_BODY_MEASUREMENTS, DEFAULT_BODY_UNITS } from '../defaults/bodyMeasurements'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 
@@ -13,17 +14,43 @@ const FAVORITE_DEFINITIONS = [
 
 export async function getBodyTrackerData() {
   const database = await openAppDatabase()
+  await ensureDefaultBodyMeasurements(database)
   const transaction = database.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
-  const [favoritesRecord, bodyWeights, measurements, units, records] = await Promise.all([
+  const [favoritesRecord, deletedRecord, bodyWeights, measurements, units, records] = await Promise.all([
     requestResult(transaction.objectStore('metadata').get('bodyFavoriteIds')),
+    requestResult(transaction.objectStore('metadata').get('bodyDeletedIds')),
     requestResult(transaction.objectStore('bodyWeights').getAll()),
     requestResult(transaction.objectStore('measurements').getAll()),
     requestResult(transaction.objectStore('measurementUnits').getAll()),
     requestResult(transaction.objectStore('measurementRecords').getAll()),
   ])
   await done
-  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value)
+  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value, deletedRecord?.value)
+}
+
+async function ensureDefaultBodyMeasurements(database) {
+  const lookupTransaction = database.transaction(['measurements', 'metadata'], 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('measurements').count()),
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyDefaultsInitialized')),
+  ])
+  await lookupDone
+  if (results[1]?.value === true) return
+
+  const transaction = database.transaction(['measurements', 'measurementUnits', 'metadata'], 'readwrite')
+  transaction.objectStore('metadata').put({ key: 'bodyDefaultsInitialized', value: true })
+  if (results[0] > 0) {
+    await transactionComplete(transaction)
+    return
+  }
+
+  const measurementStore = transaction.objectStore('measurements')
+  const unitStore = transaction.objectStore('measurementUnits')
+  for (const unit of DEFAULT_BODY_UNITS) unitStore.put(unit)
+  for (const measurement of DEFAULT_BODY_MEASUREMENTS) measurementStore.put(measurement)
+  await transactionComplete(transaction)
 }
 
 export async function saveBodyFavoriteIds(ids) {
@@ -119,6 +146,149 @@ export async function deleteBodyMeasurementRecord(record) {
   return getBodyTrackerData()
 }
 
+export async function deleteBodyMeasurement(item) {
+  const currentData = await getBodyTrackerData()
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(
+    ['metadata', 'bodyWeights', 'measurements', 'measurementRecords'],
+    'readonly',
+  )
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyFavoriteIds')),
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyDeletedIds')),
+    requestResult(lookupTransaction.objectStore('bodyWeights').getAll()),
+    requestResult(lookupTransaction.objectStore('measurements').getAll()),
+    requestResult(lookupTransaction.objectStore('measurementRecords').getAll()),
+  ])
+  await lookupDone
+
+  const measurementId = findMeasurementId(item, results[3] ?? [])
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(
+    ['metadata', 'bodyWeights', 'measurements', 'measurementRecords'],
+    'readwrite',
+  )
+
+  if (measurementId !== null) {
+    transaction.objectStore('measurements').delete(measurementId)
+    const recordStore = transaction.objectStore('measurementRecords')
+    for (const record of results[4] ?? []) {
+      if (record.measurementId === measurementId) recordStore.delete(record.id)
+    }
+  }
+
+  if (item?.sourceType === 'bodyWeight' && item.sourceField) {
+    const bodyWeightStore = transaction.objectStore('bodyWeights')
+    for (const row of results[2] ?? []) {
+      const updatedRow = { ...row, [item.sourceField]: null, localUpdatedAt: updatedAt }
+      if (hasBodyWeightContent(updatedRow)) bodyWeightStore.put(updatedRow)
+      else bodyWeightStore.delete(row.id)
+    }
+  }
+
+  const itemId = String(item?.id ?? '')
+  const favoriteIds = currentData.favorites
+    .map((favorite) => String(favorite.id))
+    .filter((id) => id !== itemId)
+  const deletedIds = Array.isArray(results[1]?.value) ? results[1].value.map(String) : []
+  if (itemId && !deletedIds.includes(itemId)) deletedIds.push(itemId)
+
+  const metadataStore = transaction.objectStore('metadata')
+  metadataStore.put({ key: 'bodyFavoriteIds', value: favoriteIds })
+  metadataStore.put({ key: 'bodyDeletedIds', value: deletedIds })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
+export async function updateBodyMeasurementName(item, rawName) {
+  const name = normalizeMeasurementName(rawName)
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('measurements', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const measurements = await requestResult(lookupTransaction.objectStore('measurements').getAll())
+  await lookupDone
+
+  const measurementId = findMeasurementId(item, measurements ?? [])
+  if (measurementId === null) throw new Error('Measurement could not be found.')
+
+  let measurement = null
+  for (const candidate of measurements ?? []) {
+    if (candidate.id === measurementId) measurement = candidate
+  }
+  if (!measurement) throw new Error('Measurement could not be found.')
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(['measurements', 'metadata'], 'readwrite')
+  transaction.objectStore('measurements').put({
+    ...measurement,
+    name,
+    bodyNameEdited: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
+export async function createBodyMeasurement(details) {
+  const name = normalizeMeasurementName(details?.name)
+  const unit = normalizeNewMeasurementUnit(details?.unit)
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(['measurements', 'measurementUnits'], 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('measurements').getAll()),
+    requestResult(lookupTransaction.objectStore('measurementUnits').getAll()),
+  ])
+  await lookupDone
+
+  for (const measurement of results[0] ?? []) {
+    if (normalizeBodyName(measurement.name) === normalizeBodyName(name)) {
+      throw new Error('A measurement with this name already exists.')
+    }
+  }
+
+  let storedUnit = null
+  for (const candidate of results[1] ?? []) {
+    if (normalizeMeasurementUnit(candidate.shortName) === unit) storedUnit = candidate
+  }
+
+  const updatedAt = new Date().toISOString()
+  const unitDefinition = newMeasurementUnitDefinition(unit)
+  const unitId = storedUnit?.id ?? createLocalId('body-unit')
+  const measurementId = createLocalId('body-measurement')
+  const localBodyId = createLocalId('body-item')
+  const transaction = database.transaction(['measurements', 'measurementUnits', 'metadata'], 'readwrite')
+
+  if (!storedUnit) {
+    transaction.objectStore('measurementUnits').put({
+      id: unitId,
+      ...unitDefinition,
+      createdLocally: true,
+      localUpdatedAt: updatedAt,
+    })
+  }
+
+  transaction.objectStore('measurements').put({
+    id: measurementId,
+    localBodyId,
+    name,
+    unitId,
+    goalType: 0,
+    goalValue: 0,
+    custom: 1,
+    enabled: 1,
+    sortOrder: nextMeasurementOrder(results[0] ?? []),
+    createdLocally: true,
+    localUpdatedAt: updatedAt,
+  })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 async function getStoredBodyRecord(database, record) {
   const storeName = bodyRecordStoreName(record)
   const transaction = database.transaction(storeName, 'readonly')
@@ -200,15 +370,20 @@ async function saveNewMeasurement(database, item, record) {
   await transactionComplete(transaction)
 }
 
-function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds) {
+function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds, savedDeletedIds) {
+  const deletedIdSet = new Set(Array.isArray(savedDeletedIds) ? savedDeletedIds.map(String) : [])
   const unitsById = new Map(units.map((unit) => [unit.id, normalizeMeasurementUnit(unit.shortName)]))
-  const measurementItems = measurements.map((measurement) => buildMeasurementItem(
-    measurement,
-    unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
-    records,
-  ))
+  const measurementItems = measurements
+    .map((measurement) => buildMeasurementItem(
+      measurement,
+      unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
+      records,
+    ))
+    .filter((item) => !deletedIdSet.has(String(item.id)))
   const itemsByName = new Map(measurementItems.map((item) => [normalizeBodyName(item.name), item]))
-  const defaultFavorites = FAVORITE_DEFINITIONS.map((definition) => buildDefaultFavorite(definition, itemsByName, bodyWeights))
+  const defaultFavorites = FAVORITE_DEFINITIONS
+    .map((definition) => buildDefaultFavorite(definition, itemsByName, bodyWeights))
+    .filter((item) => !deletedIdSet.has(String(item.id)))
   const defaultFavoritesById = new Map(defaultFavorites.map((item) => [item.id, item]))
   let measurementsWithFavorites = measurementItems
     .filter((item) => item.enabled)
@@ -244,7 +419,7 @@ function buildDefaultFavorite(definition, itemsByName, bodyWeights) {
   return {
     ...(source ?? buildBodyItem(definition.id, definition.name, definition.unit, [], () => null)),
     id: measurementItem?.id ?? definition.id,
-    name: definition.name,
+    name: measurementItem?.bodyNameEdited ? measurementItem.name : definition.name,
     favorite: true,
   }
 }
@@ -335,6 +510,35 @@ function normalizeBodyName(value) {
 function normalizeMeasurementUnit(value) {
   const unit = String(value ?? '').trim()
   return unit.toLowerCase() === 'kgs' ? 'kg' : unit
+}
+
+function normalizeMeasurementName(value) {
+  const name = String(value ?? '').trim().replace(/\s+/g, ' ')
+  if (!name) throw new Error('Enter a measurement name.')
+  if (name.length > 100) throw new Error('Measurement name must have 100 characters or fewer.')
+  if (/[<>]/.test(name)) throw new Error('Measurement name cannot include < or >.')
+  return name
+}
+
+function normalizeNewMeasurementUnit(value) {
+  const unit = String(value ?? '').trim()
+  if (unit === 'kg' || unit === 'cm' || unit === '%') return unit
+  throw new Error('Choose kg, cm or %.')
+}
+
+function newMeasurementUnitDefinition(unit) {
+  if (unit === 'kg') return { type: 1, longName: 'Kilograms', shortName: 'kg' }
+  if (unit === 'cm') return { type: 2, longName: 'Centimetres', shortName: 'cm' }
+  return { type: 3, longName: 'Percent', shortName: '%' }
+}
+
+function nextMeasurementOrder(measurements) {
+  let largestOrder = -1
+  for (const measurement of measurements) {
+    const order = Number(measurement.sortOrder)
+    if (Number.isFinite(order) && order > largestOrder) largestOrder = order
+  }
+  return largestOrder + 1
 }
 
 function measurementUnitFallback(unitId) {

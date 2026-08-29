@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { getExerciseCatalog } from '../../../data/repositories/workoutRepository'
+import { getExerciseCatalog } from '../../../data/repositories/catalogRepository'
 
 export function useExerciseCatalog() {
   const categories = ref([])
