@@ -1,6 +1,7 @@
 import { dateToKey, normalizeDateKey, normalizeTimeKey, timeToKey } from '../../shared/utils/dates'
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber } from '../../shared/utils/validation'
+import { DEFAULT_BODY_MEASUREMENTS, DEFAULT_BODY_UNITS } from '../defaults/bodyMeasurements'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 
@@ -13,6 +14,7 @@ const FAVORITE_DEFINITIONS = [
 
 export async function getBodyTrackerData() {
   const database = await openAppDatabase()
+  await ensureDefaultBodyMeasurements(database)
   const transaction = database.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
   const [favoritesRecord, bodyWeights, measurements, units, records] = await Promise.all([
@@ -24,6 +26,21 @@ export async function getBodyTrackerData() {
   ])
   await done
   return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value)
+}
+
+async function ensureDefaultBodyMeasurements(database) {
+  const lookupTransaction = database.transaction('measurements', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const measurementCount = await requestResult(lookupTransaction.objectStore('measurements').count())
+  await lookupDone
+  if (measurementCount > 0) return
+
+  const transaction = database.transaction(['measurements', 'measurementUnits'], 'readwrite')
+  const measurementStore = transaction.objectStore('measurements')
+  const unitStore = transaction.objectStore('measurementUnits')
+  for (const unit of DEFAULT_BODY_UNITS) unitStore.put(unit)
+  for (const measurement of DEFAULT_BODY_MEASUREMENTS) measurementStore.put(measurement)
+  await transactionComplete(transaction)
 }
 
 export async function saveBodyFavoriteIds(ids) {
