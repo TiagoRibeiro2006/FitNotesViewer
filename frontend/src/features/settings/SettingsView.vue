@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
@@ -49,6 +50,8 @@ function dataDeleted() {
 </script>
 
 <template>
+  <AppSectionHeader title="Settings" />
+
   <div class="settings-sections">
     <SettingsManagementSection
       @manage-muscles="openMuscles"
