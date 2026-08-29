@@ -1,5 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import { useFitNotesBackup } from './composables/useFitNotesBackup'
 
 const props = defineProps({
@@ -8,6 +9,8 @@ const props = defineProps({
 
 const emit = defineEmits(['data-imported', 'data-deleted'])
 const summary = computed(() => props.summary)
+const catalogMode = ref('muscles')
+const catalogOpen = ref(false)
 
 const {
   deleteConfirming,
@@ -48,6 +51,11 @@ async function importFile() {
 
 async function removeData() {
   if (await deleteCurrentData()) emit('data-deleted')
+}
+
+function openCatalog(mode) {
+  catalogMode.value = mode
+  catalogOpen.value = true
 }
 </script>
 
@@ -90,6 +98,26 @@ async function removeData() {
 
     <p v-if="exportError" class="settings-export-error">{{ exportError }}</p>
 
+    <div class="settings-data-action">
+      <div>
+        <strong>Manage muscles</strong>
+        <p>Rename muscles and change their colours.</p>
+      </div>
+      <button class="settings-export-button" type="button" @click="openCatalog('muscles')">
+        Open muscles
+      </button>
+    </div>
+
+    <div class="settings-data-action">
+      <div>
+        <strong>Manage exercises</strong>
+        <p>Rename exercises and change their muscle.</p>
+      </div>
+      <button class="settings-export-button" type="button" @click="openCatalog('exercises')">
+        Open exercises
+      </button>
+    </div>
+
     <div v-if="hasCurrentData" class="settings-data-action">
       <div>
         <strong>Delete current data</strong>
@@ -108,4 +136,10 @@ async function removeData() {
 
     <p v-if="deleteError" class="settings-delete-error">{{ deleteError }}</p>
   </section>
+
+  <CatalogManagementModal
+    :open="catalogOpen"
+    :mode="catalogMode"
+    @close="catalogOpen = false"
+  />
 </template>
