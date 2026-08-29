@@ -1,10 +1,16 @@
 import { onBeforeUnmount, ref } from 'vue'
 
+const SCROLL_EDGE_SIZE = 84
+const MAX_SCROLL_SPEED = 4.5
+
 export function useDragList(moveItem, finishDrag) {
   const draggingIndex = ref(-1)
   let pointerId = null
   let currentIndex = -1
   let listElement = null
+  let scrollElement = null
+  let scrollFrame = null
+  let pointerY = 0
   let moved = false
 
   onBeforeUnmount(clearDrag)
@@ -17,25 +23,77 @@ export function useDragList(moveItem, finishDrag) {
     pointerId = event.pointerId
     currentIndex = index
     listElement = event.currentTarget.closest('[data-drag-list]')
+    scrollElement = findScrollElement(listElement)
+    pointerY = event.clientY
     draggingIndex.value = index
     moved = false
     document.body.classList.add('drag-active')
     window.addEventListener('pointermove', handlePointerMove, { passive: false })
     window.addEventListener('pointerup', finishPointer)
     window.addEventListener('pointercancel', finishPointer)
+    scrollFrame = window.requestAnimationFrame(autoScroll)
   }
 
   function handlePointerMove(event) {
     if (event.pointerId !== pointerId) return
     if (event.cancelable) event.preventDefault()
+    pointerY = event.clientY
+    moveToPointer()
+  }
 
-    const nextIndex = findClosestIndex(event.clientY)
+  function moveToPointer() {
+    const nextIndex = findClosestIndex(pointerY)
     if (nextIndex < 0 || nextIndex === currentIndex) return
 
     moveItem(currentIndex, nextIndex)
     currentIndex = nextIndex
     draggingIndex.value = nextIndex
     moved = true
+  }
+
+  function autoScroll() {
+    if (pointerId === null) return
+    const speed = calculateScrollSpeed()
+    if (speed !== 0 && scrollBy(speed)) moveToPointer()
+    scrollFrame = window.requestAnimationFrame(autoScroll)
+  }
+
+  function calculateScrollSpeed() {
+    const bounds = scrollElement?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight }
+    const topDistance = Math.max(0, pointerY - bounds.top)
+    const bottomDistance = Math.max(0, bounds.bottom - pointerY)
+
+    if (topDistance < SCROLL_EDGE_SIZE) {
+      return -MAX_SCROLL_SPEED * (1 - topDistance / SCROLL_EDGE_SIZE)
+    }
+    if (bottomDistance < SCROLL_EDGE_SIZE) {
+      return MAX_SCROLL_SPEED * (1 - bottomDistance / SCROLL_EDGE_SIZE)
+    }
+    return 0
+  }
+
+  function scrollBy(amount) {
+    if (scrollElement) {
+      const previousTop = scrollElement.scrollTop
+      scrollElement.scrollTop += amount
+      return scrollElement.scrollTop !== previousTop
+    }
+
+    const previousTop = window.scrollY
+    window.scrollBy(0, amount)
+    return window.scrollY !== previousTop
+  }
+
+  function findScrollElement(element) {
+    let parent = element?.parentElement
+
+    while (parent && parent !== document.body) {
+      const overflow = window.getComputedStyle(parent).overflowY
+      if (/(auto|scroll)/.test(overflow) && parent.scrollHeight > parent.clientHeight) return parent
+      parent = parent.parentElement
+    }
+
+    return null
   }
 
   function findClosestIndex(pointerY) {
@@ -57,9 +115,13 @@ export function useDragList(moveItem, finishDrag) {
   }
 
   function clearDrag() {
+    if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame)
     pointerId = null
     currentIndex = -1
     listElement = null
+    scrollElement = null
+    scrollFrame = null
+    pointerY = 0
     moved = false
     draggingIndex.value = -1
     document.body.classList.remove('drag-active')

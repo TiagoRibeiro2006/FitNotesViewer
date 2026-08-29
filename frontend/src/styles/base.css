@@ -21,7 +21,6 @@ body {
   touch-action: manipulation;
 }
 body.drag-active {
-  overflow: hidden;
   cursor: grabbing;
   user-select: none;
 }
