@@ -1,8 +1,8 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
-import { copyWorkoutDay, getWorkoutDateSet } from '../../../data/repositories/workoutRepository'
+import { nextTick, ref, watch } from 'vue'
+import { copyWorkoutDay } from '../../../data/repositories/workoutRepository'
 import CalendarList from '../../calendar/components/CalendarList.vue'
-import { createCalendarMonths, monthKey } from '../../calendar/calendarUtils'
+import { useWorkoutCalendar } from '../../calendar/composables/useWorkoutCalendar'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { createEmptySummary } from '../../../shared/models/summary'
 import { friendlyError } from '../../../shared/utils/errors'
@@ -14,15 +14,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'copied'])
-const workoutDates = ref(new Set())
+const { currentMonthKey, loadWorkoutCalendar, months, workoutColors, workoutDates } = useWorkoutCalendar()
 const copying = ref(false)
 const error = ref('')
-
-const months = computed(() => createCalendarMonths(workoutDates.value))
-const currentMonthKey = computed(() => {
-  const now = new Date()
-  return monthKey(now.getFullYear(), now.getMonth())
-})
 
 watch(() => props.open, (open) => {
   if (open) void prepare()
@@ -32,7 +26,7 @@ async function prepare() {
   error.value = ''
 
   try {
-    workoutDates.value = await getWorkoutDateSet()
+    await loadWorkoutCalendar()
   } catch {
     error.value = 'Workout dates could not be loaded.'
   }
@@ -77,10 +71,12 @@ async function copyDate(sourceDate) {
           <path d="m7 7 10 10M17 7 7 17" />
         </svg>
       </button>
+
       <div class="modal-heading">
         <p>Copy to {{ targetDateLabel }}</p>
         <h2>Choose a day</h2>
       </div>
+
       <span class="modal-header-spacer" aria-hidden="true"></span>
     </header>
 
@@ -92,9 +88,9 @@ async function copyDate(sourceDate) {
         :current-month-key="currentMonthKey"
         current-month-element-id="copy-calendar-current-month"
         :workout-dates="workoutDates"
+        :workout-colors="workoutColors"
         action-label-prefix="Copy"
         :disabled="copying"
-        compact
         aria-label="Choose a workout day to copy"
         @select="copyDate"
       />

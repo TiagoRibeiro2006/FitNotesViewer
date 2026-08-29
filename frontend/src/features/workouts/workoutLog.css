@@ -14,8 +14,8 @@
 .day-navigation-card {
   position: sticky;
   z-index: 20;
-  top: calc(env(safe-area-inset-top) + 10px);
-  margin-top: 10px;
+  top: calc(env(safe-area-inset-top));
+  margin-top: 0px;
   padding: 12px;
   isolation: isolate;
 }
@@ -26,7 +26,7 @@
   z-index: -1;
   width: 100vw;
   top: calc(-1 * (env(safe-area-inset-top) + 20px));
-  bottom: -14px;
+  bottom: -1px;
   left: 50%;
   background: #000;
   border-radius: 0 0 var(--box-radius) var(--box-radius);
@@ -248,8 +248,8 @@
 }
 
 .day-copy-previous {
-  border: 1px solid #4b9cff;
-  background: #101b28;
+  border: 1px solid #303030;
+  background: #171717;
   color: #fff;
   cursor: pointer;
 }

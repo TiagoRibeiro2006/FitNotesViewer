@@ -1,25 +1,17 @@
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
-import { getWorkoutCalendarColors } from '../../data/repositories/workoutRepository'
+import { nextTick, onMounted, ref } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import CalendarList from './components/CalendarList.vue'
-import { createCalendarMonths, monthKey } from './calendarUtils'
+import { useWorkoutCalendar } from './composables/useWorkoutCalendar'
 
 defineProps({
   selectedDate: { type: String, required: true },
 })
 
 const emit = defineEmits(['select'])
-const workoutColors = ref(new Map())
+const { currentMonthKey, loadWorkoutCalendar, months, workoutColors, workoutDates } = useWorkoutCalendar()
 const loading = ref(false)
 const error = ref('')
-
-const workoutDates = computed(() => new Set(workoutColors.value.keys()))
-const months = computed(() => createCalendarMonths(workoutDates.value))
-const currentMonthKey = computed(() => {
-  const now = new Date()
-  return monthKey(now.getFullYear(), now.getMonth())
-})
 
 onMounted(load)
 
@@ -28,7 +20,7 @@ async function load() {
   error.value = ''
 
   try {
-    workoutColors.value = await getWorkoutCalendarColors()
+    await loadWorkoutCalendar()
   } catch {
     error.value = 'Workout dates could not be loaded.'
   } finally {

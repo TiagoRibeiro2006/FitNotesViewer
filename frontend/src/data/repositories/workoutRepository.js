@@ -5,15 +5,6 @@ import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
 
-export async function getWorkoutDateSet() {
-  const database = await openAppDatabase()
-  const transaction = database.transaction('workoutSets', 'readonly')
-  const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').getAll())
-  await done
-  return new Set((rows ?? []).map((row) => row.date).filter(Boolean))
-}
-
 export async function getWorkoutCalendarColors() {
   const database = await openAppDatabase()
   const transaction = database.transaction(['workoutSets', 'exercises', 'categories'], 'readonly')
