@@ -4,8 +4,7 @@
   gap: 12px;
 }
 
-.day-navigation-card,
-.day-content-card {
+.day-navigation-card {
   border: 1px solid #242424;
   border-radius: var(--box-radius);
   background: #101010;
@@ -20,7 +19,7 @@
 }
 
 .day-content-card {
-  padding: 18px;
+  min-width: 0;
 }
 
 .day-navigation {
@@ -113,7 +112,7 @@
   justify-content: space-between;
   gap: 16px;
   min-width: 0;
-  padding: 10px 4px 4px;
+  padding: 12px 14px 6px;
 }
 .exercise-row-title {
   min-width: 0;
@@ -134,7 +133,7 @@
 }
 .exercise-set-list {
   display: block;
-  padding: 0 4px 12px;
+  padding: 0 14px 14px;
 }
 .exercise-set-row {
   display: grid;
