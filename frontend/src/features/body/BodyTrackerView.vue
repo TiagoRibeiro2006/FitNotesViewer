@@ -33,14 +33,49 @@ onMounted(async () => {
   window.scrollTo({ top: 0, behavior: 'auto' })
 })
 
+const INTERACTIVE_SELECTOR = `
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  label,
+  form,
+  [role="button"],
+  [role="menu"],
+  [role="menuitem"],
+  [data-body-interactive]
+`
+
+function isInteractiveClick(event) {
+  return event.composedPath().some((element) => {
+    return (
+      element instanceof Element &&
+      element.matches(INTERACTIVE_SELECTOR)
+    )
+  })
+}
+
+function handlePageClick(event) {
+  if (!managing.value) return
+
+  if (isInteractiveClick(event)) {
+    return
+  }
+
+  managing.value = false
+}
+
 async function openMeasurement(item) {
   selectedItem.value = item
+
   await nextTick()
   window.scrollTo({ top: 0, behavior: 'auto' })
 }
 
 async function closeMeasurement() {
   selectedItem.value = null
+
   await nextTick()
   window.scrollTo({ top: 0, behavior: 'auto' })
 }
@@ -61,7 +96,9 @@ async function closeCreateMeasurement() {
 }
 
 async function saveNewMeasurement(details) {
-  if (await addMeasurement(details)) await closeCreateMeasurement()
+  if (await addMeasurement(details)) {
+    await closeCreateMeasurement()
+  }
 }
 
 async function scrollToTop() {
@@ -78,46 +115,80 @@ async function scrollToTop() {
     @close="closeCreateMeasurement"
     @save="saveNewMeasurement"
   />
+
   <BodyMeasurementDetailView
     v-else-if="selectedItem"
     :item="selectedItem"
     @close="closeMeasurement"
     @changed="load"
   />
-  <template v-else>
-    <AppSectionHeader title="Body Tracker">
-      <template #action>
-        <button
-          class="body-manage-toggle"
-          :class="{ 'is-active': managing }"
-          type="button"
-          :aria-pressed="managing"
-          :aria-label="managing ? 'Add body measurement' : 'Manage body measurements'"
-          @click="handleHeaderAction"
-        >
-          <svg v-if="managing" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z" />
-            <path d="m13.8 6.7 3.5 3.5" />
-          </svg>
-        </button>
-      </template>
-    </AppSectionHeader>
 
-    <div v-if="loading" class="body-status">Loading body data…</div>
-    <p v-else-if="error" class="body-error">{{ error }}</p>
-    <BodyMeasurementList
-      v-else
-      :sections="sections"
-      :managing="managing"
-      :management-saving="managementSaving"
-      @delete-measurement="removeMeasurement"
-      @edit-measurement="renameMeasurement"
-      :favorites-saving="favoritesSaving"
-      @open-measurement="openMeasurement"
-      @toggle-favorite="toggleFavorite"
-    />
+  <template v-else>
+    <div
+      class="body-tracker-page"
+      @click="handlePageClick"
+    >
+      <AppSectionHeader title="Body Tracker">
+        <template #action>
+          <button
+            class="body-manage-toggle"
+            :class="{ 'is-active': managing }"
+            type="button"
+            :aria-pressed="managing"
+            :aria-label="
+              managing
+                ? 'Add body measurement'
+                : 'Manage body measurements'
+            "
+            @click="handleHeaderAction"
+          >
+            <svg
+              v-if="managing"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+
+            <svg
+              v-else
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z"
+              />
+              <path d="m13.8 6.7 3.5 3.5" />
+            </svg>
+          </button>
+        </template>
+      </AppSectionHeader>
+
+      <div
+        v-if="loading"
+        class="body-status"
+      >
+        Loading body data…
+      </div>
+
+      <p
+        v-else-if="error"
+        class="body-error"
+      >
+        {{ error }}
+      </p>
+
+      <BodyMeasurementList
+        v-else
+        :sections="sections"
+        :managing="managing"
+        :management-saving="managementSaving"
+        :favorites-saving="favoritesSaving"
+        @delete-measurement="removeMeasurement"
+        @edit-measurement="renameMeasurement"
+        @open-measurement="openMeasurement"
+        @toggle-favorite="toggleFavorite"
+      />
+    </div>
   </template>
 </template>
