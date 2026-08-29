@@ -1,6 +1,6 @@
 @import './styles/base.css';
 @import './features/workouts/workoutLog.css';
-@import './app/navigation.css';
+@import './shared/styles/bottomBar.css';
 @import './styles/responsive.css';
 @import './shared/styles/modal.css';
 @import './features/workouts/workoutEditor.css';
