@@ -56,6 +56,10 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .section-sticky-header-inner {
   width: min(760px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin: 0 auto;
 }
 

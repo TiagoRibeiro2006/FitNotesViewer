@@ -3,6 +3,35 @@
   gap: 18px;
 }
 
+.body-manage-toggle {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #2d2d2d;
+  border-radius: 13px;
+  background: #171717;
+  color: #f5f5f5;
+  cursor: pointer;
+}
+
+.body-manage-toggle.is-active {
+  border-color: #315f91;
+  color: #4b9cff;
+}
+
+.body-manage-toggle svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .body-detail-header {
   display: flex;
   align-items: center;
@@ -96,6 +125,65 @@
   padding: 20px 18px;
   border-bottom: 1px solid #292929;
   cursor: pointer;
+}
+
+.body-measurement-row.is-managing {
+  grid-template-columns: 32px minmax(0, 1fr) 42px;
+}
+
+.body-item-menu-toggle {
+  width: 32px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #4b9cff;
+  cursor: pointer;
+}
+
+.body-item-menu-toggle svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.body-item-action-menu {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.body-item-action-menu button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #303030;
+  border-radius: 11px;
+  background: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.body-item-action-menu button.is-danger {
+  border-color: #542929;
+  color: #ff7066;
+}
+
+.body-item-action-menu svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .body-measurement-row:active { background: #151515; }

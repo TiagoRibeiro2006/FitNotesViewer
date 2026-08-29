@@ -15,6 +15,7 @@ const {
 } = useBodyTracker()
 
 const selectedItem = ref(null)
+const managing = ref(false)
 
 onMounted(async () => {
   await load()
@@ -33,6 +34,10 @@ async function closeMeasurement() {
   await nextTick()
   window.scrollTo({ top: 0, behavior: 'auto' })
 }
+
+function toggleManaging() {
+  managing.value = !managing.value
+}
 </script>
 
 <template>
@@ -43,13 +48,30 @@ async function closeMeasurement() {
     @changed="load"
   />
   <template v-else>
-    <AppSectionHeader title="Body Tracker" />
+    <AppSectionHeader title="Body Tracker">
+      <template #action>
+        <button
+          class="body-manage-toggle"
+          :class="{ 'is-active': managing }"
+          type="button"
+          :aria-pressed="managing"
+          aria-label="Manage body measurements"
+          @click="toggleManaging"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z" />
+            <path d="m13.8 6.7 3.5 3.5" />
+          </svg>
+        </button>
+      </template>
+    </AppSectionHeader>
 
     <div v-if="loading" class="body-status">Loading body data…</div>
     <p v-else-if="error" class="body-error">{{ error }}</p>
     <BodyMeasurementList
       v-else
       :sections="sections"
+      :managing="managing"
       :favorites-saving="favoritesSaving"
       @open-measurement="openMeasurement"
       @toggle-favorite="toggleFavorite"
