@@ -28,19 +28,6 @@
   font-size: 13px;
 }
 
-.copy-calendar-stack {
-  gap: 14px;
-}
-
-.copy-calendar-stack .calendar-month {
-  padding: 15px;
-}
-
-.copy-calendar-stack .calendar-day:disabled {
-  cursor: wait;
-  opacity: .5;
-}
-
 .copy-calendar-error {
   margin-top: 16px;
 }
@@ -114,6 +101,11 @@
   background: transparent;
   color: #d7d7dc;
   cursor: pointer;
+}
+
+.calendar-day:disabled {
+  cursor: wait;
+  opacity: .5;
 }
 
 .calendar-day.is-blank {
