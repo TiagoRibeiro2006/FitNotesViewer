@@ -156,6 +156,15 @@
   font-size: 13px;
 }
 .exercise-set-number { text-align: left; }
+.exercise-progress-star {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: #4b9cff;
+  stroke: #4b9cff;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
 .exercise-set-weight { text-align: center; color: #d7d7dc; }
 .exercise-set-reps { text-align: right; }
 .exercise-set-value {

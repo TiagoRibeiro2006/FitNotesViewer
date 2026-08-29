@@ -12,6 +12,7 @@ defineProps({
   exercise: { type: Object, required: true },
   hasExistingSets: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
+  setProgress: { type: Array, default: () => [] },
   sets: { type: Array, required: true },
   showCalculator: { type: Boolean, default: false },
   showHistory: { type: Boolean, default: false },
@@ -79,7 +80,10 @@ function exerciseStyle(exercise) {
           @contextmenu.prevent
           @pointerdown="startDrag($event, index, saving)"
         >
-          {{ index + 1 }}
+          <svg v-if="setProgress[index]" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+          </svg>
+          <span v-else>{{ index + 1 }}</span>
         </button>
         <input
           :value="set.weight"

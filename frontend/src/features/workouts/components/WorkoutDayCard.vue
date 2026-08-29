@@ -77,7 +77,12 @@ function saveExerciseOrder() {
         <button class="exercise-row-content" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
           <span class="exercise-set-list">
             <span v-for="(set, setIndex) in exercise.sets" :key="set.id" class="exercise-set-row">
-              <span class="exercise-set-number">{{ setIndex + 1 }}</span>
+              <span class="exercise-set-number">
+                <svg v-if="set.isProgress" class="exercise-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+                </svg>
+                <span v-else>{{ setIndex + 1 }}</span>
+              </span>
               <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
               <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
             </span>

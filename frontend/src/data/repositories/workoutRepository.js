@@ -1,5 +1,6 @@
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber, normalizePositiveInteger } from '../../shared/utils/validation'
+import { buildHistoricalProgress, buildProgressBaseline } from '../../features/workouts/exerciseProgress'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
@@ -30,18 +31,32 @@ export async function getWorkoutSetsForDate(date) {
   const database = await openAppDatabase()
   const transaction = database.transaction('workoutSets', 'readonly')
   const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').index('date').getAll(date))
+  const allRows = await requestResult(transaction.objectStore('workoutSets').getAll())
   await done
-  return orderWorkoutDayRows(rows ?? [])
+  return orderWorkoutDayRows(selectProgressRows(allRows ?? [], date))
 }
 
 export async function getWorkoutSetsForDateExercise(date, exerciseId) {
   const database = await openAppDatabase()
   const transaction = database.transaction('workoutSets', 'readonly')
   const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').index('dateExercise').getAll([date, exerciseId]))
+  const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
   await done
-  return (rows ?? []).sort(compareSetRows)
+  return selectProgressRows(rows ?? [], date).sort(compareSetRows)
+}
+
+export async function getWorkoutProgressBaseline(exerciseId, beforeDate) {
+  const database = await openAppDatabase()
+  const transaction = database.transaction('workoutSets', 'readonly')
+  const done = transactionComplete(transaction)
+  const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
+  await done
+
+  const previousRows = []
+  for (const row of rows ?? []) {
+    if (row.date && row.date < beforeDate) previousRows.push(row)
+  }
+  return buildProgressBaseline(previousRows)
 }
 
 export async function getPreviousWorkoutSetsForExercise(exerciseId, beforeDate) {
@@ -298,4 +313,16 @@ function compareSourceRows(a, b) {
   const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
   if (updatedAtComparison !== 0) return updatedAtComparison
   return String(a.id).localeCompare(String(b.id))
+}
+
+function selectProgressRows(rows, date) {
+  const progressById = buildHistoricalProgress(rows)
+  const selectedRows = []
+
+  for (const row of rows) {
+    if (row.date !== date) continue
+    selectedRows.push({ ...row, isProgress: progressById.get(row.id) === true })
+  }
+
+  return selectedRows
 }
