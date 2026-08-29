@@ -1,8 +1,10 @@
+import { createLocalId } from '../../shared/utils/ids'
+
 export function createEmptySetDrafts(count = 3) {
   const drafts = []
 
   for (let index = 0; index < count; index += 1) {
-    drafts.push({ weight: '', reps: '' })
+    drafts.push(createSetDraft('', ''))
   }
 
   return drafts
@@ -12,10 +14,7 @@ export function createSetDrafts(sets) {
   const drafts = []
 
   for (const set of sets) {
-    drafts.push({
-      weight: set.weight ?? '',
-      reps: set.reps ?? '',
-    })
+    drafts.push(createSetDraft(set.weight ?? '', set.reps ?? ''))
   }
 
   return drafts
@@ -26,10 +25,9 @@ export function createNextSetDraft(drafts, previousSets) {
   const previous = previousSets[index]
   const last = drafts[index - 1]
 
-  return {
-    weight: previous?.weight ?? last?.weight ?? '',
-    reps: previous?.reps ?? last?.reps ?? '',
-  }
+  const weight = previous?.weight ?? last?.weight ?? ''
+  const reps = previous?.reps ?? last?.reps ?? ''
+  return createSetDraft(weight, reps)
 }
 
 export function validateSetDrafts(drafts) {
@@ -54,4 +52,12 @@ export function validateSetDrafts(drafts) {
 
 function isBlank(value) {
   return value === '' || value === null || value === undefined
+}
+
+function createSetDraft(weight, reps) {
+  return {
+    draftId: createLocalId('set'),
+    weight,
+    reps,
+  }
 }

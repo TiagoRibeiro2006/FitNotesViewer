@@ -1,4 +1,5 @@
 import { onBeforeUnmount, ref } from 'vue'
+import { animateItemPositions, captureItemPositions } from '../utils/listAnimations'
 
 const SCROLL_EDGE_SIZE = 84
 const MAX_SCROLL_SPEED = 4.5
@@ -45,10 +46,12 @@ export function useDragList(moveItem, finishDrag) {
     const nextIndex = findClosestIndex(pointerY)
     if (nextIndex < 0 || nextIndex === currentIndex) return
 
+    const positions = captureItemPositions(listElement)
     moveItem(currentIndex, nextIndex)
     currentIndex = nextIndex
     draggingIndex.value = nextIndex
     moved = true
+    void animateItemPositions(positions)
   }
 
   function autoScroll() {
@@ -100,11 +103,19 @@ export function useDragList(moveItem, finishDrag) {
     const items = [...(listElement?.querySelectorAll('[data-drag-item]') ?? [])]
     if (!items.length) return -1
 
-    return items.reduce((closest, item, index) => {
+    let closestIndex = -1
+    let closestDistance = Number.POSITIVE_INFINITY
+
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index]
       const bounds = item.getBoundingClientRect()
       const distance = Math.abs(pointerY - (bounds.top + bounds.height / 2))
-      return distance < closest.distance ? { index, distance } : closest
-    }, { index: -1, distance: Number.POSITIVE_INFINITY }).index
+      if (distance >= closestDistance) continue
+      closestIndex = index
+      closestDistance = distance
+    }
+
+    return closestIndex
   }
 
   function finishPointer(event) {
