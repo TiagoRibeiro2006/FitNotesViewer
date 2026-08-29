@@ -13,8 +13,10 @@ const props = defineProps({
 const emit = defineEmits(['delete-measurement', 'edit-measurement', 'open-measurement', 'toggle-favorite'])
 const activeMenuKey = ref('')
 const deleteConfirmingKey = ref('')
+const editingKey = ref('')
+const editingName = ref('')
 
-watch(readManaging, closeMenu)
+watch(readManaging, resetManagementState)
 
 function readManaging() {
   return props.managing
@@ -23,6 +25,12 @@ function readManaging() {
 function closeMenu() {
   activeMenuKey.value = ''
   deleteConfirmingKey.value = ''
+}
+
+function resetManagementState() {
+  closeMenu()
+  editingKey.value = ''
+  editingName.value = ''
 }
 
 function menuKey(sectionId, itemId) {
@@ -39,7 +47,14 @@ function openMeasurement(item) {
   if (!props.managing) emit('open-measurement', item)
 }
 
-function chooseAction(action, item) {
+function chooseAction(action, item, sectionId) {
+  if (action === 'edit-measurement') {
+    closeMenu()
+    editingKey.value = menuKey(sectionId, item.id)
+    editingName.value = item.name
+    return
+  }
+
   if (action === 'delete-measurement') {
     if (deleteConfirmingKey.value !== String(item.id)) {
       deleteConfirmingKey.value = String(item.id)
@@ -48,6 +63,18 @@ function chooseAction(action, item) {
   }
   closeMenu()
   emit(action, item)
+}
+
+function cancelEditing() {
+  editingKey.value = ''
+  editingName.value = ''
+}
+
+function saveName(item) {
+  const name = editingName.value.trim()
+  if (!name || props.managementSaving) return
+  emit('edit-measurement', { item, name })
+  cancelEditing()
 }
 </script>
 
@@ -79,7 +106,37 @@ function chooseAction(action, item) {
             </svg>
           </button>
 
-          <button class="body-measurement-copy" type="button" :aria-label="'Open ' + item.name" @click="openMeasurement(item)">
+          <form
+            v-if="editingKey === menuKey(section.id, item.id)"
+            class="body-measurement-copy body-name-edit-form"
+            @submit.prevent="saveName(item)"
+          >
+            <span class="body-name-edit-control">
+              <input
+                v-model="editingName"
+                type="text"
+                maxlength="100"
+                autocomplete="off"
+                spellcheck="false"
+                :aria-label="'Edit ' + item.name"
+                @keydown.esc.prevent="cancelEditing"
+              />
+              <button type="submit" :disabled="managementSaving || !editingName.trim()" aria-label="Save measurement name">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+              </button>
+            </span>
+            <span class="body-measurement-value">
+              <strong>{{ formatBodyValue(item) }}</strong>
+              <span v-if="item.change !== null" class="body-measurement-change">
+                {{ item.change < 0 ? '▼' : '▲' }} {{ formatNumber(Math.abs(item.change)) }}
+              </span>
+            </span>
+            <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
+          </form>
+
+          <button v-else class="body-measurement-copy" type="button" :aria-label="'Open ' + item.name" @click="openMeasurement(item)">
             <span class="body-measurement-name">{{ item.name }}</span>
             <span class="body-measurement-value">
               <strong>{{ formatBodyValue(item) }}</strong>
@@ -108,7 +165,7 @@ function chooseAction(action, item) {
             class="body-item-action-menu"
             role="menu"
           >
-            <button type="button" role="menuitem" :disabled="managementSaving" @click="chooseAction('edit-measurement', item)">
+            <button type="button" role="menuitem" :disabled="managementSaving" @click="chooseAction('edit-measurement', item, section.id)">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z" />
                 <path d="m13.8 6.7 3.5 3.5" />

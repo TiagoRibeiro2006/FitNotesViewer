@@ -11,6 +11,7 @@ const {
   loading,
   managementSaving,
   removeMeasurement,
+  renameMeasurement,
   sections,
   load,
   toggleFavorite,
@@ -76,6 +77,7 @@ function toggleManaging() {
       :managing="managing"
       :management-saving="managementSaving"
       @delete-measurement="removeMeasurement"
+      @edit-measurement="renameMeasurement"
       :favorites-saving="favoritesSaving"
       @open-measurement="openMeasurement"
       @toggle-favorite="toggleFavorite"

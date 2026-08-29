@@ -219,6 +219,60 @@
   font-weight: 600;
 }
 
+.body-name-edit-form {
+  cursor: default;
+}
+
+.body-name-edit-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.body-name-edit-control input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid #4b9cff;
+  border-radius: 10px;
+  outline: 0;
+  background: #171717;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.body-name-edit-control button {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #315f91;
+  border-radius: 10px;
+  background: #152235;
+  color: #4b9cff;
+  cursor: pointer;
+}
+
+.body-name-edit-control button:disabled {
+  cursor: not-allowed;
+  opacity: .4;
+}
+
+.body-name-edit-control svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .body-measurement-value {
   display: flex;
   flex-wrap: wrap;

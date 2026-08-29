@@ -3,6 +3,7 @@ import {
   deleteBodyMeasurement,
   getBodyTrackerData,
   saveBodyFavoriteIds,
+  updateBodyMeasurementName,
 } from '../../../data/repositories/bodyRepository'
 
 export function useBodyTracker() {
@@ -64,6 +65,20 @@ export function useBodyTracker() {
     }
   }
 
+  async function renameMeasurement(payload) {
+    if (managementSaving.value) return
+    managementSaving.value = true
+    error.value = ''
+
+    try {
+      applyTrackerData(await updateBodyMeasurementName(payload.item, payload.name))
+    } catch {
+      error.value = 'Measurement name could not be updated in local storage.'
+    } finally {
+      managementSaving.value = false
+    }
+  }
+
   function applyTrackerData(data) {
     favorites.value = data.favorites
     measurements.value = data.measurements
@@ -75,6 +90,7 @@ export function useBodyTracker() {
     loading,
     managementSaving,
     removeMeasurement,
+    renameMeasurement,
     sections,
     load,
     toggleFavorite,
