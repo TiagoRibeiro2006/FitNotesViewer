@@ -33,6 +33,24 @@ export async function saveBodyFavoriteIds(ids) {
   await transactionComplete(transaction)
 }
 
+export async function getBodyMeasurementHistory(item) {
+  const database = await openAppDatabase()
+  const transaction = database.transaction(['bodyWeights', 'measurements', 'measurementRecords'], 'readonly')
+  const done = transactionComplete(transaction)
+  const [bodyWeights, measurements, records] = await Promise.all([
+    requestResult(transaction.objectStore('bodyWeights').getAll()),
+    requestResult(transaction.objectStore('measurements').getAll()),
+    requestResult(transaction.objectStore('measurementRecords').getAll()),
+  ])
+  await done
+
+  if (item?.sourceType === 'bodyWeight') return buildBodyWeightHistory(item, bodyWeights)
+
+  const measurementId = findMeasurementId(item, measurements)
+  if (measurementId === null) return []
+  return buildMeasurementHistory(measurementId, records)
+}
+
 export async function saveBodyMeasurementValue(item, rawValue) {
   const value = normalizeNonNegativeNumber(rawValue)
   if (value === null) throw new Error('Enter a valid value.')
@@ -171,6 +189,46 @@ function buildBodyWeightItem(id, name, unit, rows, field) {
     sourceType: 'bodyWeight',
     sourceField: field,
   }
+}
+
+function buildBodyWeightHistory(item, rows) {
+  return rows
+    .filter((row) => hasMeasurementValue(row[item.sourceField]))
+    .sort(compareBodyEntries)
+    .reverse()
+    .map((row) => ({
+      id: row.id,
+      date: row.date ?? null,
+      time: row.time ?? null,
+      value: Number(row[item.sourceField]),
+      sourceType: 'bodyWeight',
+      sourceField: item.sourceField,
+    }))
+}
+
+function buildMeasurementHistory(measurementId, records) {
+  return records
+    .filter((record) => record.measurementId === measurementId && hasMeasurementValue(record.value))
+    .sort(compareBodyEntries)
+    .reverse()
+    .map((record) => ({
+      id: record.id,
+      date: record.date ?? null,
+      time: record.time ?? null,
+      value: Number(record.value),
+      sourceType: 'measurement',
+      sourceId: measurementId,
+    }))
+}
+
+function findMeasurementId(item, measurements) {
+  if (item?.sourceId !== null && item?.sourceId !== undefined) return item.sourceId
+  const measurement = measurements.find((candidate) => String(candidate.localBodyId ?? '') === String(item?.id ?? ''))
+  return measurement?.id ?? null
+}
+
+function hasMeasurementValue(value) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
 }
 
 function buildMeasurementItem(measurement, unit, records) {

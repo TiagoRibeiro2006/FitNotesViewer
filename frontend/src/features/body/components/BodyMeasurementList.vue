@@ -7,7 +7,7 @@ defineProps({
   favoritesSaving: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['add-value', 'toggle-favorite'])
+const emit = defineEmits(['open-measurement', 'toggle-favorite'])
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const emit = defineEmits(['add-value', 'toggle-favorite'])
 
       <div v-else class="body-measurement-list">
         <article v-for="item in section.items" :key="item.id" class="body-measurement-row">
-          <button class="body-measurement-copy" type="button" :aria-label="`Add a new ${item.name} value`" @click="emit('add-value', item)">
+          <button class="body-measurement-copy" type="button" :aria-label="`Open ${item.name}`" @click="emit('open-measurement', item)">
             <span class="body-measurement-name">{{ item.name }}</span>
             <span class="body-measurement-value">
               <strong>{{ formatBodyValue(item) }}</strong>
