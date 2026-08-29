@@ -57,7 +57,7 @@
   scroll-margin-top: 20px;
   padding: 18px;
   border: 1px solid #242424;
-  border-radius: 18px;
+  border-radius: var(--box-radius);
   background: #101010;
 }
 
@@ -118,7 +118,7 @@
   display: grid;
   place-items: center;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--box-radius);
   background: transparent;
   color: #d7d7dc;
   cursor: pointer;
@@ -172,7 +172,7 @@
 @media (max-width: 640px) {
   .calendar-month {
     padding: 15px 12px;
-    border-radius: 16px;
+    border-radius: var(--box-radius);
   }
 
   .calendar-grid {
@@ -180,7 +180,7 @@
   }
 
   .calendar-day {
-    border-radius: 10px;
+    border-radius: var(--box-radius);
   }
 
   .calendar-weekdays span {
