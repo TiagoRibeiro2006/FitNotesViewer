@@ -1,14 +1,29 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
+import { usePressDragList } from '../../../shared/composables/usePressDragList'
 
 defineProps({
   dateLabel: { type: String, required: true },
   exercises: { type: Array, required: true },
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
+  reordering: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['add', 'copy', 'edit', 'next', 'previous', 'today'])
+const emit = defineEmits(['add', 'copy', 'edit', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
+const { draggingIndex, consumeClick, startDrag } = usePressDragList(moveExercise, saveExerciseOrder)
+
+function moveExercise(fromIndex, toIndex) {
+  emit('move-exercise', fromIndex, toIndex)
+}
+
+function saveExerciseOrder() {
+  emit('save-exercise-order')
+}
+
+function openExercise(event, exercise) {
+  if (!consumeClick(event)) emit('edit', exercise)
+}
 </script>
 
 <template>
@@ -24,14 +39,24 @@ const emit = defineEmits(['add', 'copy', 'edit', 'next', 'previous', 'today'])
     <p v-if="loading" class="modal-list-status">Loading workout…</p>
     <p v-else-if="error" class="editor-error">{{ error }}</p>
 
-    <div v-else-if="exercises.length" class="exercise-list">
+    <div
+      v-else-if="exercises.length"
+      class="exercise-list"
+      :class="{ 'is-reordering': draggingIndex >= 0 }"
+      data-press-drag-list
+    >
       <button
-        v-for="exercise in exercises"
+        v-for="(exercise, index) in exercises"
         :key="exercise.id"
         class="exercise-row"
+        :class="{ 'is-dragging': draggingIndex === index }"
         type="button"
         :aria-label="`Edit ${exercise.name}`"
-        @click="emit('edit', exercise)"
+        :aria-pressed="draggingIndex === index"
+        data-press-drag-item
+        @contextmenu.prevent
+        @pointerdown="startDrag($event, index, reordering)"
+        @click="openExercise($event, exercise)"
       >
         <span class="exercise-row-heading">
           <strong>{{ exercise.name }}</strong>

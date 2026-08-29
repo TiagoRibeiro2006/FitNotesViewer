@@ -37,6 +37,20 @@
 }
 .exercise-row:last-child { border-bottom: 0; }
 .exercise-row:active { opacity: .62; }
+.exercise-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: transparent;
+  border-radius: 14px;
+  background: #1b1b1b;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .5);
+  opacity: 1;
+  transform: scale(1.015);
+}
+.exercise-list.is-reordering .exercise-row {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
 .exercise-row-heading {
   display: flex;
   align-items: center;

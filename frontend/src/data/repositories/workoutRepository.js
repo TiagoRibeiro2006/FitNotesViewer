@@ -141,6 +141,36 @@ export async function deleteWorkoutExercise(date, exerciseId) {
   return refreshSummary()
 }
 
+export async function reorderWorkoutExercises(date, exerciseIds) {
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction('workoutSets', 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const rows = await requestResult(lookupTransaction.objectStore('workoutSets').index('date').getAll(date))
+  await lookupDone
+
+  const orderByExercise = new Map(exerciseIds.map((exerciseId, index) => [exerciseId, index]))
+  const changedRows = (rows ?? []).filter((row) => {
+    const order = orderByExercise.get(row.exerciseId)
+    return order !== undefined && row.dayExerciseOrder !== order
+  })
+  if (!changedRows.length) return
+
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(['workoutSets', 'metadata'], 'readwrite')
+  const store = transaction.objectStore('workoutSets')
+
+  for (const row of changedRows) {
+    store.put({
+      ...row,
+      dayExerciseOrder: orderByExercise.get(row.exerciseId),
+      localUpdatedAt: updatedAt,
+    })
+  }
+
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+}
+
 export async function copyWorkoutDay(sourceDate, targetDate) {
   if (sourceDate === targetDate) return getSummary()
 
