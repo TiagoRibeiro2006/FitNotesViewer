@@ -14,6 +14,7 @@ import { createEmptySummary } from './shared/models/summary'
 
 const summary = ref(createEmptySummary())
 const appReady = ref(false)
+const bodyManagementRequested = ref(false)
 
 const {
   activeView,
@@ -61,6 +62,16 @@ function handleDataDeleted() {
   summary.value = createEmptySummary()
   resetSelectedDate()
 }
+
+function handleNavigation(view) {
+  bodyManagementRequested.value = false
+  navigateTo(view)
+}
+
+function openBodyManagement() {
+  bodyManagementRequested.value = true
+  navigateTo('body')
+}
 </script>
 
 <template>
@@ -73,7 +84,10 @@ function handleDataDeleted() {
       @summary-changed="handleWorkoutChanged"
     />
 
-    <BodyTrackerView v-else-if="activeView === 'body'" />
+    <BodyTrackerView
+      v-else-if="activeView === 'body'"
+      :start-managing="bodyManagementRequested"
+    />
 
     <CalendarView
       v-else-if="activeView === 'calendar'"
@@ -86,8 +100,9 @@ function handleDataDeleted() {
       :summary="summary"
       @data-imported="handleDataImported"
       @data-deleted="handleDataDeleted"
+      @manage-body-items="openBodyManagement"
     />
   </main>
 
-  <AppBottomNavigation :active-view="activeView" @navigate="navigateTo" />
+  <AppBottomNavigation :active-view="activeView" @navigate="handleNavigation" />
 </template>
