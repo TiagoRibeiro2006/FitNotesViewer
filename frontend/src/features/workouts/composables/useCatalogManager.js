@@ -154,6 +154,7 @@ export function useCatalogManager(callbacks = {}) {
 
   function reset() {
     categories.value = []
+    deleting.value = false
     exercises.value = []
     error.value = ''
     loading.value = false
