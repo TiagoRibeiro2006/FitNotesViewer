@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import {
   deleteWorkoutExercise,
   getPreviousWorkoutSetsForExercise,
+  getWorkoutProgressBaseline,
   getWorkoutSetsForDateExercise,
   saveWorkoutExercise,
 } from '../../../data/repositories/workoutRepository'
@@ -12,6 +13,7 @@ import {
   createSetDrafts,
   validateSetDrafts,
 } from '../exerciseSetDrafts'
+import { calculateDraftProgress } from '../../../shared/utils/exerciseProgress'
 
 export function useExerciseSets(selectedDate, callbacks = {}) {
   const saving = ref(false)
@@ -19,10 +21,12 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
   const selectedExercise = ref(null)
   const draftSets = ref([])
   const previousSets = ref([])
+  const progressBaseline = ref({ points: [] })
   const hasExistingSets = ref(false)
   const deleteConfirming = ref(false)
   const title = computed(readTitle)
   const canSave = computed(canSaveDrafts)
+  const draftProgress = computed(readDraftProgress)
 
   async function open(exercise) {
     selectedExercise.value = exercise
@@ -32,9 +36,11 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
       const result = await Promise.all([
         getWorkoutSetsForDateExercise(selectedDate.value, exercise.id),
         getPreviousWorkoutSetsForExercise(exercise.id, selectedDate.value),
+        getWorkoutProgressBaseline(exercise.id, selectedDate.value),
       ])
       const currentSets = result[0]
       const previous = result[1]
+      progressBaseline.value = result[2]
 
       hasExistingSets.value = currentSets.length > 0
       previousSets.value = previous.sets
@@ -53,7 +59,8 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
 
   function removeSet(index) {
     if (draftSets.value.length <= 1) {
-      draftSets.value[0] = { weight: '', reps: '' }
+      draftSets.value[0].weight = ''
+      draftSets.value[0].reps = ''
       return
     }
 
@@ -73,6 +80,10 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
 
     set[field] = value
     deleteConfirming.value = false
+  }
+
+  function replaceExercise(exercise) {
+    selectedExercise.value = exercise
   }
 
   async function save() {
@@ -131,6 +142,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     deleteConfirming.value = false
     draftSets.value = []
     previousSets.value = []
+    progressBaseline.value = { points: [] }
   }
 
   function readTitle() {
@@ -141,9 +153,14 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     return validateSetDrafts(draftSets.value)
   }
 
+  function readDraftProgress() {
+    return calculateDraftProgress(draftSets.value, progressBaseline.value)
+  }
+
   return {
     canSave,
     deleteConfirming,
+    draftProgress,
     draftSets,
     error,
     hasExistingSets,
@@ -155,6 +172,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     moveSet,
     removeExercise,
     removeSet,
+    replaceExercise,
     reset,
     save,
     updateSet,

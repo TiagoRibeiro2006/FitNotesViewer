@@ -61,14 +61,14 @@ function closeWithEscape(event) {
 
     <div v-if="open" class="exercise-options-popover" role="menu">
       <template v-if="mode === 'exercise'">
-        <button type="button" role="menuitem" disabled>
+        <button type="button" role="menuitem" @click="select('muscles')">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="5" r="2.25" />
             <path d="M8.5 10.2c.9-1.7 2-2.7 3.5-2.7s2.6 1 3.5 2.7M9 10.5l-1 4.5m7-4.5 1 4.5M10.4 13.5 10 21m3.6-7.5.4 7.5" />
           </svg>
           <span>Muscle</span>
         </button>
-        <button type="button" role="menuitem" disabled>
+        <button type="button" role="menuitem" @click="select('exercises')">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="2.5" y="9.5" width="3" height="5" rx=".75" />
             <rect x="5.5" y="7.5" width="3" height="9" rx=".75" />

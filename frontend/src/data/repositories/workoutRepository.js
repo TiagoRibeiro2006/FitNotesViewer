@@ -1,17 +1,9 @@
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber, normalizePositiveInteger } from '../../shared/utils/validation'
+import { buildHistoricalProgress, buildProgressBaseline } from '../../shared/utils/exerciseProgress'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
-
-export async function getWorkoutDateSet() {
-  const database = await openAppDatabase()
-  const transaction = database.transaction('workoutSets', 'readonly')
-  const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').getAll())
-  await done
-  return new Set((rows ?? []).map((row) => row.date).filter(Boolean))
-}
 
 export async function getWorkoutCalendarColors() {
   const database = await openAppDatabase()
@@ -30,18 +22,32 @@ export async function getWorkoutSetsForDate(date) {
   const database = await openAppDatabase()
   const transaction = database.transaction('workoutSets', 'readonly')
   const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').index('date').getAll(date))
+  const allRows = await requestResult(transaction.objectStore('workoutSets').getAll())
   await done
-  return orderWorkoutDayRows(rows ?? [])
+  return orderWorkoutDayRows(selectProgressRows(allRows ?? [], date))
 }
 
 export async function getWorkoutSetsForDateExercise(date, exerciseId) {
   const database = await openAppDatabase()
   const transaction = database.transaction('workoutSets', 'readonly')
   const done = transactionComplete(transaction)
-  const rows = await requestResult(transaction.objectStore('workoutSets').index('dateExercise').getAll([date, exerciseId]))
+  const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
   await done
-  return (rows ?? []).sort(compareSetRows)
+  return selectProgressRows(rows ?? [], date).sort(compareSetRows)
+}
+
+export async function getWorkoutProgressBaseline(exerciseId, beforeDate) {
+  const database = await openAppDatabase()
+  const transaction = database.transaction('workoutSets', 'readonly')
+  const done = transactionComplete(transaction)
+  const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
+  await done
+
+  const previousRows = []
+  for (const row of rows ?? []) {
+    if (row.date && row.date < beforeDate) previousRows.push(row)
+  }
+  return buildProgressBaseline(previousRows)
 }
 
 export async function getPreviousWorkoutSetsForExercise(exerciseId, beforeDate) {
@@ -68,27 +74,6 @@ export async function getWorkoutHistoryForExercise(exerciseId) {
   const rows = await requestResult(transaction.objectStore('workoutSets').index('exerciseId').getAll(exerciseId))
   await done
   return buildWorkoutHistory(rows ?? [])
-}
-
-export async function getExerciseCatalog() {
-  const database = await openAppDatabase()
-  const transaction = database.transaction(['exercises', 'categories', 'workoutSets'], 'readonly')
-  const done = transactionComplete(transaction)
-  const [exercises, categories, workoutSets] = await Promise.all([
-    requestResult(transaction.objectStore('exercises').getAll()),
-    requestResult(transaction.objectStore('categories').getAll()),
-    requestResult(transaction.objectStore('workoutSets').getAll()),
-  ])
-  await done
-
-  const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]))
-  const usage = buildExerciseUsage(workoutSets)
-  const catalog = (exercises ?? [])
-    .map((exercise) => buildCatalogExercise(exercise, categoriesById, usage))
-    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'en', { sensitivity: 'base' }))
-  const sortedCategories = [...(categories ?? [])].sort(compareCategories)
-
-  return { exercises: catalog, categories: sortedCategories }
 }
 
 export async function saveWorkoutExercise(date, exercise, sets) {
@@ -216,20 +201,6 @@ export async function copyWorkoutDay(sourceDate, targetDate) {
   return refreshSummary()
 }
 
-function buildExerciseUsage(workoutSets = []) {
-  const usage = new Map()
-
-  for (const set of workoutSets) {
-    const stats = usage.get(set.exerciseId) ?? { dates: new Set(), totalSets: 0, lastDate: null }
-    if (set.date) stats.dates.add(set.date)
-    stats.totalSets += 1
-    if (set.date && (!stats.lastDate || set.date > stats.lastDate)) stats.lastDate = set.date
-    usage.set(set.exerciseId, stats)
-  }
-
-  return usage
-}
-
 function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories = []) {
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const categoriesById = new Map(categories.map((category) => [category.id, category]))
@@ -252,6 +223,7 @@ function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories
 
 function buildWorkoutHistory(rows) {
   const rowsByDate = new Map()
+  const progressById = buildHistoricalProgress(rows)
 
   for (const row of rows) {
     if (!row.date) continue
@@ -265,30 +237,12 @@ function buildWorkoutHistory(rows) {
     .map(([date, dayRows]) => ({
       date,
       sets: dayRows.sort(compareSetRows).map((row) => ({
-        id: row.id,
-        reps: row.reps,
+         id: row.id,
+         isProgress: progressById.get(row.id) ?? false,
+         reps: row.reps,
         weight: row.weight,
       })),
     }))
-}
-
-function buildCatalogExercise(exercise, categoriesById, usage) {
-  const category = categoriesById.get(exercise.categoryId)
-  const stats = usage.get(exercise.id)
-  return {
-    ...exercise,
-    categoryName: category?.name ?? 'Other',
-    categoryColor: category?.colour ?? null,
-    workoutCount: stats?.dates.size ?? 0,
-    totalSetCount: stats?.totalSets ?? 0,
-    lastWorkoutDate: stats?.lastDate ?? null,
-  }
-}
-
-function compareCategories(a, b) {
-  const orderA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 9999
-  const orderB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 9999
-  return orderA - orderB || String(a.name).localeCompare(String(b.name))
 }
 
 function createWorkoutSet(date, exercise, set, exerciseOrder, setOrder, updatedAt) {
@@ -352,4 +306,16 @@ function compareSourceRows(a, b) {
   const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
   if (updatedAtComparison !== 0) return updatedAtComparison
   return String(a.id).localeCompare(String(b.id))
+}
+
+function selectProgressRows(rows, date) {
+  const progressById = buildHistoricalProgress(rows)
+  const selectedRows = []
+
+  for (const row of rows) {
+    if (row.date !== date) continue
+    selectedRows.push({ ...row, isProgress: progressById.get(row.id) === true })
+  }
+
+  return selectedRows
 }

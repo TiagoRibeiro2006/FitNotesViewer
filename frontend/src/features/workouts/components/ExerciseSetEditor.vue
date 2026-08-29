@@ -2,6 +2,8 @@
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { useDragList } from '../../../shared/composables/useDragList'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
+import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
+import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
 
 defineProps({
   canSave: { type: Boolean, default: false },
@@ -10,13 +12,17 @@ defineProps({
   exercise: { type: Object, required: true },
   hasExistingSets: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
+  setProgress: { type: Array, default: () => [] },
   sets: { type: Array, required: true },
+  showCalculator: { type: Boolean, default: false },
   showHistory: { type: Boolean, default: false },
+  showRecords: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
   'add-set',
   'delete',
+  'edit-details',
   'move-set',
   'remove-set',
   'save',
@@ -38,14 +44,15 @@ function exerciseStyle(exercise) {
 </script>
 
 <template>
-  <div class="set-editor" :class="{ 'has-history': showHistory }">
-    <div class="selected-exercise-card" :style="exerciseStyle(exercise)">
+  <div class="set-editor" :class="{ 'has-details': showHistory || showRecords || showCalculator }">
+    <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
       <span class="exercise-color-dot"></span>
       <div>
         <strong>{{ exercise.name }}</strong>
         <small>{{ exercise.categoryName }}</small>
       </div>
-    </div>
+      <span class="selected-exercise-chevron" aria-hidden="true">›</span>
+    </button>
 
     <div class="sets-grid sets-grid-header" aria-hidden="true">
       <span>Set</span>
@@ -61,7 +68,7 @@ function exerciseStyle(exercise) {
     >
       <div
         v-for="(set, index) in sets"
-        :key="index"
+        :key="set.draftId"
         class="sets-grid set-input-row"
         :class="{ 'is-dragging': draggingIndex === index }"
         data-drag-item
@@ -73,7 +80,10 @@ function exerciseStyle(exercise) {
           @contextmenu.prevent
           @pointerdown="startDrag($event, index, saving)"
         >
-          {{ index + 1 }}
+          <svg v-if="setProgress[index]" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+          </svg>
+          <span v-else>{{ index + 1 }}</span>
         </button>
         <input
           :value="set.weight"
@@ -128,5 +138,7 @@ function exerciseStyle(exercise) {
     </div>
 
     <ExerciseHistoryPanel v-if="showHistory" :exercise-id="exercise.id" />
+    <ExerciseRecordsPanel v-if="showRecords" :exercise-id="exercise.id" />
+    <ExerciseOneRepMaxPanel v-if="showCalculator" />
   </div>
 </template>

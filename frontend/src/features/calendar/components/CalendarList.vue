@@ -10,7 +10,6 @@ defineProps({
   workoutColors: { type: Map, default: () => new Map() },
   actionLabelPrefix: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
-  compact: { type: Boolean, default: false },
   ariaLabel: { type: String, required: true },
 })
 
@@ -18,7 +17,7 @@ const emit = defineEmits(['select'])
 </script>
 
 <template>
-  <section class="calendar-stack" :class="{ 'copy-calendar-stack': compact }" :aria-label="ariaLabel">
+  <section class="calendar-stack" :aria-label="ariaLabel">
     <CalendarMonth
       v-for="month in months"
       :key="month.key"

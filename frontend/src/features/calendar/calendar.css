@@ -1,15 +1,7 @@
-.calendar-header {
-  margin-bottom: 14px;
-}
-
-.calendar-intro {
+.calendar-status {
   margin-bottom: 18px;
   color: #8f8f96;
   font-size: 14px;
-}
-
-.calendar-intro p {
-  margin: 0;
 }
 
 .calendar-stack {
@@ -36,19 +28,6 @@
   font-size: 13px;
 }
 
-.copy-calendar-stack {
-  gap: 14px;
-}
-
-.copy-calendar-stack .calendar-month {
-  padding: 15px;
-}
-
-.copy-calendar-stack .calendar-day:disabled {
-  cursor: wait;
-  opacity: .5;
-}
-
 .copy-calendar-error {
   margin-top: 16px;
 }
@@ -57,7 +36,7 @@
   scroll-margin-top: 20px;
   padding: 18px;
   border: 1px solid #242424;
-  border-radius: 18px;
+  border-radius: var(--box-radius);
   background: #101010;
 }
 
@@ -118,10 +97,15 @@
   display: grid;
   place-items: center;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--box-radius);
   background: transparent;
   color: #d7d7dc;
   cursor: pointer;
+}
+
+.calendar-day:disabled {
+  cursor: wait;
+  opacity: .5;
 }
 
 .calendar-day.is-blank {
@@ -172,7 +156,7 @@
 @media (max-width: 640px) {
   .calendar-month {
     padding: 15px 12px;
-    border-radius: 16px;
+    border-radius: var(--box-radius);
   }
 
   .calendar-grid {
@@ -180,7 +164,7 @@
   }
 
   .calendar-day {
-    border-radius: 10px;
+    border-radius: var(--box-radius);
   }
 
   .calendar-weekdays span {
