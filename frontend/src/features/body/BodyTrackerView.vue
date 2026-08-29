@@ -9,6 +9,8 @@ const {
   error,
   favoritesSaving,
   loading,
+  managementSaving,
+  removeMeasurement,
   sections,
   load,
   toggleFavorite,
@@ -72,6 +74,8 @@ function toggleManaging() {
       v-else
       :sections="sections"
       :managing="managing"
+      :management-saving="managementSaving"
+      @delete-measurement="removeMeasurement"
       :favorites-saving="favoritesSaving"
       @open-measurement="openMeasurement"
       @toggle-favorite="toggleFavorite"

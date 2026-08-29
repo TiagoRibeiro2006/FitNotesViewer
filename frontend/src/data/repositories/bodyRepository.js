@@ -17,25 +17,35 @@ export async function getBodyTrackerData() {
   await ensureDefaultBodyMeasurements(database)
   const transaction = database.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
-  const [favoritesRecord, bodyWeights, measurements, units, records] = await Promise.all([
+  const [favoritesRecord, deletedRecord, bodyWeights, measurements, units, records] = await Promise.all([
     requestResult(transaction.objectStore('metadata').get('bodyFavoriteIds')),
+    requestResult(transaction.objectStore('metadata').get('bodyDeletedIds')),
     requestResult(transaction.objectStore('bodyWeights').getAll()),
     requestResult(transaction.objectStore('measurements').getAll()),
     requestResult(transaction.objectStore('measurementUnits').getAll()),
     requestResult(transaction.objectStore('measurementRecords').getAll()),
   ])
   await done
-  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value)
+  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value, deletedRecord?.value)
 }
 
 async function ensureDefaultBodyMeasurements(database) {
-  const lookupTransaction = database.transaction('measurements', 'readonly')
+  const lookupTransaction = database.transaction(['measurements', 'metadata'], 'readonly')
   const lookupDone = transactionComplete(lookupTransaction)
-  const measurementCount = await requestResult(lookupTransaction.objectStore('measurements').count())
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('measurements').count()),
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyDefaultsInitialized')),
+  ])
   await lookupDone
-  if (measurementCount > 0) return
+  if (results[1]?.value === true) return
 
-  const transaction = database.transaction(['measurements', 'measurementUnits'], 'readwrite')
+  const transaction = database.transaction(['measurements', 'measurementUnits', 'metadata'], 'readwrite')
+  transaction.objectStore('metadata').put({ key: 'bodyDefaultsInitialized', value: true })
+  if (results[0] > 0) {
+    await transactionComplete(transaction)
+    return
+  }
+
   const measurementStore = transaction.objectStore('measurements')
   const unitStore = transaction.objectStore('measurementUnits')
   for (const unit of DEFAULT_BODY_UNITS) unitStore.put(unit)
@@ -136,6 +146,62 @@ export async function deleteBodyMeasurementRecord(record) {
   return getBodyTrackerData()
 }
 
+export async function deleteBodyMeasurement(item) {
+  const currentData = await getBodyTrackerData()
+  const database = await openAppDatabase()
+  const lookupTransaction = database.transaction(
+    ['metadata', 'bodyWeights', 'measurements', 'measurementRecords'],
+    'readonly',
+  )
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyFavoriteIds')),
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyDeletedIds')),
+    requestResult(lookupTransaction.objectStore('bodyWeights').getAll()),
+    requestResult(lookupTransaction.objectStore('measurements').getAll()),
+    requestResult(lookupTransaction.objectStore('measurementRecords').getAll()),
+  ])
+  await lookupDone
+
+  const measurementId = findMeasurementId(item, results[3] ?? [])
+  const updatedAt = new Date().toISOString()
+  const transaction = database.transaction(
+    ['metadata', 'bodyWeights', 'measurements', 'measurementRecords'],
+    'readwrite',
+  )
+
+  if (measurementId !== null) {
+    transaction.objectStore('measurements').delete(measurementId)
+    const recordStore = transaction.objectStore('measurementRecords')
+    for (const record of results[4] ?? []) {
+      if (record.measurementId === measurementId) recordStore.delete(record.id)
+    }
+  }
+
+  if (item?.sourceType === 'bodyWeight' && item.sourceField) {
+    const bodyWeightStore = transaction.objectStore('bodyWeights')
+    for (const row of results[2] ?? []) {
+      const updatedRow = { ...row, [item.sourceField]: null, localUpdatedAt: updatedAt }
+      if (hasBodyWeightContent(updatedRow)) bodyWeightStore.put(updatedRow)
+      else bodyWeightStore.delete(row.id)
+    }
+  }
+
+  const itemId = String(item?.id ?? '')
+  const favoriteIds = currentData.favorites
+    .map((favorite) => String(favorite.id))
+    .filter((id) => id !== itemId)
+  const deletedIds = Array.isArray(results[1]?.value) ? results[1].value.map(String) : []
+  if (itemId && !deletedIds.includes(itemId)) deletedIds.push(itemId)
+
+  const metadataStore = transaction.objectStore('metadata')
+  metadataStore.put({ key: 'bodyFavoriteIds', value: favoriteIds })
+  metadataStore.put({ key: 'bodyDeletedIds', value: deletedIds })
+  markLocalChanges(transaction, updatedAt)
+  await transactionComplete(transaction)
+  return getBodyTrackerData()
+}
+
 async function getStoredBodyRecord(database, record) {
   const storeName = bodyRecordStoreName(record)
   const transaction = database.transaction(storeName, 'readonly')
@@ -217,15 +283,20 @@ async function saveNewMeasurement(database, item, record) {
   await transactionComplete(transaction)
 }
 
-function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds) {
+function buildBodyTrackerData(bodyWeights = [], measurements = [], units = [], records = [], savedFavoriteIds, savedDeletedIds) {
+  const deletedIdSet = new Set(Array.isArray(savedDeletedIds) ? savedDeletedIds.map(String) : [])
   const unitsById = new Map(units.map((unit) => [unit.id, normalizeMeasurementUnit(unit.shortName)]))
-  const measurementItems = measurements.map((measurement) => buildMeasurementItem(
-    measurement,
-    unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
-    records,
-  ))
+  const measurementItems = measurements
+    .map((measurement) => buildMeasurementItem(
+      measurement,
+      unitsById.get(measurement.unitId) || measurementUnitFallback(measurement.unitId),
+      records,
+    ))
+    .filter((item) => !deletedIdSet.has(String(item.id)))
   const itemsByName = new Map(measurementItems.map((item) => [normalizeBodyName(item.name), item]))
-  const defaultFavorites = FAVORITE_DEFINITIONS.map((definition) => buildDefaultFavorite(definition, itemsByName, bodyWeights))
+  const defaultFavorites = FAVORITE_DEFINITIONS
+    .map((definition) => buildDefaultFavorite(definition, itemsByName, bodyWeights))
+    .filter((item) => !deletedIdSet.has(String(item.id)))
   const defaultFavoritesById = new Map(defaultFavorites.map((item) => [item.id, item]))
   let measurementsWithFavorites = measurementItems
     .filter((item) => item.enabled)
