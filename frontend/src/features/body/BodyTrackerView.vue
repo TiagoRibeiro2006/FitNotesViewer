@@ -6,6 +6,10 @@ import BodyMeasurementDetailView from './components/BodyMeasurementDetailView.vu
 import BodyMeasurementList from './components/BodyMeasurementList.vue'
 import { useBodyTracker } from './composables/useBodyTracker'
 
+const props = defineProps({
+  startManaging: { type: Boolean, default: false },
+})
+
 const {
   addMeasurement,
   error,
@@ -20,7 +24,7 @@ const {
 } = useBodyTracker()
 
 const selectedItem = ref(null)
-const managing = ref(false)
+const managing = ref(props.startManaging)
 const creatingMeasurement = ref(false)
 
 onMounted(async () => {
