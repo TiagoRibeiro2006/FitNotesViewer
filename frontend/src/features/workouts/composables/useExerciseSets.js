@@ -21,7 +21,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
   const selectedExercise = ref(null)
   const draftSets = ref([])
   const previousSets = ref([])
-  const progressBaseline = ref({ bestReps: 0, maxWeight: null })
+  const progressBaseline = ref({ points: [] })
   const hasExistingSets = ref(false)
   const deleteConfirming = ref(false)
   const title = computed(readTitle)
@@ -142,7 +142,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     deleteConfirming.value = false
     draftSets.value = []
     previousSets.value = []
-    progressBaseline.value = { bestReps: 0, maxWeight: null }
+    progressBaseline.value = { points: [] }
   }
 
   function readTitle() {
