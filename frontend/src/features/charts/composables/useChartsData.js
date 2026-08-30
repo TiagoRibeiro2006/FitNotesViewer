@@ -29,6 +29,5 @@ function createEmptyAnalyticsData() {
     categories: [],
     exercises: [],
     workoutSets: [],
-    workoutTimes: [],
   }
 }

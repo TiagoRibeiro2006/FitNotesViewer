@@ -371,6 +371,17 @@
   white-space: nowrap;
 }
 
+.chart-metric-grid small {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  color: #6f6f78;
+  font-size: 10px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chart-metric-grid strong.is-positive { color: #66d18f; }
 .chart-metric-grid strong.is-negative { color: #ff7770; }
 
@@ -814,6 +825,73 @@
   height: 4px;
 }
 
+.training-insights-card {
+  overflow: hidden;
+}
+
+.training-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #24242a;
+  border-radius: 6px;
+  background: #24242a;
+}
+
+.training-insights-grid article {
+  min-width: 0;
+  min-height: 132px;
+  padding: 14px;
+  background: #131316;
+}
+
+.training-insights-grid i {
+  width: 9px;
+  height: 9px;
+  display: block;
+  margin-bottom: 15px;
+  border-radius: 50%;
+  background: #8d75f5;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.training-insights-grid i.is-green { background: #55c988; }
+.training-insights-grid i.is-orange { background: #ec9e47; }
+.training-insights-grid i.is-blue { background: #3f96ff; }
+
+.training-insights-grid span,
+.training-insights-grid small {
+  display: block;
+  overflow: hidden;
+  color: #6e6e77;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-insights-grid span {
+  margin-bottom: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.training-insights-grid strong {
+  display: block;
+  min-height: 34px;
+  margin-bottom: 7px;
+  overflow: hidden;
+  color: #eeeef1;
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.training-insights-grid small {
+  font-size: 9px;
+}
+
 @media (max-width: 640px) {
   .chart-control-card,
   .chart-visual-card { padding: 14px; }
@@ -822,6 +900,7 @@
   .chart-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .training-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .training-dashboard-grid { grid-template-columns: 1fr; }
+  .training-insights-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .donut-chart-layout { grid-template-columns: minmax(120px, .7fr) minmax(0, 1.3fr); }
   .body-line-chart-card { overflow: hidden; }
   .time-series-chart svg { width: calc(100% + 10px); margin-left: -5px; }

@@ -58,6 +58,12 @@ function formatRange() {
   if (analytics.value.minimum === null) return '—'
   return `${formatNumber(analytics.value.minimum)}–${formatNumber(analytics.value.maximum)}`
 }
+
+function formatChangePercent() {
+  if (analytics.value.changePercent === null) return ''
+  const sign = analytics.value.changePercent > 0 ? '+' : ''
+  return `${sign}${formatNumber(analytics.value.changePercent)}% in selected period`
+}
 </script>
 
 <template>
@@ -141,6 +147,7 @@ function formatRange() {
         <strong :class="{ 'is-positive': analytics.change > 0, 'is-negative': analytics.change < 0 }">
           {{ formatChange() }}
         </strong>
+        <small>{{ formatChangePercent() }}</small>
       </article>
       <article>
         <span>Average</span>

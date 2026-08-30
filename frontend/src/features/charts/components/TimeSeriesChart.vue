@@ -205,6 +205,7 @@ function formatLongDate(record) {
           :aria-label="`${formatSelectedValue(point.record.value)}, ${formatLongDate(point.record)}`"
           @click="selectPoint(point.index)"
           @keydown.enter="selectPoint(point.index)"
+          @keydown.space.prevent="selectPoint(point.index)"
         />
       </g>
 
