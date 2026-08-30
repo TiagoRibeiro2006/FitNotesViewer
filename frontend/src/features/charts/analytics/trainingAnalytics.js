@@ -1,7 +1,7 @@
 import { androidColorToCss } from '../../../shared/utils/colors.js'
-import { normalizeDateKey, shiftDateKey } from '../../../shared/utils/dates.js'
+import { normalizeDateKey } from '../../../shared/utils/dates.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
-import { dateRangeBounds, differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
+import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
 
 export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
   const allSets = normalizeSets(data.workoutSets)
@@ -31,7 +31,6 @@ export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
     longestStreak: calculateLongestStreak(workoutDays),
     muscleDistribution,
     exerciseRanking: buildExerciseRanking(enrichedSets),
-    weeklyActivity: buildWeeklyActivity(enrichedSets, rangeId),
     weekdayDistribution: buildWeekdayDistribution(enrichedSets),
   }
 }
@@ -194,45 +193,6 @@ function createExerciseSummary(set) {
     progressSets: 0,
     dates: new Set(),
   }
-}
-
-function buildWeeklyActivity(sets, rangeId) {
-  const weeks = new Map()
-
-  for (const set of sets) {
-    const weekKey = startOfWeek(set.date)
-    const week = weeks.get(weekKey) ?? { date: weekKey, sets: 0, reps: 0, volume: 0, dates: new Set() }
-    week.sets += 1
-    week.reps += set.reps
-    week.volume += set.volume
-    week.dates.add(set.date)
-    weeks.set(weekKey, week)
-  }
-
-  const bounds = dateRangeBounds(rangeId, sets)
-  const firstWeek = startOfWeek(bounds.startDate)
-  const lastWeek = startOfWeek(bounds.endDate)
-  const activity = []
-  let weekKey = firstWeek
-
-  while (weekKey <= lastWeek) {
-    const week = weeks.get(weekKey) ?? { date: weekKey, sets: 0, reps: 0, volume: 0, dates: new Set() }
-    activity.push({ ...week, workouts: week.dates.size })
-    weekKey = shiftDateKey(weekKey, 7)
-  }
-  return activity
-}
-
-function startOfWeek(dateKey) {
-  const parts = dateKey.split('-').map(Number)
-  const date = new Date(parts[0], parts[1] - 1, parts[2])
-  const weekday = (date.getDay() + 6) % 7
-  date.setDate(date.getDate() - weekday)
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0'),
-  ].join('-')
 }
 
 function uniqueValues(rows, field) {
