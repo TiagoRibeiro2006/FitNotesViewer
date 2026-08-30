@@ -2,7 +2,7 @@ import { nextTick, ref } from 'vue'
 import { todayKey } from '../shared/utils/dates'
 
 const DEFAULT_VIEW = 'workouts'
-const APP_VIEWS = new Set(['workouts', 'body', 'calendar', 'settings'])
+const APP_VIEWS = new Set(['workouts', 'body', 'calendar', 'charts', 'settings'])
 
 export function useAppNavigation() {
   const activeView = ref(DEFAULT_VIEW)
