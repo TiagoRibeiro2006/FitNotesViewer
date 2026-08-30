@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
 import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
 import { createTrainingAnalytics } from '../analytics/trainingAnalytics.js'
-import ActivityBarChart from './ActivityBarChart.vue'
 import ChartMetricSelector from './ChartMetricSelector.vue'
 import ChartRangeSelector from './ChartRangeSelector.vue'
 import DonutChart from './DonutChart.vue'
@@ -21,11 +20,6 @@ const DISTRIBUTION_METRICS = [
   { id: 'volume', label: 'Volume' },
   { id: 'sessions', label: 'Sessions' },
 ]
-const ACTIVITY_METRICS = [
-  { id: 'sets', label: 'Sets' },
-  { id: 'volume', label: 'Volume' },
-  { id: 'workouts', label: 'Days' },
-]
 const RANKING_METRICS = [
   { id: 'volume', label: 'Volume' },
   { id: 'sets', label: 'Sets' },
@@ -36,7 +30,6 @@ const RANKING_METRICS = [
 const selectedRange = ref('90d')
 const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
-const activityMetric = ref('sets')
 const rankingMetric = ref('volume')
 const analytics = computed(buildAnalytics)
 const availableMuscles = computed(readAvailableMuscles)
@@ -171,21 +164,6 @@ function formatRate(value) {
           <MuscleFrequencyChart :muscles="analytics.muscleDistribution" />
         </section>
       </div>
-
-      <section class="chart-visual-card">
-        <div class="chart-card-heading training-chart-heading">
-          <div>
-            <p class="eyebrow">WEEKLY LOAD</p>
-            <h2>Training activity</h2>
-          </div>
-          <ChartMetricSelector
-            v-model="activityMetric"
-            :options="ACTIVITY_METRICS"
-            label="Weekly activity metric"
-          />
-        </div>
-        <ActivityBarChart :rows="analytics.weeklyActivity" :metric="activityMetric" />
-      </section>
 
       <div class="training-dashboard-grid training-dashboard-grid-bottom">
         <section class="chart-visual-card">
