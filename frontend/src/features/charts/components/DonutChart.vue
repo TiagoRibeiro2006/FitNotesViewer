@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
 
 const props = defineProps({
@@ -8,9 +8,23 @@ const props = defineProps({
   metricLabel: { type: String, required: true },
 })
 
+const chartRoot = ref(null)
+const selectedId = ref(null)
 const chartEntries = computed(buildChartEntries)
+const segments = computed(buildSegments)
 const total = computed(calculateTotal)
-const donutStyle = computed(buildDonutStyle)
+const selectedSegment = computed(readSelectedSegment)
+const popoverStyle = computed(buildPopoverStyle)
+
+onMounted(addOutsideListener)
+onBeforeUnmount(removeOutsideListener)
+
+watch(
+  function readChartSelectionSource() {
+    return [props.metric, props.entries]
+  },
+  clearSelection,
+)
 
 function buildChartEntries() {
   const entries = []
@@ -18,6 +32,7 @@ function buildChartEntries() {
     const value = Number(entry[props.metric])
     if (value > 0) entries.push({ ...entry, chartValue: value })
   }
+  entries.sort(compareChartValues)
   return entries
 }
 
@@ -27,17 +42,74 @@ function calculateTotal() {
   return value
 }
 
-function buildDonutStyle() {
-  if (!total.value) return { background: '#202026' }
+function buildSegments() {
+  if (!total.value) return []
 
-  const stops = []
-  let position = 0
+  const result = []
+  let offset = 0
   for (const entry of chartEntries.value) {
-    const start = position
-    position += (entry.chartValue / total.value) * 100
-    stops.push(`${entry.color} ${start}% ${position}%`)
+    const percentage = (entry.chartValue / total.value) * 100
+    const visiblePercentage = Math.max(percentage * .7, percentage - .65)
+    result.push({
+      ...entry,
+      percentage,
+      dashArray: `${visiblePercentage} ${100 - visiblePercentage}`,
+      dashOffset: -offset,
+      middleAngle: -90 + (offset + percentage / 2) * 3.6,
+    })
+    offset += percentage
   }
-  return { background: `conic-gradient(${stops.join(', ')})` }
+  return result
+}
+
+function compareChartValues(first, second) {
+  return second.chartValue - first.chartValue || first.name.localeCompare(second.name)
+}
+
+function selectSegment(segment) {
+  selectedId.value = segment.id
+}
+
+function clearSelection() {
+  selectedId.value = null
+}
+
+function readSelectedSegment() {
+  for (const segment of segments.value) {
+    if (String(segment.id) === String(selectedId.value)) return segment
+  }
+  return null
+}
+
+function buildPopoverStyle() {
+  const segment = selectedSegment.value
+  if (!segment) return {}
+
+  const radians = segment.middleAngle * Math.PI / 180
+  const top = Math.min(80, Math.max(20, 50 + Math.sin(radians) * 32))
+  const property = Math.cos(radians) >= 0 ? 'right' : 'left'
+  return {
+    [property]: '0',
+    top: `${top}%`,
+    borderColor: segment.color,
+  }
+}
+
+function isSelected(segment) {
+  return String(segment.id) === String(selectedId.value)
+}
+
+function addOutsideListener() {
+  document.addEventListener('pointerdown', handleOutsidePointer)
+}
+
+function removeOutsideListener() {
+  document.removeEventListener('pointerdown', handleOutsidePointer)
+}
+
+function handleOutsidePointer(event) {
+  if (selectedId.value === null || chartRoot.value?.contains(event.target)) return
+  clearSelection()
 }
 
 function formatTotal() {
@@ -47,7 +119,7 @@ function formatTotal() {
 function formatEntryValue(entry) {
   const value = compactNumber(entry.chartValue)
   if (props.metric === 'volume') return `${value} kg`
-  return value
+  return `${value} ${props.metricLabel}`
 }
 
 function formatPercentage(entry) {
@@ -62,16 +134,56 @@ function compactNumber(value) {
 </script>
 
 <template>
-  <div class="donut-chart-layout">
-    <div
-      class="donut-chart"
-      :style="donutStyle"
-      role="img"
-      :aria-label="`${formatTotal()} ${metricLabel} distributed across ${chartEntries.length} muscles`"
-    >
+  <div ref="chartRoot" class="donut-chart-layout" @click="clearSelection">
+    <div class="donut-chart-stage">
+      <svg
+        class="donut-chart"
+        viewBox="0 0 120 120"
+        role="img"
+        :aria-label="`${formatTotal()} ${metricLabel} distributed across ${chartEntries.length} muscles`"
+      >
+        <circle class="donut-chart-track" cx="60" cy="60" r="42" />
+        <g v-for="segment in segments" :key="segment.id" transform="rotate(-90 60 60)">
+          <circle
+            v-if="isSelected(segment)"
+            class="donut-segment-outline"
+            cx="60"
+            cy="60"
+            r="42"
+            pathLength="100"
+            :stroke="segment.color"
+            :stroke-dasharray="segment.dashArray"
+            :stroke-dashoffset="segment.dashOffset"
+          />
+          <circle
+            class="donut-segment"
+            :class="{ 'is-selected': isSelected(segment) }"
+            cx="60"
+            cy="60"
+            r="42"
+            pathLength="100"
+            :stroke="segment.color"
+            :stroke-dasharray="segment.dashArray"
+            :stroke-dashoffset="segment.dashOffset"
+            tabindex="0"
+            role="button"
+            :aria-label="`${segment.name}, ${formatPercentage(segment)}, ${formatEntryValue(segment)}`"
+            @click.stop="selectSegment(segment)"
+            @keydown.enter.stop="selectSegment(segment)"
+            @keydown.space.stop.prevent="selectSegment(segment)"
+          />
+        </g>
+      </svg>
+
       <div class="donut-chart-center">
         <strong>{{ formatTotal() }}</strong>
         <span>{{ metricLabel }}</span>
+      </div>
+
+      <div v-if="selectedSegment" class="donut-selection-popover" :style="popoverStyle">
+        <strong>{{ selectedSegment.name }}</strong>
+        <span>{{ formatPercentage(selectedSegment) }}</span>
+        <small>{{ formatEntryValue(selectedSegment) }}</small>
       </div>
     </div>
 
