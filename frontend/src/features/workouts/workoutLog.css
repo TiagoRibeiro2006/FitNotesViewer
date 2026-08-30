@@ -281,8 +281,8 @@
 
 .day-add-exercise {
   border: 0;
-  background: #f5f5f5;
-  color: #080808;
+  border: 1px solid #67676e;
+  background: #35353a;
   cursor: pointer;
 }
 
