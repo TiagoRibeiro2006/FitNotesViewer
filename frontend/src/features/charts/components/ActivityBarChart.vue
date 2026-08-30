@@ -7,9 +7,11 @@ const props = defineProps({
   metric: { type: String, required: true },
 })
 
+const MAXIMUM_BARS = 16
 const selectedIndex = ref(-1)
+const displayRows = computed(buildDisplayRows)
 const maximum = computed(readMaximum)
-const chartWidth = computed(readChartWidth)
+const chartStyle = computed(readChartStyle)
 const selectedRow = computed(readSelectedRow)
 
 watch(
@@ -21,7 +23,7 @@ watch(
 )
 
 function selectLatest() {
-  selectedIndex.value = props.rows.length - 1
+  selectedIndex.value = displayRows.value.length - 1
 }
 
 function selectRow(index) {
@@ -30,16 +32,46 @@ function selectRow(index) {
 
 function readMaximum() {
   let value = 0
-  for (const row of props.rows) value = Math.max(value, Number(row[props.metric]) || 0)
+  for (const row of displayRows.value) value = Math.max(value, Number(row[props.metric]) || 0)
   return value
 }
 
-function readChartWidth() {
-  return `${Math.max(100, props.rows.length * 8)}%`
+function readChartStyle() {
+  return { '--activity-bar-count': Math.max(1, displayRows.value.length) }
 }
 
 function readSelectedRow() {
-  return props.rows[selectedIndex.value] ?? null
+  return displayRows.value[selectedIndex.value] ?? null
+}
+
+function buildDisplayRows() {
+  if (props.rows.length <= MAXIMUM_BARS) return props.rows
+
+  const groupSize = Math.ceil(props.rows.length / MAXIMUM_BARS)
+  const rows = []
+  for (let index = 0; index < props.rows.length; index += groupSize) {
+    rows.push(mergeRows(props.rows.slice(index, index + groupSize)))
+  }
+  return rows
+}
+
+function mergeRows(rows) {
+  const merged = {
+    date: rows[0].date,
+    endDate: rows.at(-1).date,
+    sets: 0,
+    reps: 0,
+    volume: 0,
+    workouts: 0,
+  }
+
+  for (const row of rows) {
+    merged.sets += row.sets
+    merged.reps += row.reps
+    merged.volume += row.volume
+    merged.workouts += row.workouts
+  }
+  return merged
 }
 
 function barStyle(row) {
@@ -49,9 +81,14 @@ function barStyle(row) {
 }
 
 function shouldShowLabel(index) {
-  if (props.rows.length <= 8) return true
-  const interval = Math.ceil(props.rows.length / 6)
-  return index === 0 || index === props.rows.length - 1 || index % interval === 0
+  if (displayRows.value.length <= 8) return true
+  const interval = Math.ceil(displayRows.value.length / 5)
+  return index === 0 || index === displayRows.value.length - 1 || index % interval === 0
+}
+
+function formatPeriod(row) {
+  if (!row.endDate || row.endDate === row.date) return `Week of ${formatWeek(row.date)}`
+  return `${formatWeek(row.date)} – ${formatWeek(row.endDate)}`
 }
 
 function formatWeek(dateKey) {
@@ -71,13 +108,13 @@ function formatMetricValue(row) {
 
 <template>
   <div class="activity-chart-scroll">
-    <div class="activity-chart" :style="{ width: chartWidth }">
+    <div class="activity-chart" :style="chartStyle">
       <button
-        v-for="(row, index) in rows"
+        v-for="(row, index) in displayRows"
         :key="row.date"
         type="button"
         :class="{ 'is-selected': index === selectedIndex }"
-        :aria-label="`Week of ${formatWeek(row.date)}, ${formatMetricValue(row)}`"
+        :aria-label="`${formatPeriod(row)}, ${formatMetricValue(row)}`"
         @click="selectRow(index)"
       >
         <span class="activity-bar-track">
@@ -89,7 +126,7 @@ function formatMetricValue(row) {
   </div>
 
   <div v-if="selectedRow" class="activity-chart-selection">
-    <span>Week of {{ formatWeek(selectedRow.date) }}</span>
+    <span>{{ formatPeriod(selectedRow) }}</span>
     <strong>{{ formatMetricValue(selectedRow) }}</strong>
   </div>
 </template>
