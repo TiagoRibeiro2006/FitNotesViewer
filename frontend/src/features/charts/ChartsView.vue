@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
 const activeSection = ref('body')
@@ -54,11 +55,10 @@ function showTrainingCharts() {
     <button type="button" @click="load">Try again</button>
   </section>
 
-  <section v-else-if="activeSection === 'body'" class="charts-placeholder-card">
-    <p class="eyebrow">BODY ANALYTICS</p>
-    <h2>{{ data.bodyMeasurements.length }} measurements ready</h2>
-    <p>Select a measurement and follow every value through time.</p>
-  </section>
+  <BodyAnalyticsPanel
+    v-else-if="activeSection === 'body'"
+    :measurements="data.bodyMeasurements"
+  />
 
   <section v-else class="charts-placeholder-card">
     <p class="eyebrow">TRAINING ANALYTICS</p>
