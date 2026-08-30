@@ -1,6 +1,6 @@
 import { androidColorToCss } from '../../../shared/utils/colors.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
-import { filterByDateRange, rangeDayCount } from './dateRanges.js'
+import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
 
 export function createTrainingAnalytics(data, rangeId) {
   const allSets = normalizeSets(data.workoutSets)
@@ -14,6 +14,8 @@ export function createTrainingAnalytics(data, rangeId) {
   const totalReps = sumValues(enrichedSets, 'reps')
   const progressSets = countProgressSets(enrichedSets)
   const daysInRange = rangeDayCount(rangeId, enrichedSets)
+  const weeksInRange = daysInRange ? Math.max(1, daysInRange / 7) : 0
+  const muscleDistribution = buildMuscleDistribution(enrichedSets, weeksInRange)
 
   return {
     sets: enrichedSets,
@@ -24,10 +26,12 @@ export function createTrainingAnalytics(data, rangeId) {
     workoutCount: workoutDays.size,
     exerciseCount: activeExercises.size,
     averageSetsPerWorkout: workoutDays.size ? enrichedSets.length / workoutDays.size : 0,
-    workoutsPerWeek: daysInRange ? workoutDays.size / Math.max(1, daysInRange / 7) : 0,
-    muscleDistribution: buildMuscleDistribution(enrichedSets),
+    workoutsPerWeek: weeksInRange ? workoutDays.size / weeksInRange : 0,
+    longestStreak: calculateLongestStreak(workoutDays),
+    muscleDistribution,
     exerciseRanking: buildExerciseRanking(enrichedSets),
     weeklyActivity: buildWeeklyActivity(enrichedSets),
+    weekdayDistribution: buildWeekdayDistribution(enrichedSets),
   }
 }
 
@@ -72,7 +76,7 @@ function enrichSets(sets, lookups, progressById) {
   return enriched
 }
 
-function buildMuscleDistribution(sets) {
+function buildMuscleDistribution(sets, weeksInRange) {
   const muscles = new Map()
 
   for (const set of sets) {
@@ -91,11 +95,44 @@ function buildMuscleDistribution(sets) {
     distribution.push({
       ...muscle,
       sessions: muscle.dates.size,
+      sessionsPerWeek: weeksInRange ? muscle.dates.size / weeksInRange : 0,
       exerciseCount: muscle.exercises.size,
     })
   }
   distribution.sort(compareSetCount)
   return distribution
+}
+
+function buildWeekdayDistribution(sets) {
+  const weekdays = createWeekdays()
+
+  for (const set of sets) {
+    const index = readWeekdayIndex(set.date)
+    const day = weekdays[index]
+    day.sets += 1
+    day.volume += set.volume
+    day.dates.add(set.date)
+  }
+
+  return weekdays.map(finalizeWeekday)
+}
+
+function createWeekdays() {
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  return labels.map(createWeekday)
+}
+
+function createWeekday(label, index) {
+  return { id: index, label, sets: 0, volume: 0, dates: new Set() }
+}
+
+function finalizeWeekday(day) {
+  return { ...day, workouts: day.dates.size }
+}
+
+function readWeekdayIndex(dateKey) {
+  const parts = dateKey.split('-').map(Number)
+  return (new Date(parts[0], parts[1] - 1, parts[2]).getDay() + 6) % 7
 }
 
 function createMuscleSummary(set) {
@@ -196,6 +233,20 @@ function countProgressSets(sets) {
     if (set.isProgress) count += 1
   }
   return count
+}
+
+function calculateLongestStreak(workoutDays) {
+  const dates = [...workoutDays].sort()
+  if (!dates.length) return 0
+
+  let longest = 1
+  let current = 1
+  for (let index = 1; index < dates.length; index += 1) {
+    if (differenceInDays(dates[index - 1], dates[index]) === 1) current += 1
+    else current = 1
+    longest = Math.max(longest, current)
+  }
+  return longest
 }
 
 function compareSetCount(first, second) {
