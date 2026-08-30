@@ -24,7 +24,7 @@ function saveExerciseOrder() {
 </script>
 
 <template>
-  <section class="workout-day">
+  <section class="workout-day" :class="{ 'is-empty': !loading && !error && !exercises.length }">
     <header class="day-navigation-card">
       <div class="day-navigation">
         <button class="nav-button" aria-label="Previous day" @click="emit('previous')">←</button>

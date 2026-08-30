@@ -9,12 +9,11 @@ body.modal-open {
   display: grid;
   place-items: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, .76);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #fff;
 }
 
 .workout-modal {
+  position: relative;
   width: min(720px, 100%);
   max-height: min(860px, calc(100dvh - 32px));
   display: flex;

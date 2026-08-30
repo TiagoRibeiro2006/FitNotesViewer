@@ -1,10 +1,12 @@
 import { createLocalId } from '../../shared/utils/ids'
+import { DEFAULT_CATEGORIES, DEFAULT_EXERCISES } from '../defaults/exerciseCatalog'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
 
 export async function getExerciseCatalog() {
   const database = await openAppDatabase()
+  await ensureDefaultExerciseCatalog(database)
   const transaction = database.transaction(['exercises', 'categories', 'workoutSets'], 'readonly')
   const done = transactionComplete(transaction)
   const results = await Promise.all([
@@ -30,6 +32,31 @@ export async function getExerciseCatalog() {
   catalogExercises.sort(compareExerciseNames)
   categories.sort(compareCategories)
   return { exercises: catalogExercises, categories }
+}
+
+async function ensureDefaultExerciseCatalog(database) {
+  const lookupTransaction = database.transaction(['exercises', 'categories', 'metadata'], 'readonly')
+  const lookupDone = transactionComplete(lookupTransaction)
+  const results = await Promise.all([
+    requestResult(lookupTransaction.objectStore('exercises').count()),
+    requestResult(lookupTransaction.objectStore('categories').count()),
+    requestResult(lookupTransaction.objectStore('metadata').get('exerciseCatalogDefaultsInitialized')),
+  ])
+  await lookupDone
+  if (results[2]?.value === true) return
+
+  const transaction = database.transaction(['exercises', 'categories', 'metadata'], 'readwrite')
+  transaction.objectStore('metadata').put({ key: 'exerciseCatalogDefaultsInitialized', value: true })
+  if (results[0] > 0 || results[1] > 0) {
+    await transactionComplete(transaction)
+    return
+  }
+
+  const exerciseStore = transaction.objectStore('exercises')
+  const categoryStore = transaction.objectStore('categories')
+  for (const category of DEFAULT_CATEGORIES) categoryStore.put(category)
+  for (const exercise of DEFAULT_EXERCISES) exerciseStore.put(exercise)
+  await transactionComplete(transaction)
 }
 
 export async function createExerciseDetails(details) {
