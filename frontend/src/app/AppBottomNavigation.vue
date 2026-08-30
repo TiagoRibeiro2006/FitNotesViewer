@@ -41,7 +41,7 @@ const emit = defineEmits(['navigate'])
       </template>
     </BaseBottomBarItem>
 
-    <BaseBottomBarItem label="Charts" disabled>
+    <BaseBottomBarItem label="Charts" :active="activeView === 'charts'" @select="emit('navigate', 'charts')">
       <template #icon>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 20V10m5 10V4m6 16v-7m5 7V7" />

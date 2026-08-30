@@ -7,6 +7,7 @@ import { migrateLegacyLocalStorage } from './data/repositories/backupRepository'
 import { getSummary } from './data/repositories/summaryRepository'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
+import ChartsView from './features/charts/ChartsView.vue'
 import SettingsView from './features/settings/SettingsView.vue'
 import WorkoutLogView from './features/workouts/WorkoutLogView.vue'
 import { warmUpSqliteEngine } from './fitnotes'
@@ -94,6 +95,8 @@ function openBodyManagement() {
       :selected-date="selectedDate"
       @select="selectCalendarDate"
     />
+
+    <ChartsView v-else-if="activeView === 'charts'" />
 
     <SettingsView
       v-else-if="activeView === 'settings'"
