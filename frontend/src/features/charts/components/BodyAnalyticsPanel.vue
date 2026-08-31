@@ -10,6 +10,7 @@ const props = defineProps({
   measurements: { type: Array, required: true },
 })
 
+const measurementOptions = computed(sortMeasurements)
 const selectedMeasurementId = ref(findInitialMeasurementId())
 const initialInterval = createRecentDateInterval()
 const selectedStartDate = ref(initialInterval.startDate)
@@ -21,17 +22,26 @@ const selectedMeasurement = computed(findSelectedMeasurement)
 const analytics = computed(buildAnalytics)
 
 function findInitialMeasurementId() {
-  for (const measurement of props.measurements) {
+  for (const measurement of measurementOptions.value) {
     if (measurement.records.length) return String(measurement.id)
   }
-  return props.measurements.length ? String(props.measurements[0].id) : ''
+  return measurementOptions.value.length ? String(measurementOptions.value[0].id) : ''
 }
 
 function findSelectedMeasurement() {
-  for (const measurement of props.measurements) {
+  for (const measurement of measurementOptions.value) {
     if (String(measurement.id) === selectedMeasurementId.value) return measurement
   }
-  return props.measurements[0] ?? null
+  return measurementOptions.value[0] ?? null
+}
+
+function sortMeasurements() {
+  return [...props.measurements].sort(compareMeasurements)
+}
+
+function compareMeasurements(first, second) {
+  if (first.favorite !== second.favorite) return first.favorite ? -1 : 1
+  return first.name.localeCompare(second.name, undefined, { sensitivity: 'base' })
 }
 
 function buildAnalytics() {
@@ -97,7 +107,7 @@ function formatChangePercent() {
           <span>Y axis · Measurement</span>
           <select v-model="selectedMeasurementId">
             <option
-              v-for="measurement in measurements"
+              v-for="measurement in measurementOptions"
               :key="measurement.id"
               :value="String(measurement.id)"
             >
