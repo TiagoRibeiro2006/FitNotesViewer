@@ -31,12 +31,17 @@ const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const rankingMetric = ref('volume')
 const analytics = computed(buildAnalytics)
+const weeklyAnalytics = computed(buildWeeklyAnalytics)
 const availableMuscles = computed(readAvailableMuscles)
 const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
 
 function buildAnalytics() {
   return createTrainingAnalytics(props.data, selectedRange.value, selectedMuscleId.value)
+}
+
+function buildWeeklyAnalytics() {
+  return createTrainingAnalytics(props.data, selectedRange.value)
 }
 
 function readAvailableMuscles() {
@@ -148,8 +153,6 @@ function readStrongestMuscle() {
           <ExerciseRanking :exercises="analytics.exerciseRanking" :metric="rankingMetric" />
         </section>
       </div>
-
-      <WeeklyTrainingAnalysis :sets="analytics.sets" />
     </template>
 
     <section v-else class="chart-empty-card">
@@ -159,5 +162,7 @@ function readStrongestMuscle() {
       <strong>No workouts in this range</strong>
       <p>Choose a longer period or add sets in the Log.</p>
     </section>
+
+    <WeeklyTrainingAnalysis v-if="weeklyAnalytics.totalSets" :sets="weeklyAnalytics.sets" />
   </div>
 </template>
