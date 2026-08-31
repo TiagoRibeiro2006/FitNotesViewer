@@ -7,7 +7,6 @@ import ChartRangeSelector from './ChartRangeSelector.vue'
 import DonutChart from './DonutChart.vue'
 import ExerciseRanking from './ExerciseRanking.vue'
 import MuscleFrequencyChart from './MuscleFrequencyChart.vue'
-import WeeklyTrainingAnalysis from './WeeklyTrainingAnalysis.vue'
 import WeekdayChart from './WeekdayChart.vue'
 
 const props = defineProps({
@@ -31,17 +30,12 @@ const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const rankingMetric = ref('volume')
 const analytics = computed(buildAnalytics)
-const weeklyAnalytics = computed(buildWeeklyAnalytics)
 const availableMuscles = computed(readAvailableMuscles)
 const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
 
 function buildAnalytics() {
   return createTrainingAnalytics(props.data, selectedRange.value, selectedMuscleId.value)
-}
-
-function buildWeeklyAnalytics() {
-  return createTrainingAnalytics(props.data, selectedRange.value)
 }
 
 function readAvailableMuscles() {
@@ -162,7 +156,5 @@ function readStrongestMuscle() {
       <strong>No workouts in this range</strong>
       <p>Choose a longer period or add sets in the Log.</p>
     </section>
-
-    <WeeklyTrainingAnalysis v-if="weeklyAnalytics.totalSets" :sets="weeklyAnalytics.sets" />
   </div>
 </template>
