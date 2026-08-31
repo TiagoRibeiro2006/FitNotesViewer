@@ -834,170 +834,38 @@
   text-transform: uppercase;
 }
 
-.weekly-analysis-content {
-  display: grid;
-  gap: 14px;
-}
-
-.weekly-analysis-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
+.weekly-analysis-report {
+  position: relative;
   overflow: hidden;
+  padding: 18px;
   border: 1px solid #24242a;
   border-radius: 6px;
-  background: #24242a;
+  background: linear-gradient(145deg, #141a22, #111114 58%);
 }
 
-.weekly-analysis-summary article {
-  min-width: 0;
-  min-height: 108px;
-  padding: 16px;
-  background: #131316;
+.weekly-analysis-report::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: #3f96ff;
 }
 
-.weekly-analysis-summary span,
-.weekly-analysis-summary small {
-  display: block;
-  color: #71717b;
-}
-
-.weekly-analysis-summary span {
-  margin-bottom: 12px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-
-.weekly-analysis-summary strong {
-  display: block;
-  margin-bottom: 8px;
-  color: #fff;
-  font-size: 28px;
-  line-height: 1;
-}
-
-.weekly-analysis-summary small {
-  font-size: 9px;
-}
-
-.weekly-analysis-details {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.weekly-analysis-section {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid #24242a;
-  border-radius: 6px;
-  background: #111114;
-}
-
-.weekly-analysis-section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 13px 14px;
-  border-bottom: 1px solid #24242a;
-}
-
-.weekly-analysis-section-title span {
-  color: #a2a2ab;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.weekly-analysis-section-title small {
-  color: #62626b;
-  font-size: 9px;
-}
-
-.weekly-muscle-list,
-.weekly-workout-list {
-  display: grid;
-}
-
-.weekly-muscle-list article,
-.weekly-workout-list article {
-  min-width: 0;
-  padding: 13px 14px;
-  border-bottom: 1px solid #202024;
-}
-
-.weekly-muscle-list article:last-child,
-.weekly-workout-list article:last-child {
-  border-bottom: 0;
-}
-
-.weekly-muscle-heading,
-.weekly-workout-list article {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.weekly-muscle-heading strong,
-.weekly-workout-list strong {
-  overflow: hidden;
-  color: #eeeef2;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.weekly-muscle-heading span,
-.weekly-workout-list span {
-  color: #83838c;
-  font-size: 10px;
-}
-
-.weekly-muscle-track {
-  height: 4px;
-  margin: 9px 0 7px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #24242a;
-}
-
-.weekly-muscle-track i {
-  height: 100%;
-  display: block;
-  min-width: 2px;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #317bd1, #5eb0ff);
-}
-
-.weekly-muscle-list article > small {
-  color: #62626b;
-  font-size: 9px;
-}
-
-.weekly-analysis-empty {
-  padding: 28px 18px;
-  border: 1px solid #24242a;
-  border-radius: 6px;
-  background: #111114;
-  text-align: center;
-}
-
-.weekly-analysis-empty strong {
-  display: block;
-  margin-bottom: 7px;
-  color: #eeeef2;
-  font-size: 13px;
-}
-
-.weekly-analysis-empty p {
+.weekly-analysis-report p {
   margin: 0;
-  color: #6e6e77;
-  font-size: 10px;
+  color: #d5d5db;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.weekly-analysis-report small {
+  display: block;
+  margin-top: 16px;
+  color: #686873;
+  font-size: 9px;
 }
 
 @media (max-width: 640px) {
@@ -1007,7 +875,6 @@
   .training-filter-grid { grid-template-columns: 1fr; }
   .chart-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .training-dashboard-grid { grid-template-columns: 1fr; }
-  .weekly-analysis-details { grid-template-columns: 1fr; }
   .donut-chart-layout { grid-template-columns: minmax(120px, .7fr) minmax(0, 1.3fr); }
   .body-line-chart-card { overflow: hidden; }
   .time-series-chart svg { width: calc(100% + 10px); margin-left: -5px; }
