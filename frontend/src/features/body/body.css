@@ -202,6 +202,39 @@
   fill: currentColor;
 }
 
+.body-item-menu-toggle.is-favorite-drag-handle {
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.body-item-menu-toggle.is-favorite-drag-handle:active {
+  cursor: grabbing;
+}
+
+.body-section-card.is-reordering,
+.body-measurement-list.is-reordering {
+  overflow: visible;
+}
+
+.body-measurement-list.is-reordering .body-measurement-row {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.body-measurement-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border: 1px solid #4b9cff;
+  border-radius: var(--box-radius);
+  outline: 2px solid #4b9cff;
+  outline-offset: 1px;
+  background: #181818;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .5);
+  transform: scale(1.025);
+}
+
 .body-item-action-menu {
   grid-column: 1 / -1;
   display: grid;

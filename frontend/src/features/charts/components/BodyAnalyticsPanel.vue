@@ -41,7 +41,17 @@ function sortMeasurements() {
 
 function compareMeasurements(first, second) {
   if (first.favorite !== second.favorite) return first.favorite ? -1 : 1
+  if (first.favorite) {
+    const orderDifference = readFavoriteOrder(first) - readFavoriteOrder(second)
+    if (orderDifference !== 0) return orderDifference
+  }
   return first.name.localeCompare(second.name, undefined, { sensitivity: 'base' })
+}
+
+function readFavoriteOrder(measurement) {
+  return Number.isInteger(measurement.favoriteOrder)
+    ? measurement.favoriteOrder
+    : Number.MAX_SAFE_INTEGER
 }
 
 function buildAnalytics() {

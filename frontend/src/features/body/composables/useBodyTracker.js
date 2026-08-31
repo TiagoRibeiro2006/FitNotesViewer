@@ -68,6 +68,29 @@ export function useBodyTracker() {
     }
   }
 
+  function moveFavorite(fromIndex, toIndex) {
+    if (favoritesSaving.value || fromIndex === toIndex) return
+    const movedItems = favorites.value.splice(fromIndex, 1)
+    if (!movedItems.length) return
+    favorites.value.splice(toIndex, 0, movedItems[0])
+  }
+
+  async function saveFavoriteOrder() {
+    if (favoritesSaving.value) return
+    favoritesSaving.value = true
+    error.value = ''
+
+    try {
+      const favoriteIds = favorites.value.map(readItemId)
+      await saveBodyFavoriteIds(favoriteIds)
+      applyTrackerData(await getBodyTrackerData())
+    } catch {
+      error.value = 'Favorite order could not be saved in local storage.'
+    } finally {
+      favoritesSaving.value = false
+    }
+  }
+
   async function removeMeasurement(item) {
     if (managementSaving.value) return
     managementSaving.value = true
@@ -101,14 +124,20 @@ export function useBodyTracker() {
     measurements.value = data.measurements
   }
 
+  function readItemId(item) {
+    return item.id
+  }
+
   return {
     addMeasurement,
     error,
     favoritesSaving,
     loading,
     managementSaving,
+    moveFavorite,
     removeMeasurement,
     renameMeasurement,
+    saveFavoriteOrder,
     sections,
     load,
     toggleFavorite,
