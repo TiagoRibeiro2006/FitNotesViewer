@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { createTrainingSets } from '../analytics/trainingAnalytics.js'
-import WeeklyTrainingAnalysis from './WeeklyTrainingAnalysis.vue'
+import TrainingPeriodAnalysis from './TrainingPeriodAnalysis.vue'
 
 const props = defineProps({
   data: { type: Object, required: true },
@@ -16,7 +16,7 @@ function readSets() {
 
 <template>
   <div class="charts-panel-stack">
-    <WeeklyTrainingAnalysis v-if="sets.length" :sets="sets" />
+    <TrainingPeriodAnalysis v-if="sets.length" :sets="sets" />
 
     <section v-else class="chart-empty-card">
       <svg viewBox="0 0 24 24" aria-hidden="true">

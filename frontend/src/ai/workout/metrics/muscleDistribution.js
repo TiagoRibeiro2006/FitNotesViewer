@@ -1,10 +1,10 @@
-export function calculateMuscleDistribution(muscleSets, totalWeeklySets) {
-  if (!totalWeeklySets) return {}
+export function calculateMuscleDistribution(muscleSets, totalSets) {
+  if (!totalSets) return {}
 
   const distribution = new Map()
 
   for (const [muscleName, setCount] of Object.entries(muscleSets)) {
-    distribution.set(muscleName, percentage(setCount, totalWeeklySets))
+    distribution.set(muscleName, percentage(setCount, totalSets))
   }
 
   return Object.fromEntries(distribution)

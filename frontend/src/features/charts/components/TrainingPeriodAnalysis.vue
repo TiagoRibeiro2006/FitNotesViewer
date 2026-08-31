@@ -1,0 +1,129 @@
+<script setup>
+import { computed, ref, watch } from 'vue'
+import { analyzeTrainingPeriod } from '../../../ai/workout/analyzeTrainingPeriod.js'
+import { evaluateTrainingPeriod } from '../../../ai/workout/evaluateTrainingPeriod.js'
+import { generateTrainingFeedback } from '../../../ai/workout/generateTrainingFeedback.js'
+import {
+  buildTrainingPeriodWorkouts,
+  countTrainingPeriodDays,
+  createDefaultTrainingPeriod,
+  normalizeTrainingPeriod,
+} from '../analytics/trainingPeriodInput.js'
+
+const props = defineProps({
+  sets: { type: Array, required: true },
+})
+
+const selectedStartDate = ref('')
+const selectedEndDate = ref('')
+const generatedStartDate = ref('')
+const generatedEndDate = ref('')
+const workouts = computed(buildWorkouts)
+const periodDays = computed(readPeriodDays)
+const analysis = computed(buildAnalysis)
+const feedback = computed(buildFeedback)
+const rating = computed(buildRating)
+const ratingClass = computed(readRatingClass)
+const rangeLabel = computed(formatGeneratedRange)
+
+watch(readSets, resetDates, { immediate: true })
+
+function readSets() {
+  return props.sets
+}
+
+function buildWorkouts() {
+  return buildTrainingPeriodWorkouts(
+    props.sets,
+    generatedStartDate.value,
+    generatedEndDate.value,
+  )
+}
+
+function readPeriodDays() {
+  return countTrainingPeriodDays(generatedStartDate.value, generatedEndDate.value)
+}
+
+function buildAnalysis() {
+  return analyzeTrainingPeriod(workouts.value)
+}
+
+function buildFeedback() {
+  return generateTrainingFeedback(analysis.value, periodDays.value)
+}
+
+function buildRating() {
+  return evaluateTrainingPeriod(analysis.value, periodDays.value)
+}
+
+function readRatingClass() {
+  return 'is-' + rating.value.level
+}
+
+function resetDates() {
+  const period = createDefaultTrainingPeriod(props.sets)
+  if (!period) return
+
+  selectedStartDate.value = period.startDate
+  selectedEndDate.value = period.endDate
+  generatedStartDate.value = period.startDate
+  generatedEndDate.value = period.endDate
+}
+
+function generateAnalysis() {
+  const period = normalizeTrainingPeriod(selectedStartDate.value, selectedEndDate.value)
+  if (!period) return
+
+  generatedStartDate.value = period.startDate
+  generatedEndDate.value = period.endDate
+}
+
+function formatGeneratedRange() {
+  const period = normalizeTrainingPeriod(generatedStartDate.value, generatedEndDate.value)
+  if (!period) return 'No period selected'
+  return formatDate(period.startDate) + ' – ' + formatDate(period.endDate)
+}
+
+function formatDate(dateKey) {
+  const parts = dateKey.split('-').map(Number)
+  const date = new Date(parts[0], parts[1] - 1, parts[2])
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
+</script>
+
+<template>
+  <section class="chart-visual-card training-analysis-card" :class="ratingClass">
+    <div class="chart-card-heading training-chart-heading training-analysis-heading">
+      <div>
+        <p class="eyebrow">AI TRAINING ANALYSIS</p>
+        <h2>What your training shows</h2>
+      </div>
+    </div>
+
+    <div class="training-analysis-status">
+      <span class="training-analysis-badge">{{ rating.label }}</span>
+      <span class="training-analysis-range">{{ rangeLabel }}</span>
+    </div>
+
+    <form class="training-analysis-controls" @submit.prevent="generateAnalysis">
+      <label>
+        <span>Start date</span>
+        <input v-model="selectedStartDate" type="date" required>
+      </label>
+      <label>
+        <span>End date</span>
+        <input v-model="selectedEndDate" type="date" required>
+      </label>
+      <button type="submit">Generate</button>
+    </form>
+
+    <div class="training-analysis-report">
+      <p>{{ feedback }}</p>
+      <small>Generated locally from the selected training period.</small>
+    </div>
+  </section>
+</template>
