@@ -1,53 +1,36 @@
-import { shiftDateKey, todayKey } from '../../../shared/utils/dates.js'
+import { normalizeDateKey, shiftDateKey, todayKey } from '../../../shared/utils/dates.js'
 
-export const CHART_RANGE_OPTIONS = [
-  { id: '30d', label: '30D', days: 30 },
-  { id: '90d', label: '90D', days: 90 },
-  { id: '6m', label: '6M', days: 183 },
-  { id: '1y', label: '1Y', days: 365 },
-  { id: 'all', label: 'All', days: null },
-]
+export function createRecentDateInterval(days = 90, endDate = todayKey()) {
+  const normalizedEnd = normalizeDateKey(endDate) ?? todayKey()
+  const length = Math.max(1, Math.floor(Number(days) || 1))
+  return {
+    startDate: shiftDateKey(normalizedEnd, 1 - length),
+    endDate: normalizedEnd,
+  }
+}
 
-export function filterByDateRange(rows, rangeId, endDate = todayKey()) {
-  const range = findRange(rangeId)
-  if (range.days === null) return [...rows]
+export function normalizeDateInterval(startDate, endDate) {
+  const normalizedStart = normalizeDateKey(startDate)
+  const normalizedEnd = normalizeDateKey(endDate)
+  if (!normalizedStart || !normalizedEnd || normalizedStart > normalizedEnd) return null
+  return { startDate: normalizedStart, endDate: normalizedEnd }
+}
 
-  const startDate = shiftDateKey(endDate, 1 - range.days)
+export function filterByDateInterval(rows, startDate, endDate) {
+  const interval = normalizeDateInterval(startDate, endDate)
+  if (!interval) return [...rows]
+
   const filtered = []
   for (const row of rows) {
-    if (row.date >= startDate && row.date <= endDate) filtered.push(row)
+    if (row.date >= interval.startDate && row.date <= interval.endDate) filtered.push(row)
   }
   return filtered
 }
 
-export function rangeDayCount(rangeId, rows = []) {
-  const range = findRange(rangeId)
-  if (range.days !== null) return range.days
-  if (!rows.length) return 0
-
-  let firstDate = rows[0].date
-  let lastDate = rows[0].date
-  for (const row of rows) {
-    if (row.date < firstDate) firstDate = row.date
-    if (row.date > lastDate) lastDate = row.date
-  }
-  return differenceInDays(firstDate, lastDate) + 1
-}
-
-export function dateRangeBounds(rangeId, rows = [], endDate = todayKey()) {
-  const range = findRange(rangeId)
-  if (range.days !== null) {
-    return { startDate: shiftDateKey(endDate, 1 - range.days), endDate }
-  }
-  if (!rows.length) return { startDate: endDate, endDate }
-
-  let startDate = rows[0].date
-  let lastDate = rows[0].date
-  for (const row of rows) {
-    if (row.date < startDate) startDate = row.date
-    if (row.date > lastDate) lastDate = row.date
-  }
-  return { startDate, endDate: lastDate }
+export function dateIntervalDayCount(startDate, endDate, rows = []) {
+  const interval = normalizeDateInterval(startDate, endDate) ?? readRowDateInterval(rows)
+  if (!interval) return 0
+  return differenceInDays(interval.startDate, interval.endDate) + 1
 }
 
 export function differenceInDays(firstDate, secondDate) {
@@ -59,9 +42,14 @@ export function dateKeyToTime(dateKey) {
   return new Date(parts[0], parts[1] - 1, parts[2]).getTime()
 }
 
-function findRange(rangeId) {
-  for (const range of CHART_RANGE_OPTIONS) {
-    if (range.id === rangeId) return range
+function readRowDateInterval(rows) {
+  if (!rows.length) return null
+
+  let startDate = rows[0].date
+  let endDate = rows[0].date
+  for (const row of rows) {
+    if (row.date < startDate) startDate = row.date
+    if (row.date > endDate) endDate = row.date
   }
-  return CHART_RANGE_OPTIONS[1]
+  return normalizeDateInterval(startDate, endDate)
 }

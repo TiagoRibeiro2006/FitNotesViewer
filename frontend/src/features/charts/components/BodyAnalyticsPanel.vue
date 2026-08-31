@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
 import { createBodyAnalytics } from '../analytics/bodyAnalytics.js'
-import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
-import ChartRangeSelector from './ChartRangeSelector.vue'
+import { createRecentDateInterval, normalizeDateInterval } from '../analytics/dateRanges.js'
+import DateRangeControl from './DateRangeControl.vue'
 import TimeSeriesChart from './TimeSeriesChart.vue'
 
 const props = defineProps({
@@ -11,7 +11,11 @@ const props = defineProps({
 })
 
 const selectedMeasurementId = ref(findInitialMeasurementId())
-const selectedRange = ref('90d')
+const initialInterval = createRecentDateInterval()
+const selectedStartDate = ref(initialInterval.startDate)
+const selectedEndDate = ref(initialInterval.endDate)
+const appliedStartDate = ref(initialInterval.startDate)
+const appliedEndDate = ref(initialInterval.endDate)
 const scaleMode = ref('auto')
 const selectedMeasurement = computed(findSelectedMeasurement)
 const analytics = computed(buildAnalytics)
@@ -31,7 +35,18 @@ function findSelectedMeasurement() {
 }
 
 function buildAnalytics() {
-  return createBodyAnalytics(selectedMeasurement.value, selectedRange.value)
+  return createBodyAnalytics(
+    selectedMeasurement.value,
+    appliedStartDate.value,
+    appliedEndDate.value,
+  )
+}
+
+function applyDateInterval() {
+  const interval = normalizeDateInterval(selectedStartDate.value, selectedEndDate.value)
+  if (!interval) return
+  appliedStartDate.value = interval.startDate
+  appliedEndDate.value = interval.endDate
 }
 
 function setAutomaticScale() {
@@ -106,7 +121,11 @@ function formatChangePercent() {
 
       <div class="chart-range-control">
         <span>X axis · Time range</span>
-        <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+        <DateRangeControl
+          v-model:start-date="selectedStartDate"
+          v-model:end-date="selectedEndDate"
+          @apply="applyDateInterval"
+        />
       </div>
     </section>
 

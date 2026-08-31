@@ -9,6 +9,7 @@ import {
   createDefaultTrainingPeriod,
   normalizeTrainingPeriod,
 } from '../analytics/trainingPeriodInput.js'
+import DateRangeControl from './DateRangeControl.vue'
 
 const props = defineProps({
   sets: { type: Array, required: true },
@@ -109,17 +110,12 @@ function formatDate(dateKey) {
       <span class="training-analysis-range">{{ rangeLabel }}</span>
     </div>
 
-    <form class="training-analysis-controls" @submit.prevent="generateAnalysis">
-      <label>
-        <span>Start date</span>
-        <input v-model="selectedStartDate" type="date" required>
-      </label>
-      <label>
-        <span>End date</span>
-        <input v-model="selectedEndDate" type="date" required>
-      </label>
-      <button type="submit">Generate</button>
-    </form>
+    <DateRangeControl
+      v-model:start-date="selectedStartDate"
+      v-model:end-date="selectedEndDate"
+      action-label="Generate"
+      @apply="generateAnalysis"
+    />
 
     <div class="training-analysis-report">
       <p>{{ feedback }}</p>

@@ -1,16 +1,16 @@
 import { androidColorToCss } from '../../../shared/utils/colors.js'
 import { normalizeDateKey } from '../../../shared/utils/dates.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
-import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
+import { dateIntervalDayCount, differenceInDays, filterByDateInterval } from './dateRanges.js'
 
-export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
-  const enrichedSets = createTrainingSets(data, rangeId, muscleId)
+export function createTrainingAnalytics(data, startDate, endDate, muscleId = 'all') {
+  const enrichedSets = createTrainingSets(data, startDate, endDate, muscleId)
   const workoutDays = uniqueValues(enrichedSets, 'date')
   const activeExercises = uniqueValues(enrichedSets, 'exerciseId')
   const totalVolume = sumValues(enrichedSets, 'volume')
   const totalReps = sumValues(enrichedSets, 'reps')
   const progressSets = countProgressSets(enrichedSets)
-  const daysInRange = rangeDayCount(rangeId, enrichedSets)
+  const daysInRange = dateIntervalDayCount(startDate, endDate, enrichedSets)
   const weeksInRange = daysInRange ? Math.max(1, daysInRange / 7) : 0
   const muscleDistribution = buildMuscleDistribution(enrichedSets, weeksInRange)
 
@@ -31,10 +31,10 @@ export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
   }
 }
 
-export function createTrainingSets(data, rangeId = 'all', muscleId = 'all') {
+export function createTrainingSets(data, startDate = null, endDate = null, muscleId = 'all') {
   const allSets = normalizeSets(data.workoutSets)
   const progressById = buildHistoricalProgress(allSets)
-  const sets = filterByDateRange(allSets, rangeId)
+  const sets = filterByDateInterval(allSets, startDate, endDate)
   const lookups = createLookups(data.exercises, data.categories)
   return filterByMuscle(enrichSets(sets, lookups, progressById), muscleId)
 }
