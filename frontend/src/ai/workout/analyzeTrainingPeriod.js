@@ -3,7 +3,7 @@ import { calculateMuscleFrequency } from './metrics/muscleFrequency.js'
 import { calculateMuscleSets } from './metrics/muscleSets.js'
 import { calculateWorkoutSets } from './metrics/workoutSets.js'
 
-export function analyzeWeeklyTraining(workouts) {
+export function analyzeTrainingPeriod(workouts) {
   const workoutMetrics = calculateWorkoutSets(workouts)
   const muscleSets = calculateMuscleSets(workouts)
   const muscleFrequency = calculateMuscleFrequency(workouts)

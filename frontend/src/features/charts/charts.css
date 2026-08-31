@@ -837,38 +837,38 @@
   height: 4px;
 }
 
-.weekly-analysis-card {
-  --weekly-analysis-accent: #ef5753;
-  --weekly-analysis-badge-background: #2a1517;
+.training-analysis-card {
+  --training-analysis-accent: #ef5753;
+  --training-analysis-badge-background: #2a1517;
   overflow: hidden;
 }
 
-.weekly-analysis-card.is-great {
-  --weekly-analysis-accent: #55c988;
-  --weekly-analysis-badge-background: #14251c;
+.training-analysis-card.is-great {
+  --training-analysis-accent: #55c988;
+  --training-analysis-badge-background: #14251c;
 }
 
-.weekly-analysis-card.is-average {
-  --weekly-analysis-accent: #e2c84f;
-  --weekly-analysis-badge-background: #292513;
+.training-analysis-card.is-average {
+  --training-analysis-accent: #e2c84f;
+  --training-analysis-badge-background: #292513;
 }
 
-.weekly-analysis-card.is-bad {
-  --weekly-analysis-accent: #ec9e47;
-  --weekly-analysis-badge-background: #2a2015;
+.training-analysis-card.is-bad {
+  --training-analysis-accent: #ec9e47;
+  --training-analysis-badge-background: #2a2015;
 }
 
-.weekly-analysis-card.is-terrible {
-  --weekly-analysis-accent: #ef5753;
-  --weekly-analysis-badge-background: #2a1517;
+.training-analysis-card.is-terrible {
+  --training-analysis-accent: #ef5753;
+  --training-analysis-badge-background: #2a1517;
 }
 
-.weekly-analysis-heading {
+.training-analysis-heading {
   align-items: center;
   margin-bottom: 14px;
 }
 
-.weekly-analysis-status {
+.training-analysis-status {
   min-width: 0;
   display: flex;
   align-items: center;
@@ -877,20 +877,20 @@
   margin-bottom: 14px;
 }
 
-.weekly-analysis-badge {
+.training-analysis-badge {
   flex: 0 0 auto;
   padding: 6px 9px;
-  border: 1px solid var(--weekly-analysis-accent);
+  border: 1px solid var(--training-analysis-accent);
   border-radius: 999px;
-  background: var(--weekly-analysis-badge-background);
-  color: var(--weekly-analysis-accent);
+  background: var(--training-analysis-badge-background);
+  color: var(--training-analysis-accent);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
 
-.weekly-analysis-range {
+.training-analysis-range {
   min-width: 0;
   overflow: hidden;
   color: #a2a2ab;
@@ -901,9 +901,9 @@
   white-space: nowrap;
 }
 
-.weekly-analysis-controls {
+.training-analysis-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 88px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
   gap: 10px;
   margin-bottom: 14px;
@@ -913,13 +913,13 @@
   background: #111114;
 }
 
-.weekly-analysis-controls label {
+.training-analysis-controls label {
   min-width: 0;
   display: grid;
   gap: 7px;
 }
 
-.weekly-analysis-controls label > span {
+.training-analysis-controls label > span {
   color: #74747d;
   font-size: 9px;
   font-weight: 800;
@@ -927,7 +927,7 @@
   text-transform: uppercase;
 }
 
-.weekly-analysis-controls input {
+.training-analysis-controls input {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -941,7 +941,8 @@
   color-scheme: dark;
 }
 
-.weekly-analysis-controls button {
+.training-analysis-controls button {
+  grid-column: 2;
   width: 100%;
   min-width: 0;
   height: 42px;
@@ -955,11 +956,11 @@
   cursor: pointer;
 }
 
-.weekly-analysis-controls button:active {
+.training-analysis-controls button:active {
   transform: scale(.98);
 }
 
-.weekly-analysis-report {
+.training-analysis-report {
   position: relative;
   overflow: hidden;
   padding: 18px;
@@ -968,17 +969,17 @@
   background: linear-gradient(145deg, #141a22, #111114 58%);
 }
 
-.weekly-analysis-report::before {
+.training-analysis-report::before {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   width: 3px;
-  background: var(--weekly-analysis-accent);
+  background: var(--training-analysis-accent);
 }
 
-.weekly-analysis-report p {
+.training-analysis-report p {
   margin: 0;
   color: #d5d5db;
   font-size: 13px;
@@ -986,7 +987,7 @@
   white-space: pre-line;
 }
 
-.weekly-analysis-report small {
+.training-analysis-report small {
   display: block;
   margin-top: 16px;
   color: #686873;

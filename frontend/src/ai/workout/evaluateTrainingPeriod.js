@@ -5,31 +5,41 @@ const RATINGS = [
   { minimumScore: 0, level: 'terrible', label: 'Terrible' },
 ]
 
-export function evaluateWeeklyTraining(analysis) {
-  const score = calculateScore(analysis)
+export function evaluateTrainingPeriod(analysis, periodDays) {
+  const score = calculateScore(analysis, periodDays)
   const rating = findRating(score)
   return { ...rating, score }
 }
 
-function calculateScore(analysis) {
+function calculateScore(analysis, periodDays) {
   if (!analysis?.totalSets || !analysis?.workoutCount) return 0
 
-  return workoutScore(analysis.workoutCount)
-    + setScore(analysis.totalSets)
+  const weeks = calculateWeeks(periodDays)
+  const workoutsPerWeek = analysis.workoutCount / weeks
+  const setsPerWeek = analysis.totalSets / weeks
+
+  return workoutScore(workoutsPerWeek)
+    + setScore(setsPerWeek)
     + muscleVarietyScore(analysis.muscles)
     + muscleBalanceScore(analysis.muscles, analysis.totalSets)
     + workoutBalanceScore(analysis.workouts)
 }
 
-function workoutScore(workoutCount) {
-  if (workoutCount >= 3) return 35
-  if (workoutCount === 2) return 22
+function calculateWeeks(periodDays) {
+  const days = Number(periodDays)
+  if (!Number.isFinite(days) || days <= 7) return 1
+  return days / 7
+}
+
+function workoutScore(workoutsPerWeek) {
+  if (workoutsPerWeek >= 3) return 35
+  if (workoutsPerWeek >= 2) return 22
   return 8
 }
 
-function setScore(totalSets) {
-  if (totalSets >= 10) return 20
-  if (totalSets >= 5) return 12
+function setScore(setsPerWeek) {
+  if (setsPerWeek >= 10) return 20
+  if (setsPerWeek >= 5) return 12
   return 5
 }
 
