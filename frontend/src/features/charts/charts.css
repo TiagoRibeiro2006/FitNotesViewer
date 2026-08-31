@@ -921,6 +921,7 @@
 }
 
 .date-interval-control input {
+  display: block;
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -932,6 +933,31 @@
   background: #18181c;
   color: #fff;
   color-scheme: dark;
+  font-size: 13px;
+}
+
+.date-interval-days {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid #303037;
+  border-radius: 6px;
+  background: #18181c;
+  color: #8e8e98;
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.date-interval-days strong {
+  color: #fff;
+  font-size: 13px;
 }
 
 .date-interval-control button {
@@ -1001,6 +1027,8 @@
   .donut-chart-layout { grid-template-columns: minmax(120px, .7fr) minmax(0, 1.3fr); }
   .body-line-chart-card { overflow: hidden; }
   .time-series-chart svg { width: calc(100% + 10px); margin-left: -5px; }
+  .date-interval-control label { grid-column: 1 / -1; }
+  .date-interval-control input { font-size: 16px; }
 }
 
 @media (max-width: 390px) {

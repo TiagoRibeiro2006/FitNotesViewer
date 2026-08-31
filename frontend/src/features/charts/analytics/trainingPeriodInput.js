@@ -1,4 +1,4 @@
-import { dateToKey, normalizeDateKey, shiftDateKey } from '../../../shared/utils/dates.js'
+import { normalizeDateKey } from '../../../shared/utils/dates.js'
 
 export function buildTrainingPeriodWorkouts(sets, startDate, endDate) {
   const period = normalizeTrainingPeriod(startDate, endDate)
@@ -15,18 +15,10 @@ export function buildTrainingPeriodWorkouts(sets, startDate, endDate) {
   return finalizeWorkouts(workouts)
 }
 
-export function createDefaultTrainingPeriod(sets) {
-  const latestDate = findLatestWorkoutDate(sets)
-  if (!latestDate) return null
-
-  const startDate = startOfWeek(latestDate)
-  return { startDate, endDate: shiftDateKey(startDate, 6) }
-}
-
 export function normalizeTrainingPeriod(startDate, endDate) {
   const normalizedStart = normalizeDateKey(startDate)
   const normalizedEnd = normalizeDateKey(endDate)
-  if (!normalizedStart || !normalizedEnd || normalizedStart > normalizedEnd) return null
+  if (!normalizedStart || !normalizedEnd || normalizedStart >= normalizedEnd) return null
   return { startDate: normalizedStart, endDate: normalizedEnd }
 }
 
@@ -37,24 +29,6 @@ export function countTrainingPeriodDays(startDate, endDate) {
   const start = createDate(period.startDate)
   const end = createDate(period.endDate)
   return Math.round((end - start) / 86400000) + 1
-}
-
-function findLatestWorkoutDate(sets) {
-  let latestDate = null
-
-  for (const set of sets ?? []) {
-    const date = normalizeDateKey(set?.date)
-    if (date && (!latestDate || date > latestDate)) latestDate = date
-  }
-
-  return latestDate
-}
-
-function startOfWeek(dateKey) {
-  const date = createDate(dateKey)
-  const daysSinceMonday = (date.getDay() + 6) % 7
-  date.setDate(date.getDate() - daysSinceMonday)
-  return dateToKey(date)
 }
 
 function createDate(dateKey) {

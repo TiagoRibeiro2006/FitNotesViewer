@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { createRecentDateInterval, normalizeDateInterval } from '../analytics/dateRanges.js'
+import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
 import { createTrainingAnalytics } from '../analytics/trainingAnalytics.js'
+import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import ChartMetricSelector from './ChartMetricSelector.vue'
 import DateRangeControl from './DateRangeControl.vue'
 import DonutChart from './DonutChart.vue'
@@ -25,11 +26,9 @@ const RANKING_METRICS = [
   { id: 'progressSets', label: 'Progress' },
 ]
 
-const initialInterval = createRecentDateInterval()
-const selectedStartDate = ref(initialInterval.startDate)
-const selectedEndDate = ref(initialInterval.endDate)
-const appliedStartDate = ref(initialInterval.startDate)
-const appliedEndDate = ref(initialInterval.endDate)
+const { startDate: selectedStartDate, endDate: selectedEndDate } = useChartDateInterval()
+const appliedStartDate = ref(selectedStartDate.value)
+const appliedEndDate = ref(selectedEndDate.value)
 const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const rankingMetric = ref('volume')
@@ -52,7 +51,7 @@ function readAvailableMuscles() {
 }
 
 function applyDateInterval() {
-  const interval = normalizeDateInterval(selectedStartDate.value, selectedEndDate.value)
+  const interval = normalizeSelectableDateInterval(selectedStartDate.value, selectedEndDate.value)
   if (!interval) return
   appliedStartDate.value = interval.startDate
   appliedEndDate.value = interval.endDate
