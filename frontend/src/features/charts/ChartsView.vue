@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
+import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
@@ -77,6 +78,8 @@ function toggleAi() {
     v-else-if="activeSection === 'body'"
     :measurements="data.bodyMeasurements"
   />
+
+  <TrainingAiPanel v-else-if="aiEnabled" :data="data" />
 
   <TrainingAnalyticsPanel v-else :data="data" />
 </template>

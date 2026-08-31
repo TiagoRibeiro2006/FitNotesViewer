@@ -4,11 +4,7 @@ import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.
 import { differenceInDays, filterByDateRange, rangeDayCount } from './dateRanges.js'
 
 export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
-  const allSets = normalizeSets(data.workoutSets)
-  const progressById = buildHistoricalProgress(allSets)
-  const sets = filterByDateRange(allSets, rangeId)
-  const lookups = createLookups(data.exercises, data.categories)
-  const enrichedSets = filterByMuscle(enrichSets(sets, lookups, progressById), muscleId)
+  const enrichedSets = createTrainingSets(data, rangeId, muscleId)
   const workoutDays = uniqueValues(enrichedSets, 'date')
   const activeExercises = uniqueValues(enrichedSets, 'exerciseId')
   const totalVolume = sumValues(enrichedSets, 'volume')
@@ -33,6 +29,14 @@ export function createTrainingAnalytics(data, rangeId, muscleId = 'all') {
     exerciseRanking: buildExerciseRanking(enrichedSets),
     weekdayDistribution: buildWeekdayDistribution(enrichedSets),
   }
+}
+
+export function createTrainingSets(data, rangeId = 'all', muscleId = 'all') {
+  const allSets = normalizeSets(data.workoutSets)
+  const progressById = buildHistoricalProgress(allSets)
+  const sets = filterByDateRange(allSets, rangeId)
+  const lookups = createLookups(data.exercises, data.categories)
+  return filterByMuscle(enrichSets(sets, lookups, progressById), muscleId)
 }
 
 function filterByMuscle(sets, muscleId) {
