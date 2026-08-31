@@ -201,8 +201,7 @@
   cursor: pointer;
 }
 
-.chart-inline-toggle,
-.chart-range-selector {
+.chart-inline-toggle {
   display: grid;
   gap: 3px;
   padding: 3px;
@@ -215,8 +214,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.chart-inline-toggle button,
-.chart-range-selector button {
+.chart-inline-toggle button {
   min-height: 38px;
   border: 0;
   border-radius: 4px;
@@ -227,18 +225,13 @@
   cursor: pointer;
 }
 
-.chart-inline-toggle button.is-active,
-.chart-range-selector button.is-active {
+.chart-inline-toggle button.is-active {
   background: #29292f;
   color: #fff;
 }
 
 .chart-range-control {
   margin-top: 16px;
-}
-
-.chart-range-selector {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .chart-current-value {
@@ -901,7 +894,7 @@
   white-space: nowrap;
 }
 
-.training-analysis-controls {
+.date-interval-control {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
@@ -913,13 +906,13 @@
   background: #111114;
 }
 
-.training-analysis-controls label {
+.date-interval-control label {
   min-width: 0;
   display: grid;
   gap: 7px;
 }
 
-.training-analysis-controls label > span {
+.date-interval-control label > span {
   color: #74747d;
   font-size: 9px;
   font-weight: 800;
@@ -927,7 +920,7 @@
   text-transform: uppercase;
 }
 
-.training-analysis-controls input {
+.date-interval-control input {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -941,7 +934,7 @@
   color-scheme: dark;
 }
 
-.training-analysis-controls button {
+.date-interval-control button {
   grid-column: 2;
   width: 100%;
   min-width: 0;
@@ -956,8 +949,12 @@
   cursor: pointer;
 }
 
-.training-analysis-controls button:active {
+.date-interval-control button:active {
   transform: scale(.98);
+}
+
+.chart-range-control .date-interval-control {
+  margin-bottom: 0;
 }
 
 .training-analysis-report {
@@ -1007,7 +1004,6 @@
 }
 
 @media (max-width: 390px) {
-  .chart-range-selector button { font-size: 11px; }
   .chart-current-value { font-size: 19px; }
   .chart-card-heading h2 { font-size: 19px; }
   .training-chart-heading { align-items: flex-start; flex-direction: column; }

@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
+import { createRecentDateInterval, normalizeDateInterval } from '../analytics/dateRanges.js'
 import { createTrainingAnalytics } from '../analytics/trainingAnalytics.js'
 import ChartMetricSelector from './ChartMetricSelector.vue'
-import ChartRangeSelector from './ChartRangeSelector.vue'
+import DateRangeControl from './DateRangeControl.vue'
 import DonutChart from './DonutChart.vue'
 import ExerciseRanking from './ExerciseRanking.vue'
 import MuscleFrequencyChart from './MuscleFrequencyChart.vue'
@@ -25,7 +25,11 @@ const RANKING_METRICS = [
   { id: 'progressSets', label: 'Progress' },
 ]
 
-const selectedRange = ref('90d')
+const initialInterval = createRecentDateInterval()
+const selectedStartDate = ref(initialInterval.startDate)
+const selectedEndDate = ref(initialInterval.endDate)
+const appliedStartDate = ref(initialInterval.startDate)
+const appliedEndDate = ref(initialInterval.endDate)
 const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const rankingMetric = ref('volume')
@@ -35,11 +39,23 @@ const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
 
 function buildAnalytics() {
-  return createTrainingAnalytics(props.data, selectedRange.value, selectedMuscleId.value)
+  return createTrainingAnalytics(
+    props.data,
+    appliedStartDate.value,
+    appliedEndDate.value,
+    selectedMuscleId.value,
+  )
 }
 
 function readAvailableMuscles() {
-  return createTrainingAnalytics(props.data, 'all').muscleDistribution
+  return createTrainingAnalytics(props.data).muscleDistribution
+}
+
+function applyDateInterval() {
+  const interval = normalizeDateInterval(selectedStartDate.value, selectedEndDate.value)
+  if (!interval) return
+  appliedStartDate.value = interval.startDate
+  appliedEndDate.value = interval.endDate
 }
 
 function readDistributionLabel() {
@@ -68,7 +84,11 @@ function readStrongestMuscle() {
       <div class="training-filter-grid">
         <div class="chart-range-control chart-range-control-first">
           <span>Analysis period</span>
-          <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+          <DateRangeControl
+            v-model:start-date="selectedStartDate"
+            v-model:end-date="selectedEndDate"
+            @apply="applyDateInterval"
+          />
         </div>
 
         <label class="chart-select-field">

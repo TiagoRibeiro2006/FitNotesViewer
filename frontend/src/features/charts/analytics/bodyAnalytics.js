@@ -1,8 +1,8 @@
-import { filterByDateRange } from './dateRanges.js'
+import { filterByDateInterval } from './dateRanges.js'
 
-export function createBodyAnalytics(measurement, rangeId) {
+export function createBodyAnalytics(measurement, startDate, endDate) {
   const allRecords = measurement?.records ?? []
-  const records = filterByDateRange(allRecords, rangeId)
+  const records = filterByDateInterval(allRecords, startDate, endDate)
   if (!records.length) return emptyBodyAnalytics(records)
 
   let minimum = records[0].value
