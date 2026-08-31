@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { formatNumber } from '../../../shared/utils/numbers.js'
 import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
 import { createTrainingAnalytics } from '../analytics/trainingAnalytics.js'
 import ChartMetricSelector from './ChartMetricSelector.vue'
@@ -55,18 +54,6 @@ function readStrongestMuscle() {
   return analytics.value.muscleDistribution[0] ?? null
 }
 
-function formatCompact(value) {
-  if (Math.abs(value) < 10000) return formatNumber(value)
-  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value)
-}
-
-function formatVolume(value) {
-  return `${formatCompact(value)} kg`
-}
-
-function formatRate(value) {
-  return `${formatNumber(value)}×`
-}
 </script>
 
 <template>
@@ -97,42 +84,12 @@ function formatRate(value) {
       </div>
     </section>
 
-    <section class="training-metric-grid" aria-label="Training summary">
-      <article>
-        <span>Workout days</span>
-        <strong>{{ analytics.workoutCount }}</strong>
-        <small>{{ formatRate(analytics.workoutsPerWeek) }} per week</small>
-      </article>
-      <article>
-        <span>Total sets</span>
-        <strong>{{ formatCompact(analytics.totalSets) }}</strong>
-        <small>{{ formatNumber(analytics.averageSetsPerWorkout) }} per workout</small>
-      </article>
-      <article>
-        <span>Training volume</span>
-        <strong>{{ formatVolume(analytics.totalVolume) }}</strong>
-        <small>Weight × reps</small>
-      </article>
-      <article>
-        <span>Total reps</span>
-        <strong>{{ formatCompact(analytics.totalReps) }}</strong>
-        <small>Across {{ analytics.exerciseCount }} exercises</small>
-      </article>
-      <article>
-        <span>Progress sets</span>
-        <strong>{{ analytics.progressSets }}</strong>
-        <small>New weight or rep progress</small>
-      </article>
-      <article>
-        <span>Longest streak</span>
-        <strong>{{ analytics.longestStreak }} days</strong>
-        <small>Consecutive workout days</small>
-      </article>
-    </section>
-
     <template v-if="analytics.totalSets">
-      <div class="training-dashboard-grid">
-        <section class="chart-visual-card">
+      <div
+        class="training-dashboard-grid"
+        :class="{ 'is-single': selectedMuscleId !== 'all' }"
+      >
+        <section v-if="selectedMuscleId === 'all'" class="chart-visual-card">
           <div class="chart-card-heading training-chart-heading">
             <div>
               <p class="eyebrow">MUSCLE BALANCE</p>
