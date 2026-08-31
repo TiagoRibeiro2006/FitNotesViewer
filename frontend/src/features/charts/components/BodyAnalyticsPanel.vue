@@ -19,6 +19,7 @@ const appliedEndDate = ref(selectedEndDate.value)
 const scaleMode = ref('auto')
 const selectedMeasurement = computed(findSelectedMeasurement)
 const analytics = computed(buildAnalytics)
+const hasDateChanges = computed(readHasDateChanges)
 
 function findInitialMeasurementId() {
   for (const measurement of measurementOptions.value) {
@@ -66,6 +67,13 @@ function applyDateInterval() {
   if (!interval) return
   appliedStartDate.value = interval.startDate
   appliedEndDate.value = interval.endDate
+}
+
+function readHasDateChanges() {
+  return (
+    selectedStartDate.value !== appliedStartDate.value ||
+    selectedEndDate.value !== appliedEndDate.value
+  )
 }
 
 function setAutomaticScale() {
@@ -143,6 +151,7 @@ function formatChangePercent() {
         <DateRangeControl
           v-model:start-date="selectedStartDate"
           v-model:end-date="selectedEndDate"
+          :action-disabled="!hasDateChanges"
           @apply="applyDateInterval"
         />
       </div>

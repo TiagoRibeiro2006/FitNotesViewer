@@ -857,16 +857,7 @@
 }
 
 .training-analysis-heading {
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.training-analysis-status {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: flex-start;
   margin-bottom: 14px;
 }
 
@@ -883,16 +874,6 @@
   text-transform: uppercase;
 }
 
-.training-analysis-range {
-  min-width: 0;
-  overflow: hidden;
-  color: #a2a2ab;
-  font-size: 10px;
-  font-weight: 700;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .date-interval-control {
   display: grid;
@@ -973,9 +954,17 @@
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
+  transition: background .16s ease, color .16s ease, opacity .16s ease;
 }
 
-.date-interval-control button:active {
+.date-interval-control button:disabled {
+  border: 1px solid #303037;
+  background: #18181c;
+  color: #696973;
+  cursor: default;
+}
+
+.date-interval-control button:not(:disabled):active {
   transform: scale(.98);
 }
 
@@ -1035,6 +1024,7 @@
   .chart-current-value { font-size: 19px; }
   .chart-card-heading h2 { font-size: 19px; }
   .training-chart-heading { align-items: flex-start; flex-direction: column; }
+  .training-analysis-heading { flex-direction: row; }
   .chart-metric-selector { justify-content: flex-start; }
   .donut-chart-layout { grid-template-columns: 1fr; }
   .donut-chart-stage { width: 176px; }
