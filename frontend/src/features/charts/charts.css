@@ -814,7 +814,29 @@
 }
 
 .weekly-analysis-card {
+  --weekly-analysis-accent: #ef5753;
+  --weekly-analysis-badge-background: #2a1517;
   overflow: hidden;
+}
+
+.weekly-analysis-card.is-great {
+  --weekly-analysis-accent: #55c988;
+  --weekly-analysis-badge-background: #14251c;
+}
+
+.weekly-analysis-card.is-average {
+  --weekly-analysis-accent: #e2c84f;
+  --weekly-analysis-badge-background: #292513;
+}
+
+.weekly-analysis-card.is-bad {
+  --weekly-analysis-accent: #ec9e47;
+  --weekly-analysis-badge-background: #2a2015;
+}
+
+.weekly-analysis-card.is-terrible {
+  --weekly-analysis-accent: #ef5753;
+  --weekly-analysis-badge-background: #2a1517;
 }
 
 .weekly-analysis-heading {
@@ -824,10 +846,10 @@
 .weekly-analysis-badge {
   flex: 0 0 auto;
   padding: 6px 9px;
-  border: 1px solid #2d4056;
+  border: 1px solid var(--weekly-analysis-accent);
   border-radius: 999px;
-  background: #152235;
-  color: #64adff;
+  background: var(--weekly-analysis-badge-background);
+  color: var(--weekly-analysis-accent);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: .06em;
@@ -850,7 +872,7 @@
   bottom: 0;
   left: 0;
   width: 3px;
-  background: #3f96ff;
+  background: var(--weekly-analysis-accent);
 }
 
 .weekly-analysis-report p {
