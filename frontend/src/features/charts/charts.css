@@ -879,7 +879,7 @@
 
 .weekly-analysis-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 88px;
   align-items: end;
   gap: 10px;
   margin-bottom: 14px;
@@ -918,9 +918,10 @@
 }
 
 .weekly-analysis-controls button {
-  min-width: 96px;
+  width: 100%;
+  min-width: 0;
   height: 42px;
-  padding: 0 15px;
+  padding: 0 10px;
   border: 0;
   border-radius: 6px;
   background: #f1f1f3;
@@ -985,8 +986,6 @@
   .chart-current-value { font-size: 19px; }
   .chart-card-heading h2 { font-size: 19px; }
   .training-chart-heading { align-items: flex-start; flex-direction: column; }
-  .weekly-analysis-controls { grid-template-columns: 1fr; }
-  .weekly-analysis-controls button { width: 100%; }
   .chart-metric-selector { justify-content: flex-start; }
   .donut-chart-layout { grid-template-columns: 1fr; }
   .donut-chart-stage { width: 176px; }
