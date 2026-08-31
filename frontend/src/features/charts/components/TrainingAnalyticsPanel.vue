@@ -7,7 +7,7 @@ import ChartRangeSelector from './ChartRangeSelector.vue'
 import DonutChart from './DonutChart.vue'
 import ExerciseRanking from './ExerciseRanking.vue'
 import MuscleFrequencyChart from './MuscleFrequencyChart.vue'
-import TrainingInsights from './TrainingInsights.vue'
+import WeeklyTrainingAnalysis from './WeeklyTrainingAnalysis.vue'
 import WeekdayChart from './WeekdayChart.vue'
 
 const props = defineProps({
@@ -149,7 +149,7 @@ function readStrongestMuscle() {
         </section>
       </div>
 
-      <TrainingInsights :analytics="analytics" />
+      <WeeklyTrainingAnalysis :sets="analytics.sets" />
     </template>
 
     <section v-else class="chart-empty-card">
