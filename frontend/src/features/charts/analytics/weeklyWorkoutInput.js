@@ -1,23 +1,28 @@
 import { dateToKey, normalizeDateKey, shiftDateKey } from '../../../shared/utils/dates.js'
 
 export function buildLatestWeeklyWorkouts(sets) {
-  const latestDate = findLatestDate(sets)
+  const latestDate = findLatestWorkoutDate(sets)
   if (!latestDate) return []
 
-  const startDate = startOfWeek(latestDate)
-  const endDate = shiftDateKey(startDate, 6)
+  return buildWeeklyWorkouts(sets, latestDate)
+}
+
+export function buildWeeklyWorkouts(sets, referenceDate) {
+  const range = readWorkoutWeekRange(referenceDate)
+  if (!range) return []
+
   const workouts = new Map()
 
   for (const set of sets ?? []) {
     const date = normalizeDateKey(set?.date)
-    if (!date || date < startDate || date > endDate) continue
+    if (!date || date < range.startDate || date > range.endDate) continue
     addSetToWorkout(workouts, date, set)
   }
 
   return finalizeWorkouts(workouts)
 }
 
-function findLatestDate(sets) {
+export function findLatestWorkoutDate(sets) {
   let latestDate = null
 
   for (const set of sets ?? []) {
@@ -26,6 +31,14 @@ function findLatestDate(sets) {
   }
 
   return latestDate
+}
+
+export function readWorkoutWeekRange(referenceDate) {
+  const date = normalizeDateKey(referenceDate)
+  if (!date) return null
+
+  const startDate = startOfWeek(date)
+  return { startDate, endDate: shiftDateKey(startDate, 6) }
 }
 
 function startOfWeek(dateKey) {
