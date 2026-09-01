@@ -928,6 +928,7 @@
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
+  color: #fff;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
