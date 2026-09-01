@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { createTrainingSets } from '../analytics/trainingAnalytics.js'
+import TrainingAiChat from './TrainingAiChat.vue'
 import TrainingPeriodAnalysis from './TrainingPeriodAnalysis.vue'
 
 const props = defineProps({
@@ -25,5 +26,7 @@ function readSets() {
       <strong>No workouts to analyse</strong>
       <p>Add sets in the Log to generate an AI training review.</p>
     </section>
+
+    <TrainingAiChat />
   </div>
 </template>
