@@ -872,6 +872,71 @@
   font-weight: 800;
   letter-spacing: .06em;
   text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.training-rating-guide {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.training-rating-popover {
+  position: absolute;
+  z-index: 8;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(278px, calc(100vw - 56px));
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #303037;
+  border-radius: 7px;
+  background: #151518;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .48);
+}
+
+.training-rating-labels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.training-rating-labels span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 8px;
+  font-weight: 750;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: .72;
+}
+
+.training-rating-labels span.is-current {
+  font-weight: 900;
+  opacity: 1;
+}
+
+.training-rating-labels .is-terrible { color: #ef5753; }
+.training-rating-labels .is-bad { color: #ec9e47; }
+.training-rating-labels .is-average { color: #e2c84f; }
+.training-rating-labels .is-great { color: #55c988; }
+
+.training-rating-spectrum {
+  height: 9px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ef5753, #ec9e47 34%, #e2c84f 66%, #55c988);
+}
+
+.training-rating-popover small {
+  display: block;
+  margin-top: 8px;
+  color: #777780;
+  font-size: 8px;
+  text-align: center;
 }
 
 
