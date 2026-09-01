@@ -1,14 +1,20 @@
+import { evaluateBodyRegionBalance } from './utils/bodyRegionBalance.js'
+
 const RATINGS = [
   { minimumScore: 80, level: 'great', label: 'Great' },
   { minimumScore: 60, level: 'average', label: 'Average' },
   { minimumScore: 35, level: 'bad', label: 'Bad' },
   { minimumScore: 0, level: 'terrible', label: 'Terrible' },
 ]
+const RATING_LEVELS = ['terrible', 'bad', 'average', 'great']
 
 export function evaluateTrainingPeriod(analysis, periodDays) {
   const score = calculateScore(analysis, periodDays)
-  const rating = findRating(score)
-  return { ...rating, score }
+  const scoreRating = findRating(score)
+  const regionBalance = evaluateBodyRegionBalance(analysis?.regions)
+  const maximumRating = findMaximumRating(regionBalance.status)
+  const rating = limitRating(scoreRating, maximumRating)
+  return { ...rating, score, regionBalance }
 }
 
 function calculateScore(analysis, periodDays) {
@@ -94,5 +100,32 @@ function findRating(score) {
     }
   }
 
+  return { level: 'terrible', label: 'Terrible' }
+}
+
+function findMaximumRating(balanceStatus) {
+  if (balanceStatus === 'missing-both') return 'terrible'
+  if (balanceStatus === 'missing-upper') return 'terrible'
+  if (balanceStatus === 'missing-lower') return 'terrible'
+  if (balanceStatus === 'unbalanced') return 'bad'
+  if (balanceStatus === 'uneven') return 'average'
+  return null
+}
+
+function limitRating(rating, maximumRating) {
+  if (!maximumRating) return rating
+
+  const ratingIndex = RATING_LEVELS.indexOf(rating.level)
+  const maximumIndex = RATING_LEVELS.indexOf(maximumRating)
+  if (ratingIndex <= maximumIndex) return rating
+  return findRatingByLevel(maximumRating)
+}
+
+function findRatingByLevel(level) {
+  for (const rating of RATINGS) {
+    if (rating.level === level) {
+      return { level: rating.level, label: rating.label }
+    }
+  }
   return { level: 'terrible', label: 'Terrible' }
 }

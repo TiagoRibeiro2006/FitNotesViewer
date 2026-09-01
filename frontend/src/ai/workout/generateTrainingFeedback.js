@@ -1,12 +1,29 @@
+import { evaluateBodyRegionBalance } from './utils/bodyRegionBalance.js'
+
 export function generateTrainingFeedback(analysis, periodDays) {
-  if (!analysis?.totalSets || !analysis?.workoutCount) return emptyPeriodFeedback()
+  const paragraphs = []
+  if (isSmallRange(periodDays)) paragraphs.push(smallRangeFeedback())
+
+  if (!analysis?.totalSets || !analysis?.workoutCount) {
+    paragraphs.push(emptyPeriodFeedback())
+    return paragraphs.join('\n\n')
+  }
 
   const muscles = readMuscles(analysis.muscles)
-  const paragraphs = [buildPeriodSummary(analysis, periodDays), buildMuscleSummary(muscles)]
+  paragraphs.push(buildPeriodSummary(analysis, periodDays))
+  paragraphs.push(buildMuscleSummary(muscles))
   const improvement = buildImprovement(analysis, muscles, periodDays)
 
   if (improvement) paragraphs.push(improvement)
   return paragraphs.filter(Boolean).join('\n\n')
+}
+
+function isSmallRange(periodDays) {
+  return Number(periodDays) < 6
+}
+
+function smallRangeFeedback() {
+  return 'The range is small, so this review may not be fully accurate. Select at least 6 days for a more reliable view of your training balance.'
 }
 
 function emptyPeriodFeedback() {
@@ -63,6 +80,10 @@ function countLeadingMuscles(muscles, leadingSetCount) {
 }
 
 function buildImprovement(analysis, muscles, periodDays) {
+  const regionBalance = evaluateBodyRegionBalance(analysis.regions)
+  const regionImprovement = buildRegionImprovement(regionBalance)
+  if (regionImprovement) return regionImprovement
+
   const workoutsPerWeek = calculateWeeklyAverage(analysis.workoutCount, periodDays)
 
   if (workoutsPerWeek < 1.5) {
@@ -84,13 +105,35 @@ function buildImprovement(analysis, muscles, periodDays) {
     return 'Your workload varied noticeably between workout days. Spreading sets more evenly may make your training easier to manage and repeat.'
   }
 
-  const infrequentMuscles = readInfrequentMuscles(muscles, periodDays)
-  if (infrequentMuscles.length) {
-    return formatMuscleNames(infrequentMuscles)
-      + ' appeared infrequently. If progressing those muscles is a priority, consider training them more consistently.'
-  }
-
   return 'Your training was consistent and the workload was reasonably well distributed. There is no obvious adjustment needed from these data alone.'
+}
+
+function buildRegionImprovement(balance) {
+  if (balance.status === 'missing-both') {
+    return 'No major upper- or lower-body work was logged. A complete routine should include both regions instead of relying only on smaller accessory muscles.'
+  }
+  if (balance.status === 'missing-upper') {
+    return 'No major upper-body work was logged. Add upper-body training to avoid leaving half of the body untrained.'
+  }
+  if (balance.status === 'missing-lower') {
+    return 'No major lower-body work was logged. Add lower-body training to avoid leaving half of the body untrained.'
+  }
+  if (balance.status === 'unbalanced') {
+    return buildRegionFrequencyFeedback(balance, 'The gap is large enough to make the routine unbalanced.')
+  }
+  if (balance.status === 'uneven') {
+    return buildRegionFrequencyFeedback(balance, 'The frequencies are close, but could be more even.')
+  }
+  return ''
+}
+
+function buildRegionFrequencyFeedback(balance, conclusion) {
+  return 'Upper body appeared in '
+    + pluralize(balance.upperFrequency, 'workout')
+    + ', while lower body appeared in '
+    + pluralize(balance.lowerFrequency, 'workout')
+    + '. '
+    + conclusion
 }
 
 function calculateWeeklyAverage(value, periodDays) {
@@ -136,22 +179,6 @@ function hasUnevenWorkoutLoads(workouts) {
   }
 
   return maximum - minimum >= 4 && maximum >= minimum * 2
-}
-
-function readInfrequentMuscles(muscles, periodDays) {
-  const names = []
-
-  for (const muscle of muscles) {
-    if (calculateWeeklyAverage(muscle.frequency, periodDays) <= 1) names.push(muscle.name)
-  }
-
-  return names.slice(0, 3)
-}
-
-function formatMuscleNames(names) {
-  if (names.length === 1) return names[0]
-  if (names.length === 2) return names[0] + ' and ' + names[1]
-  return names[0] + ', ' + names[1] + ' and ' + names[2]
 }
 
 function formatPercentage(value) {

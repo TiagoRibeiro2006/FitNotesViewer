@@ -2,6 +2,7 @@ import { calculateMuscleDistribution } from './metrics/muscleDistribution.js'
 import { calculateMuscleFrequency } from './metrics/muscleFrequency.js'
 import { calculateMuscleSets } from './metrics/muscleSets.js'
 import { calculateWorkoutSets } from './metrics/workoutSets.js'
+import { calculateBodyRegions } from './metrics/bodyRegions.js'
 
 export function analyzeTrainingPeriod(workouts) {
   const workoutMetrics = calculateWorkoutSets(workouts)
@@ -14,6 +15,7 @@ export function analyzeTrainingPeriod(workouts) {
     workoutCount: workoutMetrics.workouts.length,
     workouts: workoutMetrics.workouts,
     muscles: buildMuscleMetrics(muscleSets, muscleFrequency, muscleDistribution),
+    regions: calculateBodyRegions(workouts),
   }
 }
 
