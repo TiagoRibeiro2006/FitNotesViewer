@@ -24,7 +24,7 @@ const analysis = computed(buildAnalysis)
 const feedback = computed(buildFeedback)
 const rating = computed(buildRating)
 const ratingClass = computed(readRatingClass)
-const rangeLabel = computed(formatGeneratedRange)
+const hasDateChanges = computed(readHasDateChanges)
 
 function buildWorkouts() {
   return buildTrainingPeriodWorkouts(
@@ -62,20 +62,11 @@ function generateAnalysis() {
   generatedEndDate.value = period.endDate
 }
 
-function formatGeneratedRange() {
-  const period = normalizeSelectableDateInterval(generatedStartDate.value, generatedEndDate.value)
-  if (!period) return 'No period selected'
-  return formatDate(period.startDate) + ' – ' + formatDate(period.endDate)
-}
-
-function formatDate(dateKey) {
-  const parts = dateKey.split('-').map(Number)
-  const date = new Date(parts[0], parts[1] - 1, parts[2])
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date)
+function readHasDateChanges() {
+  return (
+    selectedStartDate.value !== generatedStartDate.value ||
+    selectedEndDate.value !== generatedEndDate.value
+  )
 }
 </script>
 
@@ -86,17 +77,14 @@ function formatDate(dateKey) {
         <p class="eyebrow">AI TRAINING ANALYSIS</p>
         <h2>What your training shows</h2>
       </div>
-    </div>
-
-    <div class="training-analysis-status">
       <span class="training-analysis-badge">{{ rating.label }}</span>
-      <span class="training-analysis-range">{{ rangeLabel }}</span>
     </div>
 
     <DateRangeControl
       v-model:start-date="selectedStartDate"
       v-model:end-date="selectedEndDate"
       action-label="Generate"
+      :action-disabled="!hasDateChanges"
       @apply="generateAnalysis"
     />
 

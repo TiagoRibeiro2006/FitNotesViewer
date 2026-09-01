@@ -10,6 +10,7 @@ const props = defineProps({
   startDate: { type: String, required: true },
   endDate: { type: String, required: true },
   actionLabel: { type: String, default: 'Apply' },
+  actionDisabled: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:startDate', 'update:endDate', 'apply'])
@@ -37,6 +38,7 @@ function updateEndDate(event) {
 }
 
 function applyInterval() {
+  if (props.actionDisabled) return
   emit('apply')
 }
 
@@ -84,6 +86,6 @@ function restoreInput(event, value) {
       <strong>{{ intervalDays }}</strong>
       <span>days</span>
     </output>
-    <button type="submit">{{ actionLabel }}</button>
+    <button type="submit" :disabled="actionDisabled">{{ actionLabel }}</button>
   </form>
 </template>

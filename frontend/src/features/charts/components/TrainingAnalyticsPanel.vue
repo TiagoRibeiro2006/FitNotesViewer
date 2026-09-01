@@ -36,6 +36,7 @@ const analytics = computed(buildAnalytics)
 const availableMuscles = computed(readAvailableMuscles)
 const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
+const hasDateChanges = computed(readHasDateChanges)
 
 function buildAnalytics() {
   return createTrainingAnalytics(
@@ -68,6 +69,13 @@ function readStrongestMuscle() {
   return analytics.value.muscleDistribution[0] ?? null
 }
 
+function readHasDateChanges() {
+  return (
+    selectedStartDate.value !== appliedStartDate.value ||
+    selectedEndDate.value !== appliedEndDate.value
+  )
+}
+
 </script>
 
 <template>
@@ -86,6 +94,7 @@ function readStrongestMuscle() {
           <DateRangeControl
             v-model:start-date="selectedStartDate"
             v-model:end-date="selectedEndDate"
+            :action-disabled="!hasDateChanges"
             @apply="applyDateInterval"
           />
         </div>
