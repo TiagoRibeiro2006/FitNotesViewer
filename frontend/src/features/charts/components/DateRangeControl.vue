@@ -18,6 +18,11 @@ const intervalDays = computed(readIntervalDays)
 const startDateMaximum = computed(readStartDateMaximum)
 const endDateMinimum = computed(readEndDateMinimum)
 const endDateMaximum = todayKey()
+const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
 
 function updateStartDate(event) {
   const value = event.currentTarget.value
@@ -57,30 +62,53 @@ function readEndDateMinimum() {
 function restoreInput(event, value) {
   event.currentTarget.value = value
 }
+
+function formatDateValue(dateKey) {
+  const parts = String(dateKey).split('-').map(Number)
+  return dateFormatter.format(new Date(parts[0], parts[1] - 1, parts[2]))
+}
 </script>
 
 <template>
   <form class="date-interval-control" @submit.prevent="applyInterval">
     <label>
       <span>Start date</span>
-      <input
-        :value="startDate"
-        type="date"
-        :max="startDateMaximum"
-        required
-        @input="updateStartDate"
-      >
+      <span class="date-input-shell">
+        <span class="date-input-value">{{ formatDateValue(startDate) }}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M16 3v4M8 3v4M3 10h18" />
+        </svg>
+        <input
+          class="date-native-input"
+          :value="startDate"
+          type="date"
+          :max="startDateMaximum"
+          aria-label="Start date"
+          required
+          @input="updateStartDate"
+        >
+      </span>
     </label>
     <label>
       <span>End date</span>
-      <input
-        :value="endDate"
-        type="date"
-        :min="endDateMinimum"
-        :max="endDateMaximum"
-        required
-        @input="updateEndDate"
-      >
+      <span class="date-input-shell">
+        <span class="date-input-value">{{ formatDateValue(endDate) }}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M16 3v4M8 3v4M3 10h18" />
+        </svg>
+        <input
+          class="date-native-input"
+          :value="endDate"
+          type="date"
+          :min="endDateMinimum"
+          :max="endDateMaximum"
+          aria-label="End date"
+          required
+          @input="updateEndDate"
+        >
+      </span>
     </label>
     <output class="date-interval-days" :aria-label="intervalDays + ' days selected'">
       <strong>{{ intervalDays }}</strong>

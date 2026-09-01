@@ -901,20 +901,60 @@
   text-transform: uppercase;
 }
 
-.date-interval-control input {
-  display: block;
+.date-input-shell {
+  position: relative;
   width: 100%;
   min-width: 0;
   max-width: 100%;
   height: 42px;
   box-sizing: border-box;
-  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  padding: 0 11px 0 12px;
   border: 1px solid #303037;
   border-radius: 6px;
   background: #18181c;
   color: #fff;
-  color-scheme: dark;
   font-size: 13px;
+}
+
+.date-input-shell:focus-within {
+  border-color: #5b5b65;
+}
+
+.date-input-value {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-input-shell svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: #8e8e98;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.date-native-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .date-interval-days {
@@ -1017,7 +1057,7 @@
   .body-line-chart-card { overflow: hidden; }
   .time-series-chart svg { width: calc(100% + 10px); margin-left: -5px; }
   .date-interval-control label { grid-column: 1 / -1; }
-  .date-interval-control input { font-size: 16px; }
+  .date-input-shell { font-size: 16px; }
 }
 
 @media (max-width: 390px) {
