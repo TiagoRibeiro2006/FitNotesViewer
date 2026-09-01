@@ -16,6 +16,14 @@ export function normalizeDateInterval(startDate, endDate) {
   return { startDate: normalizedStart, endDate: normalizedEnd }
 }
 
+export function normalizeSelectableDateInterval(startDate, endDate, maximumDate = todayKey()) {
+  const interval = normalizeDateInterval(startDate, endDate)
+  const normalizedMaximum = normalizeDateKey(maximumDate) ?? todayKey()
+  if (!interval || interval.startDate >= interval.endDate) return null
+  if (interval.endDate > normalizedMaximum) return null
+  return interval
+}
+
 export function filterByDateInterval(rows, startDate, endDate) {
   const interval = normalizeDateInterval(startDate, endDate)
   if (!interval) return [...rows]

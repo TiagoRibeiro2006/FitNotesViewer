@@ -1,24 +1,23 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { analyzeTrainingPeriod } from '../../../ai/workout/analyzeTrainingPeriod.js'
 import { evaluateTrainingPeriod } from '../../../ai/workout/evaluateTrainingPeriod.js'
 import { generateTrainingFeedback } from '../../../ai/workout/generateTrainingFeedback.js'
 import {
   buildTrainingPeriodWorkouts,
   countTrainingPeriodDays,
-  createDefaultTrainingPeriod,
-  normalizeTrainingPeriod,
 } from '../analytics/trainingPeriodInput.js'
+import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
+import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import DateRangeControl from './DateRangeControl.vue'
 
 const props = defineProps({
   sets: { type: Array, required: true },
 })
 
-const selectedStartDate = ref('')
-const selectedEndDate = ref('')
-const generatedStartDate = ref('')
-const generatedEndDate = ref('')
+const { startDate: selectedStartDate, endDate: selectedEndDate } = useChartDateInterval()
+const generatedStartDate = ref(selectedStartDate.value)
+const generatedEndDate = ref(selectedEndDate.value)
 const workouts = computed(buildWorkouts)
 const periodDays = computed(readPeriodDays)
 const analysis = computed(buildAnalysis)
@@ -26,12 +25,6 @@ const feedback = computed(buildFeedback)
 const rating = computed(buildRating)
 const ratingClass = computed(readRatingClass)
 const rangeLabel = computed(formatGeneratedRange)
-
-watch(readSets, resetDates, { immediate: true })
-
-function readSets() {
-  return props.sets
-}
 
 function buildWorkouts() {
   return buildTrainingPeriodWorkouts(
@@ -61,18 +54,8 @@ function readRatingClass() {
   return 'is-' + rating.value.level
 }
 
-function resetDates() {
-  const period = createDefaultTrainingPeriod(props.sets)
-  if (!period) return
-
-  selectedStartDate.value = period.startDate
-  selectedEndDate.value = period.endDate
-  generatedStartDate.value = period.startDate
-  generatedEndDate.value = period.endDate
-}
-
 function generateAnalysis() {
-  const period = normalizeTrainingPeriod(selectedStartDate.value, selectedEndDate.value)
+  const period = normalizeSelectableDateInterval(selectedStartDate.value, selectedEndDate.value)
   if (!period) return
 
   generatedStartDate.value = period.startDate
@@ -80,7 +63,7 @@ function generateAnalysis() {
 }
 
 function formatGeneratedRange() {
-  const period = normalizeTrainingPeriod(generatedStartDate.value, generatedEndDate.value)
+  const period = normalizeSelectableDateInterval(generatedStartDate.value, generatedEndDate.value)
   if (!period) return 'No period selected'
   return formatDate(period.startDate) + ' – ' + formatDate(period.endDate)
 }
