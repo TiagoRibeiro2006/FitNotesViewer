@@ -10,6 +10,7 @@ import {
 import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
 import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import DateRangeControl from './DateRangeControl.vue'
+import TrainingRatingGuide from './TrainingRatingGuide.vue'
 
 const props = defineProps({
   sets: { type: Array, required: true },
@@ -77,7 +78,7 @@ function readHasDateChanges() {
         <p class="eyebrow">AI TRAINING ANALYSIS</p>
         <h2>What your training shows</h2>
       </div>
-      <span class="training-analysis-badge">{{ rating.label }}</span>
+      <TrainingRatingGuide :level="rating.level" :label="rating.label" />
     </div>
 
     <DateRangeControl
