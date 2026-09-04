@@ -1105,11 +1105,36 @@
   white-space: pre-line;
 }
 
+.training-analysis-report-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .training-analysis-report small {
   display: block;
-  margin-top: 16px;
   color: #686873;
   font-size: 9px;
+}
+
+.training-analysis-details-button {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid #34343b;
+  border-radius: 5px;
+  background: #1a1a1f;
+  color: #d9d9de;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.training-analysis-details-button:active {
+  transform: scale(.97);
 }
 
 @media (max-width: 640px) {
