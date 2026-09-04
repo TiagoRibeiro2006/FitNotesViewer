@@ -90,6 +90,14 @@ function buildImprovement(analysis, muscles, periodDays) {
     return 'Your training frequency was low for this period. If consistency is one of your goals, adding another weekly training day would create a more regular rhythm.'
   }
 
+  const exerciseConsistencyFeedback = buildExerciseConsistencyFeedback(
+    analysis.consistency?.exercises,
+  )
+  if (exerciseConsistencyFeedback) return exerciseConsistencyFeedback
+
+  const setConsistencyFeedback = buildSetConsistencyFeedback(analysis.consistency?.sets)
+  if (setConsistencyFeedback) return setConsistencyFeedback
+
   if (muscles.length === 1) {
     return 'All logged sets targeted '
       + muscles[0].name
@@ -106,6 +114,24 @@ function buildImprovement(analysis, muscles, periodDays) {
   }
 
   return 'Your training was consistent and the workload was reasonably well distributed. There is no obvious adjustment needed from these data alone.'
+}
+
+function buildExerciseConsistencyFeedback(metrics) {
+  if (!Number.isFinite(metrics?.repeatRate) || metrics.repeatRate > 0.4) return ''
+
+  const percentage = Math.round(metrics.repeatRate * 100)
+  return 'Only '
+    + percentage
+    + '% of comparable exercise appearances were repeated. Keeping a small core of exercises for each muscle would make progress easier to measure.'
+}
+
+function buildSetConsistencyFeedback(metrics) {
+  if (!Number.isFinite(metrics?.stability) || metrics.stability >= 0.6) return ''
+
+  const percentage = Math.round(metrics.stability * 100)
+  return 'Set counts were '
+    + percentage
+    + '% stable across repeated exercises. A more consistent number of working sets would make your workload easier to compare and manage.'
 }
 
 function buildRegionImprovement(balance) {
