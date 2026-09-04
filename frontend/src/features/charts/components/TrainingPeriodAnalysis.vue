@@ -111,7 +111,7 @@ function closeDetails() {
 
     <TrainingAnalysisDetailsModal
       :open="detailsOpen"
-      :categories="[]"
+      :categories="rating.categories"
       @close="closeDetails"
     />
   </section>
