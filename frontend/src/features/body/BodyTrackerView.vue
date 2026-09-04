@@ -16,8 +16,10 @@ const {
   favoritesSaving,
   loading,
   managementSaving,
+  moveFavorite,
   removeMeasurement,
   renameMeasurement,
+  saveFavoriteOrder,
   sections,
   load,
   toggleFavorite,
@@ -186,7 +188,9 @@ async function scrollToTop() {
         :favorites-saving="favoritesSaving"
         @delete-measurement="removeMeasurement"
         @edit-measurement="renameMeasurement"
+        @move-favorite="moveFavorite"
         @open-measurement="openMeasurement"
+        @save-favorite-order="saveFavoriteOrder"
         @toggle-favorite="toggleFavorite"
       />
     </div>
