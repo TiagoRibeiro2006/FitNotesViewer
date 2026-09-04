@@ -91,7 +91,10 @@ function readHasDateChanges() {
 
     <div class="training-analysis-report">
       <p>{{ feedback }}</p>
-      <small>Generated locally from the selected training period.</small>
+      <div class="training-analysis-report-footer">
+        <small>Generated locally from the selected training period.</small>
+        <button class="training-analysis-details-button" type="button">Details</button>
+      </div>
     </div>
   </section>
 </template>
