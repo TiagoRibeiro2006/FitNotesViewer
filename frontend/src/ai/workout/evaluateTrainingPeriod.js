@@ -11,7 +11,7 @@ const RATING_LEVELS = ['terrible', 'bad', 'average', 'great']
 export function evaluateTrainingPeriod(analysis, periodDays) {
   const score = calculateScore(analysis, periodDays)
   const scoreRating = findRating(score)
-  const regionBalance = evaluateBodyRegionBalance(analysis?.regions)
+  const regionBalance = evaluateBodyRegionBalance(analysis?.regions, periodDays)
   const maximumRating = findMaximumRating(regionBalance.status)
   const rating = limitRating(scoreRating, maximumRating)
   return { ...rating, score, regionBalance }

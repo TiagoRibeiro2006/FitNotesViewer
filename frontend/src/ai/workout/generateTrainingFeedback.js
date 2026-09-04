@@ -80,7 +80,7 @@ function countLeadingMuscles(muscles, leadingSetCount) {
 }
 
 function buildImprovement(analysis, muscles, periodDays) {
-  const regionBalance = evaluateBodyRegionBalance(analysis.regions)
+  const regionBalance = evaluateBodyRegionBalance(analysis.regions, periodDays)
   const regionImprovement = buildRegionImprovement(regionBalance)
   if (regionImprovement) return regionImprovement
 
