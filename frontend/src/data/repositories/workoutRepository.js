@@ -4,6 +4,7 @@ import { buildHistoricalProgress, buildProgressBaseline } from '../../shared/uti
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
+import { createWorkoutDayCopies } from './workoutCopy'
 
 export async function getWorkoutCalendarColors() {
   const database = await openAppDatabase()
@@ -183,22 +184,23 @@ export async function copyWorkoutDay(sourceDate, targetDate) {
   const transaction = database.transaction(['workoutSets', 'metadata'], 'readwrite')
   const targetStore = transaction.objectStore('workoutSets')
   const updatedAt = new Date().toISOString()
+  const copiedRows = createWorkoutDayCopies(
+    orderWorkoutDayRows(sourceRows ?? []),
+    targetDate,
+    updatedAt,
+    createCopyId,
+  )
 
   for (const key of targetKeys ?? []) targetStore.delete(key)
-  for (const row of orderWorkoutDayRows(sourceRows ?? [])) {
-    targetStore.put({
-      ...row,
-      id: createLocalId('local'),
-      date: targetDate,
-      routineSectionExerciseSetId: 0,
-      createdLocally: true,
-      localUpdatedAt: updatedAt,
-    })
-  }
+  for (const row of copiedRows) targetStore.put(row)
 
   markLocalChanges(transaction, updatedAt)
   await transactionComplete(transaction)
   return refreshSummary()
+}
+
+function createCopyId() {
+  return createLocalId('local')
 }
 
 function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories = []) {

@@ -2,10 +2,12 @@
 import { onMounted, ref } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
+import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
 const activeSection = ref('body')
+const aiEnabled = ref(false)
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -22,10 +24,26 @@ function showBodyCharts() {
 function showTrainingCharts() {
   activeSection.value = 'training'
 }
+
+function toggleAi() {
+  aiEnabled.value = !aiEnabled.value
+}
 </script>
 
 <template>
-  <AppSectionHeader title="Charts" />
+  <AppSectionHeader title="Charts">
+    <template #action>
+      <button
+        class="charts-ai-toggle"
+        :class="{ 'is-active': aiEnabled }"
+        type="button"
+        :aria-pressed="aiEnabled"
+        @click="toggleAi"
+      >
+        AI {{ aiEnabled ? 'ON' : 'OFF' }}
+      </button>
+    </template>
+  </AppSectionHeader>
 
   <nav class="charts-section-tabs" aria-label="Chart category">
     <button
@@ -60,6 +78,8 @@ function showTrainingCharts() {
     v-else-if="activeSection === 'body'"
     :measurements="data.bodyMeasurements"
   />
+
+  <TrainingAiPanel v-else-if="aiEnabled" :data="data" />
 
   <TrainingAnalyticsPanel v-else :data="data" />
 </template>

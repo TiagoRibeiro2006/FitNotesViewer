@@ -21,24 +21,39 @@ export async function getAnalyticsData() {
   await done
 
   return {
-    bodyMeasurements: buildBodyMeasurements(bodyTracker.measurements, results[1], results[2]),
+    bodyMeasurements: buildBodyMeasurements(
+      bodyTracker.measurements,
+      bodyTracker.favorites,
+      results[1],
+      results[2],
+    ),
     categories: catalog.categories,
     exercises: catalog.exercises,
     workoutSets: results[0] ?? [],
   }
 }
 
-function buildBodyMeasurements(items, bodyWeights, measurementRecords) {
+function buildBodyMeasurements(items, favorites, bodyWeights, measurementRecords) {
   const measurements = []
+  const favoriteOrder = buildFavoriteOrder(favorites)
 
   for (const item of items) {
     measurements.push({
       ...item,
+      favoriteOrder: favoriteOrder.get(String(item.id)) ?? null,
       records: buildBodyHistory(item, bodyWeights, measurementRecords),
     })
   }
 
   return measurements
+}
+
+function buildFavoriteOrder(favorites) {
+  const order = new Map()
+  for (let index = 0; index < favorites.length; index += 1) {
+    order.set(String(favorites[index].id), index)
+  }
+  return order
 }
 
 function buildBodyHistory(item, bodyWeights, measurementRecords) {

@@ -1,14 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { formatNumber } from '../../../shared/utils/numbers.js'
-import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
+import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
 import { createTrainingAnalytics } from '../analytics/trainingAnalytics.js'
+import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import ChartMetricSelector from './ChartMetricSelector.vue'
-import ChartRangeSelector from './ChartRangeSelector.vue'
+import DateRangeControl from './DateRangeControl.vue'
 import DonutChart from './DonutChart.vue'
 import ExerciseRanking from './ExerciseRanking.vue'
 import MuscleFrequencyChart from './MuscleFrequencyChart.vue'
-import TrainingInsights from './TrainingInsights.vue'
 import WeekdayChart from './WeekdayChart.vue'
 
 const props = defineProps({
@@ -27,7 +26,9 @@ const RANKING_METRICS = [
   { id: 'progressSets', label: 'Progress' },
 ]
 
-const selectedRange = ref('90d')
+const { startDate: selectedStartDate, endDate: selectedEndDate } = useChartDateInterval()
+const appliedStartDate = ref(selectedStartDate.value)
+const appliedEndDate = ref(selectedEndDate.value)
 const selectedMuscleId = ref('all')
 const distributionMetric = ref('sets')
 const rankingMetric = ref('volume')
@@ -35,13 +36,26 @@ const analytics = computed(buildAnalytics)
 const availableMuscles = computed(readAvailableMuscles)
 const distributionLabel = computed(readDistributionLabel)
 const strongestMuscle = computed(readStrongestMuscle)
+const hasDateChanges = computed(readHasDateChanges)
 
 function buildAnalytics() {
-  return createTrainingAnalytics(props.data, selectedRange.value, selectedMuscleId.value)
+  return createTrainingAnalytics(
+    props.data,
+    appliedStartDate.value,
+    appliedEndDate.value,
+    selectedMuscleId.value,
+  )
 }
 
 function readAvailableMuscles() {
-  return createTrainingAnalytics(props.data, 'all').muscleDistribution
+  return createTrainingAnalytics(props.data).muscleDistribution
+}
+
+function applyDateInterval() {
+  const interval = normalizeSelectableDateInterval(selectedStartDate.value, selectedEndDate.value)
+  if (!interval) return
+  appliedStartDate.value = interval.startDate
+  appliedEndDate.value = interval.endDate
 }
 
 function readDistributionLabel() {
@@ -55,18 +69,13 @@ function readStrongestMuscle() {
   return analytics.value.muscleDistribution[0] ?? null
 }
 
-function formatCompact(value) {
-  if (Math.abs(value) < 10000) return formatNumber(value)
-  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+function readHasDateChanges() {
+  return (
+    selectedStartDate.value !== appliedStartDate.value ||
+    selectedEndDate.value !== appliedEndDate.value
+  )
 }
 
-function formatVolume(value) {
-  return `${formatCompact(value)} kg`
-}
-
-function formatRate(value) {
-  return `${formatNumber(value)}×`
-}
 </script>
 
 <template>
@@ -82,7 +91,12 @@ function formatRate(value) {
       <div class="training-filter-grid">
         <div class="chart-range-control chart-range-control-first">
           <span>Analysis period</span>
-          <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+          <DateRangeControl
+            v-model:start-date="selectedStartDate"
+            v-model:end-date="selectedEndDate"
+            :action-disabled="!hasDateChanges"
+            @apply="applyDateInterval"
+          />
         </div>
 
         <label class="chart-select-field">
@@ -97,42 +111,12 @@ function formatRate(value) {
       </div>
     </section>
 
-    <section class="training-metric-grid" aria-label="Training summary">
-      <article>
-        <span>Workout days</span>
-        <strong>{{ analytics.workoutCount }}</strong>
-        <small>{{ formatRate(analytics.workoutsPerWeek) }} per week</small>
-      </article>
-      <article>
-        <span>Total sets</span>
-        <strong>{{ formatCompact(analytics.totalSets) }}</strong>
-        <small>{{ formatNumber(analytics.averageSetsPerWorkout) }} per workout</small>
-      </article>
-      <article>
-        <span>Training volume</span>
-        <strong>{{ formatVolume(analytics.totalVolume) }}</strong>
-        <small>Weight × reps</small>
-      </article>
-      <article>
-        <span>Total reps</span>
-        <strong>{{ formatCompact(analytics.totalReps) }}</strong>
-        <small>Across {{ analytics.exerciseCount }} exercises</small>
-      </article>
-      <article>
-        <span>Progress sets</span>
-        <strong>{{ analytics.progressSets }}</strong>
-        <small>New weight or rep progress</small>
-      </article>
-      <article>
-        <span>Longest streak</span>
-        <strong>{{ analytics.longestStreak }} days</strong>
-        <small>Consecutive workout days</small>
-      </article>
-    </section>
-
     <template v-if="analytics.totalSets">
-      <div class="training-dashboard-grid">
-        <section class="chart-visual-card">
+      <div
+        class="training-dashboard-grid"
+        :class="{ 'is-single': selectedMuscleId !== 'all' }"
+      >
+        <section v-if="selectedMuscleId === 'all'" class="chart-visual-card">
           <div class="chart-card-heading training-chart-heading">
             <div>
               <p class="eyebrow">MUSCLE BALANCE</p>
@@ -191,8 +175,6 @@ function formatRate(value) {
           <ExerciseRanking :exercises="analytics.exerciseRanking" :metric="rankingMetric" />
         </section>
       </div>
-
-      <TrainingInsights :analytics="analytics" />
     </template>
 
     <section v-else class="chart-empty-card">

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { useDragList } from '../../../shared/composables/useDragList'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
 
@@ -10,11 +11,20 @@ const props = defineProps({
   managementSaving: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['delete-measurement', 'edit-measurement', 'open-measurement', 'toggle-favorite'])
+const emit = defineEmits([
+  'delete-measurement',
+  'edit-measurement',
+  'move-favorite',
+  'open-measurement',
+  'save-favorite-order',
+  'toggle-favorite',
+])
 const activeMenuKey = ref('')
 const deleteConfirmingKey = ref('')
 const editingKey = ref('')
 const editingName = ref('')
+let skipNextMenuClick = false
+const { draggingIndex, startDrag } = useDragList(moveFavorite, saveFavoriteOrder)
 
 watch(readManaging, resetManagementState)
 
@@ -38,9 +48,37 @@ function menuKey(sectionId, itemId) {
 }
 
 function toggleMenu(sectionId, itemId) {
+  if (skipNextMenuClick) {
+    skipNextMenuClick = false
+    return
+  }
+
   const key = menuKey(sectionId, itemId)
   activeMenuKey.value = activeMenuKey.value === key ? '' : key
   deleteConfirmingKey.value = ''
+}
+
+function startFavoriteDrag(event, section, index) {
+  const disabled = section.id !== 'favorites'
+    || !props.managing
+    || props.favoritesSaving
+    || props.managementSaving
+  if (!disabled) closeMenu()
+  startDrag(event, index, disabled)
+}
+
+function moveFavorite(fromIndex, toIndex) {
+  emit('move-favorite', fromIndex, toIndex)
+}
+
+function saveFavoriteOrder() {
+  skipNextMenuClick = true
+  window.setTimeout(clearSkippedMenuClick, 0)
+  emit('save-favorite-order')
+}
+
+function clearSkippedMenuClick() {
+  skipNextMenuClick = false
 }
 
 function openMeasurement(item) {
@@ -80,23 +118,40 @@ function saveName(item) {
 
 <template>
   <div class="body-sections">
-    <section v-for="section in sections" :key="section.id" class="body-section-card">
+    <section
+      v-for="section in sections"
+      :key="section.id"
+      class="body-section-card"
+      :class="{ 'is-reordering': section.id === 'favorites' && draggingIndex >= 0 }"
+    >
       <p class="body-section-label">{{ section.label }}</p>
       <p v-if="!section.items.length" class="body-status">{{ section.emptyMessage }}</p>
 
-      <div v-else class="body-measurement-list">
+      <div
+        v-else
+        class="body-measurement-list"
+        :class="{ 'is-reordering': section.id === 'favorites' && draggingIndex >= 0 }"
+        :data-drag-list="section.id === 'favorites' && managing ? '' : null"
+      >
         <article
-          v-for="item in section.items"
+          v-for="(item, index) in section.items"
           :key="item.id"
           class="body-measurement-row"
-          :class="{ 'is-managing': managing }"
+          :class="{
+            'is-managing': managing,
+            'is-dragging': section.id === 'favorites' && draggingIndex === index,
+          }"
+          :data-drag-item="section.id === 'favorites' && managing ? '' : null"
         >
           <button
             v-if="managing"
             class="body-item-menu-toggle"
+            :class="{ 'is-favorite-drag-handle': section.id === 'favorites' }"
             type="button"
             :aria-expanded="activeMenuKey === menuKey(section.id, item.id)"
             :aria-label="'Manage ' + item.name"
+            @contextmenu.prevent
+            @pointerdown="startFavoriteDrag($event, section, index)"
             @click="toggleMenu(section.id, item.id)"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -2,36 +2,78 @@
 import { computed, ref } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
 import { createBodyAnalytics } from '../analytics/bodyAnalytics.js'
-import { CHART_RANGE_OPTIONS } from '../analytics/dateRanges.js'
-import ChartRangeSelector from './ChartRangeSelector.vue'
+import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
+import { useChartDateInterval } from '../composables/useChartDateInterval.js'
+import DateRangeControl from './DateRangeControl.vue'
 import TimeSeriesChart from './TimeSeriesChart.vue'
 
 const props = defineProps({
   measurements: { type: Array, required: true },
 })
 
+const measurementOptions = computed(sortMeasurements)
 const selectedMeasurementId = ref(findInitialMeasurementId())
-const selectedRange = ref('90d')
+const { startDate: selectedStartDate, endDate: selectedEndDate } = useChartDateInterval()
+const appliedStartDate = ref(selectedStartDate.value)
+const appliedEndDate = ref(selectedEndDate.value)
 const scaleMode = ref('auto')
 const selectedMeasurement = computed(findSelectedMeasurement)
 const analytics = computed(buildAnalytics)
+const hasDateChanges = computed(readHasDateChanges)
 
 function findInitialMeasurementId() {
-  for (const measurement of props.measurements) {
+  for (const measurement of measurementOptions.value) {
     if (measurement.records.length) return String(measurement.id)
   }
-  return props.measurements.length ? String(props.measurements[0].id) : ''
+  return measurementOptions.value.length ? String(measurementOptions.value[0].id) : ''
 }
 
 function findSelectedMeasurement() {
-  for (const measurement of props.measurements) {
+  for (const measurement of measurementOptions.value) {
     if (String(measurement.id) === selectedMeasurementId.value) return measurement
   }
-  return props.measurements[0] ?? null
+  return measurementOptions.value[0] ?? null
+}
+
+function sortMeasurements() {
+  return [...props.measurements].sort(compareMeasurements)
+}
+
+function compareMeasurements(first, second) {
+  if (first.favorite !== second.favorite) return first.favorite ? -1 : 1
+  if (first.favorite) {
+    const orderDifference = readFavoriteOrder(first) - readFavoriteOrder(second)
+    if (orderDifference !== 0) return orderDifference
+  }
+  return first.name.localeCompare(second.name, undefined, { sensitivity: 'base' })
+}
+
+function readFavoriteOrder(measurement) {
+  return Number.isInteger(measurement.favoriteOrder)
+    ? measurement.favoriteOrder
+    : Number.MAX_SAFE_INTEGER
 }
 
 function buildAnalytics() {
-  return createBodyAnalytics(selectedMeasurement.value, selectedRange.value)
+  return createBodyAnalytics(
+    selectedMeasurement.value,
+    appliedStartDate.value,
+    appliedEndDate.value,
+  )
+}
+
+function applyDateInterval() {
+  const interval = normalizeSelectableDateInterval(selectedStartDate.value, selectedEndDate.value)
+  if (!interval) return
+  appliedStartDate.value = interval.startDate
+  appliedEndDate.value = interval.endDate
+}
+
+function readHasDateChanges() {
+  return (
+    selectedStartDate.value !== appliedStartDate.value ||
+    selectedEndDate.value !== appliedEndDate.value
+  )
 }
 
 function setAutomaticScale() {
@@ -82,7 +124,7 @@ function formatChangePercent() {
           <span>Y axis · Measurement</span>
           <select v-model="selectedMeasurementId">
             <option
-              v-for="measurement in measurements"
+              v-for="measurement in measurementOptions"
               :key="measurement.id"
               :value="String(measurement.id)"
             >
@@ -106,7 +148,12 @@ function formatChangePercent() {
 
       <div class="chart-range-control">
         <span>X axis · Time range</span>
-        <ChartRangeSelector v-model="selectedRange" :options="CHART_RANGE_OPTIONS" />
+        <DateRangeControl
+          v-model:start-date="selectedStartDate"
+          v-model:end-date="selectedEndDate"
+          :action-disabled="!hasDateChanges"
+          @apply="applyDateInterval"
+        />
       </div>
     </section>
 
