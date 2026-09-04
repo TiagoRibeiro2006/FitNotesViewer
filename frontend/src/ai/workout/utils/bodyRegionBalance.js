@@ -1,4 +1,6 @@
-export function evaluateBodyRegionBalance(regions) {
+const MINIMUM_WEEKLY_FREQUENCY = 2
+
+export function evaluateBodyRegionBalance(regions, periodDays = 7) {
   const upperFrequency = readFrequency(regions?.upper)
   const lowerFrequency = readFrequency(regions?.lower)
 
@@ -15,6 +17,10 @@ export function evaluateBodyRegionBalance(regions) {
   const ratio = Math.min(upperFrequency, lowerFrequency)
     / Math.max(upperFrequency, lowerFrequency)
 
+  if (hasSufficientWeeklyFrequency(upperFrequency, lowerFrequency, periodDays)) {
+    return createBalance('balanced', upperFrequency, lowerFrequency, ratio)
+  }
+
   if (ratio <= 0.5) {
     return createBalance('unbalanced', upperFrequency, lowerFrequency, ratio)
   }
@@ -22,6 +28,21 @@ export function evaluateBodyRegionBalance(regions) {
     return createBalance('uneven', upperFrequency, lowerFrequency, ratio)
   }
   return createBalance('balanced', upperFrequency, lowerFrequency, ratio)
+}
+
+function hasSufficientWeeklyFrequency(upperFrequency, lowerFrequency, periodDays) {
+  const weeks = calculateWeeks(periodDays)
+  const upperFrequencyPerWeek = upperFrequency / weeks
+  const lowerFrequencyPerWeek = lowerFrequency / weeks
+
+  return upperFrequencyPerWeek >= MINIMUM_WEEKLY_FREQUENCY
+    && lowerFrequencyPerWeek >= MINIMUM_WEEKLY_FREQUENCY
+}
+
+function calculateWeeks(periodDays) {
+  const days = Number(periodDays)
+  if (!Number.isFinite(days) || days <= 7) return 1
+  return days / 7
 }
 
 function readFrequency(region) {
