@@ -3,6 +3,8 @@ import { calculateMuscleFrequency } from './metrics/muscleFrequency.js'
 import { calculateMuscleSets } from './metrics/muscleSets.js'
 import { calculateWorkoutSets } from './metrics/workoutSets.js'
 import { calculateBodyRegions } from './metrics/bodyRegions.js'
+import { calculateExerciseConsistency } from './metrics/exerciseConsistency.js'
+import { calculateSetConsistency } from './metrics/setConsistency.js'
 
 export function analyzeTrainingPeriod(workouts) {
   const workoutMetrics = calculateWorkoutSets(workouts)
@@ -16,6 +18,10 @@ export function analyzeTrainingPeriod(workouts) {
     workouts: workoutMetrics.workouts,
     muscles: buildMuscleMetrics(muscleSets, muscleFrequency, muscleDistribution),
     regions: calculateBodyRegions(workouts),
+    consistency: {
+      exercises: calculateExerciseConsistency(workouts),
+      sets: calculateSetConsistency(workouts),
+    },
   }
 }
 
