@@ -1,11 +1,10 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue'
-import { copyWorkoutDay } from '../../../data/repositories/workoutRepository'
 import CalendarList from '../../calendar/components/CalendarList.vue'
 import { useWorkoutCalendar } from '../../calendar/composables/useWorkoutCalendar'
 import BaseModal from '../../../shared/components/BaseModal.vue'
-import { createEmptySummary } from '../../../shared/models/summary'
 import { friendlyError } from '../../../shared/utils/errors'
+import { copyWorkoutToDate } from '../services/workoutCopyService'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -47,7 +46,7 @@ async function copyDate(sourceDate) {
   error.value = ''
 
   try {
-    const summary = await copyWorkoutDay(sourceDate, props.targetDate) ?? createEmptySummary()
+    const summary = await copyWorkoutToDate(sourceDate, props.targetDate)
     emit('copied', summary)
     close(true)
   } catch (copyError) {
