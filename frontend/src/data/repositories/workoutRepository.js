@@ -1,7 +1,14 @@
 import { createLocalId } from '../../shared/utils/ids'
 import { normalizeNonNegativeNumber, normalizePositiveInteger } from '../../shared/utils/validation'
-import { buildHistoricalProgress, buildProgressBaseline } from '../../shared/utils/exerciseProgress'
+import { buildProgressBaseline } from '../../shared/utils/exerciseProgress'
 import { openAppDatabase } from '../indexedDb/database'
+import {
+  buildWorkoutCalendarColors,
+  buildWorkoutHistory,
+  compareSetRows,
+  orderWorkoutDayRows,
+  selectProgressRows,
+} from '../mappers/workoutRows'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
 import { getSummary, refreshSummary } from './summaryRepository'
 import { createWorkoutDayCopies } from './workoutCopy'
@@ -203,50 +210,6 @@ function createCopyId() {
   return createLocalId('local')
 }
 
-function buildWorkoutCalendarColors(workoutSets = [], exercises = [], categories = []) {
-  const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
-  const categoriesById = new Map(categories.map((category) => [category.id, category]))
-  const setsByDate = new Map()
-
-  for (const set of workoutSets) {
-    if (!set.date) continue
-    const daySets = setsByDate.get(set.date) ?? []
-    daySets.push(set)
-    setsByDate.set(set.date, daySets)
-  }
-
-  return new Map([...setsByDate].map(([date, daySets]) => {
-    const firstSet = orderWorkoutDayRows(daySets)[0]
-    const exercise = exercisesById.get(firstSet?.exerciseId)
-    const category = categoriesById.get(exercise?.categoryId)
-    return [date, category?.colour ?? null]
-  }))
-}
-
-function buildWorkoutHistory(rows) {
-  const rowsByDate = new Map()
-  const progressById = buildHistoricalProgress(rows)
-
-  for (const row of rows) {
-    if (!row.date) continue
-    const dayRows = rowsByDate.get(row.date) ?? []
-    dayRows.push(row)
-    rowsByDate.set(row.date, dayRows)
-  }
-
-  return [...rowsByDate]
-    .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-    .map(([date, dayRows]) => ({
-      date,
-      sets: dayRows.sort(compareSetRows).map((row) => ({
-         id: row.id,
-         isProgress: progressById.get(row.id) ?? false,
-         reps: row.reps,
-        weight: row.weight,
-      })),
-    }))
-}
-
 function createWorkoutSet(date, exercise, set, exerciseOrder, setOrder, updatedAt) {
   return {
     id: createLocalId('local'),
@@ -268,56 +231,4 @@ function createWorkoutSet(date, exercise, set, exerciseOrder, setOrder, updatedA
     createdLocally: true,
     localUpdatedAt: updatedAt,
   }
-}
-
-function compareSetRows(a, b) {
-  const orderA = Number.isFinite(Number(a.localSetOrder)) ? Number(a.localSetOrder) : Number.MAX_SAFE_INTEGER
-  const orderB = Number.isFinite(Number(b.localSetOrder)) ? Number(b.localSetOrder) : Number.MAX_SAFE_INTEGER
-  if (orderA !== orderB) return orderA - orderB
-
-  const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
-  const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
-  if (idA !== idB) return idA - idB
-  return String(a.id).localeCompare(String(b.id))
-}
-
-function orderWorkoutDayRows(rows) {
-  const groups = new Map()
-
-  for (const row of [...rows].sort(compareSourceRows)) {
-    const group = groups.get(row.exerciseId) ?? { rows: [], sourceOrder: groups.size, savedOrder: null }
-    group.rows.push(row)
-
-    const savedOrder = Number(row.dayExerciseOrder)
-    if (row.dayExerciseOrder !== null && row.dayExerciseOrder !== undefined && Number.isInteger(savedOrder) && savedOrder >= 0) {
-      group.savedOrder = savedOrder
-    }
-    groups.set(row.exerciseId, group)
-  }
-
-  return [...groups.values()]
-    .sort((a, b) => (a.savedOrder ?? a.sourceOrder) - (b.savedOrder ?? b.sourceOrder) || a.sourceOrder - b.sourceOrder)
-    .flatMap((group) => group.rows.sort(compareSetRows))
-}
-
-function compareSourceRows(a, b) {
-  const idA = typeof a.id === 'number' ? a.id : Number.MAX_SAFE_INTEGER
-  const idB = typeof b.id === 'number' ? b.id : Number.MAX_SAFE_INTEGER
-  if (idA !== idB) return idA - idB
-
-  const updatedAtComparison = String(a.localUpdatedAt ?? '').localeCompare(String(b.localUpdatedAt ?? ''))
-  if (updatedAtComparison !== 0) return updatedAtComparison
-  return String(a.id).localeCompare(String(b.id))
-}
-
-function selectProgressRows(rows, date) {
-  const progressById = buildHistoricalProgress(rows)
-  const selectedRows = []
-
-  for (const row of rows) {
-    if (row.date !== date) continue
-    selectedRows.push({ ...row, isProgress: progressById.get(row.id) === true })
-  }
-
-  return selectedRows
 }

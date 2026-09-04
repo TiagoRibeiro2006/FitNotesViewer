@@ -1,3 +1,5 @@
+import { normalizeTrainingText } from './trainingText.js'
+
 const IGNORED_WORDS = new Set([
   'a',
   'about',
@@ -34,7 +36,7 @@ const IGNORED_WORDS = new Set([
 ])
 
 export function tokenizeTrainingQuestion(text) {
-  const normalizedText = normalizeText(text)
+  const normalizedText = normalizeTrainingText(text)
   const words = normalizedText.split(/[^a-z0-9]+/)
   const tokens = []
 
@@ -44,11 +46,4 @@ export function tokenizeTrainingQuestion(text) {
   }
 
   return tokens
-}
-
-function normalizeText(text) {
-  return String(text ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
 }

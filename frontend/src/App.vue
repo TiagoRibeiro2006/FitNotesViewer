@@ -1,16 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
+import {
+  loadApplicationSummary,
+  startBackgroundServices,
+} from './app/services/appInitializationService'
 import { useAppNavigation } from './app/useAppNavigation'
-import { requestPersistentStorage } from './data/browserStorage'
-import { migrateLegacyLocalStorage } from './data/repositories/backupRepository'
-import { getSummary } from './data/repositories/summaryRepository'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
 import ChartsView from './features/charts/ChartsView.vue'
 import SettingsView from './features/settings/SettingsView.vue'
 import WorkoutLogView from './features/workouts/WorkoutLogView.vue'
-import { warmUpSqliteEngine } from './fitnotes'
 import { createEmptySummary } from './shared/models/summary'
 
 const summary = ref(createEmptySummary())
@@ -28,26 +28,9 @@ const {
 onMounted(initializeApp)
 
 async function initializeApp() {
-  try {
-    await migrateLegacyLocalStorage()
-    summary.value = await getSummary() ?? createEmptySummary()
-  } catch {
-    summary.value = createEmptySummary()
-  } finally {
-    appReady.value = true
-  }
-
-  void requestPersistentStorage()
-  void warmUpDatabaseEngine()
-}
-
-async function warmUpDatabaseEngine() {
-  try {
-    await warmUpSqliteEngine()
-    return true
-  } catch {
-    return false
-  }
+  summary.value = await loadApplicationSummary()
+  appReady.value = true
+  startBackgroundServices()
 }
 
 function handleWorkoutChanged(updatedSummary) {
