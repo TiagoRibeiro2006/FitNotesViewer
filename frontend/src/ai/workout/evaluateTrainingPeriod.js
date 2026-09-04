@@ -1,4 +1,5 @@
 import { evaluateBodyRegionBalance } from './utils/bodyRegionBalance.js'
+import { evaluateTrainingCategories } from './evaluateTrainingCategories.js'
 
 const RATINGS = [
   { minimumScore: 80, level: 'great', label: 'Great' },
@@ -9,88 +10,21 @@ const RATINGS = [
 const RATING_LEVELS = ['terrible', 'bad', 'average', 'great']
 
 export function evaluateTrainingPeriod(analysis, periodDays) {
-  const score = calculateScore(analysis, periodDays)
+  const categories = evaluateTrainingCategories(analysis, periodDays)
+  const score = calculateScore(categories)
   const scoreRating = findRating(score)
-  const regionBalance = evaluateBodyRegionBalance(analysis?.regions)
-  const maximumRating = findMaximumRating(regionBalance.status)
+  const regionBalance = evaluateBodyRegionBalance(analysis?.regions, periodDays)
+  const maximumRating = findMaximumRating(regionBalance.status, categories)
   const rating = limitRating(scoreRating, maximumRating)
-  return { ...rating, score, regionBalance }
+  return { ...rating, score, regionBalance, categories }
 }
 
-function calculateScore(analysis, periodDays) {
-  if (!analysis?.totalSets || !analysis?.workoutCount) return 0
+function calculateScore(categories) {
+  if (!categories.length) return 0
 
-  const weeks = calculateWeeks(periodDays)
-  const workoutsPerWeek = analysis.workoutCount / weeks
-  const setsPerWeek = analysis.totalSets / weeks
-
-  return workoutScore(workoutsPerWeek)
-    + setScore(setsPerWeek)
-    + muscleVarietyScore(analysis.muscles)
-    + muscleBalanceScore(analysis.muscles, analysis.totalSets)
-    + workoutBalanceScore(analysis.workouts)
-}
-
-function calculateWeeks(periodDays) {
-  const days = Number(periodDays)
-  if (!Number.isFinite(days) || days <= 7) return 1
-  return days / 7
-}
-
-function workoutScore(workoutsPerWeek) {
-  if (workoutsPerWeek >= 3) return 35
-  if (workoutsPerWeek >= 2) return 22
-  return 8
-}
-
-function setScore(setsPerWeek) {
-  if (setsPerWeek >= 10) return 20
-  if (setsPerWeek >= 5) return 12
-  return 5
-}
-
-function muscleVarietyScore(muscles) {
-  const muscleCount = Object.keys(muscles ?? {}).length
-  if (muscleCount >= 3) return 20
-  if (muscleCount === 2) return 12
-  return muscleCount === 1 ? 5 : 0
-}
-
-function muscleBalanceScore(muscles, totalSets) {
-  const largestMuscleSetCount = readLargestMuscleSetCount(muscles)
-  if (!largestMuscleSetCount || !totalSets) return 0
-
-  const percentage = (largestMuscleSetCount / totalSets) * 100
-  if (percentage <= 50) return 15
-  if (percentage <= 60) return 10
-  if (percentage <= 80) return 5
-  return 0
-}
-
-function readLargestMuscleSetCount(muscles) {
-  let largestSetCount = 0
-
-  for (const metrics of Object.values(muscles ?? {})) {
-    largestSetCount = Math.max(largestSetCount, metrics.totalSets)
-  }
-
-  return largestSetCount
-}
-
-function workoutBalanceScore(workouts) {
-  if (!Array.isArray(workouts) || workouts.length < 2) return 5
-
-  let minimum = workouts[0].totalSets
-  let maximum = workouts[0].totalSets
-
-  for (const workout of workouts) {
-    minimum = Math.min(minimum, workout.totalSets)
-    maximum = Math.max(maximum, workout.totalSets)
-  }
-
-  if (maximum - minimum >= 6 && maximum >= minimum * 2) return 2
-  if (maximum - minimum >= 4 && maximum >= minimum * 2) return 5
-  return 10
+  let total = 0
+  for (const category of categories) total += category.score
+  return Math.round((total / categories.length) * 10)
 }
 
 function findRating(score) {
@@ -103,13 +37,31 @@ function findRating(score) {
   return { level: 'terrible', label: 'Terrible' }
 }
 
-function findMaximumRating(balanceStatus) {
+function findMaximumRating(balanceStatus, categories) {
   if (balanceStatus === 'missing-both') return 'terrible'
   if (balanceStatus === 'missing-upper') return 'terrible'
   if (balanceStatus === 'missing-lower') return 'terrible'
   if (balanceStatus === 'unbalanced') return 'bad'
   if (balanceStatus === 'uneven') return 'average'
+  if (hasPoorExerciseAndSetConsistency(categories)) return 'bad'
+  if (hasPoorExerciseConsistency(categories)) return 'average'
   return null
+}
+
+function hasPoorExerciseAndSetConsistency(categories) {
+  return readCategoryScore(categories, 'exercise-consistency') <= 2
+    && readCategoryScore(categories, 'set-consistency') <= 3
+}
+
+function hasPoorExerciseConsistency(categories) {
+  return readCategoryScore(categories, 'exercise-consistency') <= 2
+}
+
+function readCategoryScore(categories, categoryId) {
+  for (const category of categories) {
+    if (category.id === categoryId) return category.score
+  }
+  return 0
 }
 
 function limitRating(rating, maximumRating) {

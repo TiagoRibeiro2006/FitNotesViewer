@@ -15,6 +15,11 @@ export function readSets(exercise) {
   return exercise.sets
 }
 
+export function readExerciseName(exercise) {
+  const name = String(exercise?.name ?? '').trim()
+  return name || 'Unknown exercise'
+}
+
 export function readMuscleName(exercise) {
   const muscle = exercise?.muscle
   if (typeof muscle === 'string') return normalizeMuscleName(muscle)

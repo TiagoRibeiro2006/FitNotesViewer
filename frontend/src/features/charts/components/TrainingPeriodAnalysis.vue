@@ -10,6 +10,7 @@ import {
 import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
 import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import DateRangeControl from './DateRangeControl.vue'
+import TrainingAnalysisDetailsModal from './TrainingAnalysisDetailsModal.vue'
 import TrainingRatingGuide from './TrainingRatingGuide.vue'
 
 const props = defineProps({
@@ -26,6 +27,7 @@ const feedback = computed(buildFeedback)
 const rating = computed(buildRating)
 const ratingClass = computed(readRatingClass)
 const hasDateChanges = computed(readHasDateChanges)
+const detailsOpen = ref(false)
 
 function buildWorkouts() {
   return buildTrainingPeriodWorkouts(
@@ -69,6 +71,14 @@ function readHasDateChanges() {
     selectedEndDate.value !== generatedEndDate.value
   )
 }
+
+function openDetails() {
+  detailsOpen.value = true
+}
+
+function closeDetails() {
+  detailsOpen.value = false
+}
 </script>
 
 <template>
@@ -91,7 +101,18 @@ function readHasDateChanges() {
 
     <div class="training-analysis-report">
       <p>{{ feedback }}</p>
-      <small>Generated locally from the selected training period.</small>
+      <div class="training-analysis-report-footer">
+        <small>Generated locally from the selected training period.</small>
+        <button class="training-analysis-details-button" type="button" @click="openDetails">
+          Details
+        </button>
+      </div>
     </div>
+
+    <TrainingAnalysisDetailsModal
+      :open="detailsOpen"
+      :categories="rating.categories"
+      @close="closeDetails"
+    />
   </section>
 </template>
