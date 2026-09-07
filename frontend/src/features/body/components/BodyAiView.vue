@@ -1,7 +1,6 @@
 <script setup>
-import { ref } from 'vue'
-
-const selectedGoal = ref('')
+import BodyAiResult from './BodyAiResult.vue'
+import { useBodyAiAnalysis } from '../composables/useBodyAiAnalysis.js'
 
 const goals = [
   { id: 'cutting', label: 'Cutting', description: 'Lose weight', direction: 'down' },
@@ -9,9 +8,14 @@ const goals = [
   { id: 'bulking', label: 'Bulking', description: 'Gain weight', direction: 'up' },
 ]
 
-function selectGoal(goalId) {
-  selectedGoal.value = goalId
-}
+const {
+  analysis,
+  error,
+  generateAnalysis,
+  loading,
+  selectedGoal,
+  selectGoal,
+} = useBodyAiAnalysis()
 </script>
 
 <template>
@@ -60,39 +64,16 @@ function selectGoal(goalId) {
         <span>Only your locally stored Body Weight values will be analysed.</span>
       </div>
 
-      <button class="body-ai-generate" type="button" :disabled="!selectedGoal">
-        Analyse body weight
+      <button
+        class="body-ai-generate"
+        type="button"
+        :disabled="!selectedGoal || loading"
+        @click="generateAnalysis"
+      >
+        {{ loading ? 'Analysing…' : 'Analyse body weight' }}
       </button>
     </section>
 
-    <section class="body-ai-card body-ai-result-card">
-      <div class="body-ai-result-heading">
-        <div>
-          <p class="eyebrow">AI REVIEW</p>
-          <h2>Your progress</h2>
-        </div>
-        <span class="body-ai-rating">—</span>
-      </div>
-
-      <div class="body-ai-empty-result">
-        <span class="body-ai-empty-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <path d="M4 17 9 12l4 3 7-9" />
-            <circle cx="4" cy="17" r="1.4" />
-            <circle cx="9" cy="12" r="1.4" />
-            <circle cx="13" cy="15" r="1.4" />
-            <circle cx="20" cy="6" r="1.4" />
-          </svg>
-        </span>
-        <strong>Ready when you are</strong>
-        <p>Select your goal and generate an analysis to see whether your weight trend is on track.</p>
-      </div>
-
-      <div class="body-ai-preview-metrics" aria-label="Future analysis details">
-        <span><small>Trend</small><strong>—</strong></span>
-        <span><small>Pace</small><strong>—</strong></span>
-        <span><small>Consistency</small><strong>—</strong></span>
-      </div>
-    </section>
+    <BodyAiResult :analysis="analysis" :error="error" />
   </div>
 </template>
