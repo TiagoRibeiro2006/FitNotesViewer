@@ -1272,6 +1272,10 @@
 }
 
 @media (max-width: 640px) {
+  .training-details-header {
+    padding-top: max(18px, calc(env(safe-area-inset-top) + 12px));
+  }
+
   .chart-control-card,
   .chart-visual-card { padding: 14px; }
   .chart-control-grid { grid-template-columns: 1fr; }
