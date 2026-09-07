@@ -69,6 +69,12 @@
   cursor: pointer;
 }
 
+.body-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .body-manage-toggle.is-active {
   border-color: #315f91;
   color: #4b9cff;

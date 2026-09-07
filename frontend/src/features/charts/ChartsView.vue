@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import TrainingAiPanel from './components/TrainingAiPanel.vue'
@@ -33,15 +34,7 @@ function toggleAi() {
 <template>
   <AppSectionHeader title="Charts">
     <template #action>
-      <button
-        class="charts-ai-toggle"
-        :class="{ 'is-active': aiEnabled }"
-        type="button"
-        :aria-pressed="aiEnabled"
-        @click="toggleAi"
-      >
-        AI {{ aiEnabled ? 'ON' : 'OFF' }}
-      </button>
+      <AiModeToggle :active="aiEnabled" @toggle="toggleAi" />
     </template>
   </AppSectionHeader>
 
