@@ -1,6 +1,8 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
+import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import BodyAiView from './components/BodyAiView.vue'
 import BodyMeasurementCreateView from './components/BodyMeasurementCreateView.vue'
 import BodyMeasurementDetailView from './components/BodyMeasurementDetailView.vue'
 import BodyMeasurementList from './components/BodyMeasurementList.vue'
@@ -28,6 +30,7 @@ const {
 const selectedItem = ref(null)
 const managing = ref(props.startManaging)
 const creatingMeasurement = ref(false)
+const aiEnabled = ref(false)
 
 onMounted(async () => {
   await load()
@@ -92,6 +95,11 @@ async function handleHeaderAction() {
   await scrollToTop()
 }
 
+function toggleAi() {
+  aiEnabled.value = !aiEnabled.value
+  managing.value = false
+}
+
 async function closeCreateMeasurement() {
   creatingMeasurement.value = false
   await scrollToTop()
@@ -132,42 +140,49 @@ async function scrollToTop() {
     >
       <AppSectionHeader title="Body Tracker">
         <template #action>
-          <button
-            class="body-manage-toggle"
-            :class="{ 'is-active': managing }"
-            type="button"
-            :aria-pressed="managing"
-            :aria-label="
-              managing
-                ? 'Add body measurement'
-                : 'Manage body measurements'
-            "
-            @click="handleHeaderAction"
-          >
-            <svg
-              v-if="managing"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+          <div class="body-header-actions">
+            <AiModeToggle :active="aiEnabled" @toggle="toggleAi" />
 
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              aria-hidden="true"
+            <button
+              v-if="!aiEnabled"
+              class="body-manage-toggle"
+              :class="{ 'is-active': managing }"
+              type="button"
+              :aria-pressed="managing"
+              :aria-label="
+                managing
+                  ? 'Add body measurement'
+                  : 'Manage body measurements'
+              "
+              @click="handleHeaderAction"
             >
-              <path
-                d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z"
-              />
-              <path d="m13.8 6.7 3.5 3.5" />
-            </svg>
-          </button>
+              <svg
+                v-if="managing"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+
+              <svg
+                v-else
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z"
+                />
+                <path d="m13.8 6.7 3.5 3.5" />
+              </svg>
+            </button>
+          </div>
         </template>
       </AppSectionHeader>
 
+      <BodyAiView v-if="aiEnabled" />
+
       <div
-        v-if="loading"
+        v-else-if="loading"
         class="body-status"
       >
         Loading body data…
