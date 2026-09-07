@@ -27,6 +27,6 @@ function readSets() {
       <p>Add sets in the Log to generate an AI training review.</p>
     </section>
 
-    <TrainingAiChat />
+    <TrainingAiChat :sets="sets" />
   </div>
 </template>

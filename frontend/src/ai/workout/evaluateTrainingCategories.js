@@ -1,4 +1,5 @@
 import { evaluateBodyRegionBalance } from './utils/bodyRegionBalance.js'
+import { calculatePeriodWeeks } from './utils/trainingPeriod.js'
 
 const CATEGORY_LEVELS = [
   { minimumScore: 8, level: 'great' },
@@ -23,7 +24,7 @@ export function evaluateTrainingCategories(analysis, periodDays) {
 }
 
 function evaluateFrequency(analysis, periodDays) {
-  const workoutsPerWeek = analysis.workoutCount / calculateWeeks(periodDays)
+  const workoutsPerWeek = analysis.workoutCount / calculatePeriodWeeks(periodDays)
   let score = 2
 
   if (workoutsPerWeek > 6) score = 7
@@ -43,7 +44,7 @@ function evaluateFrequency(analysis, periodDays) {
 function evaluateBodyBalance(analysis, periodDays) {
   const balance = evaluateBodyRegionBalance(analysis.regions, periodDays)
   const score = bodyBalanceScore(balance.status)
-  const weeks = calculateWeeks(periodDays)
+  const weeks = calculatePeriodWeeks(periodDays)
   const upperPerWeek = balance.upperFrequency / weeks
   const lowerPerWeek = balance.lowerFrequency / weeks
   const summary = 'Upper ' + formatNumber(upperPerWeek)
@@ -226,12 +227,6 @@ function findCategoryLevel(score) {
     if (score >= categoryLevel.minimumScore) return categoryLevel.level
   }
   return 'terrible'
-}
-
-function calculateWeeks(periodDays) {
-  const days = Number(periodDays)
-  if (!Number.isFinite(days) || days <= 7) return 1
-  return days / 7
 }
 
 function formatNumber(value) {

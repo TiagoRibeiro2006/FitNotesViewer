@@ -2,7 +2,11 @@
 import { nextTick, ref } from 'vue'
 import { useTrainingAiChat } from '../composables/useTrainingAiChat.js'
 
-const { messages, prompt, sendPrompt } = useTrainingAiChat()
+const props = defineProps({
+  sets: { type: Array, required: true },
+})
+
+const { messages, prompt, sendPrompt } = useTrainingAiChat(props)
 const chatMessages = ref(null)
 
 async function submitPrompt() {
@@ -26,7 +30,7 @@ function scrollToLatestMessage() {
         <p class="eyebrow">AI TRAINING CHAT</p>
         <h2>Ask about your training</h2>
       </div>
-      <span class="training-ai-chat-status">Preview</span>
+      <span class="training-ai-chat-status">Local test</span>
     </div>
 
     <div ref="chatMessages" class="training-ai-chat-messages" aria-live="polite">
@@ -36,7 +40,7 @@ function scrollToLatestMessage() {
           <path d="M8 10h8M8 13h5" />
         </svg>
         <strong>Start a conversation</strong>
-        <p>Ask a question about your training. The real AI response will be added later.</p>
+        <p>Ask about your sets, workout count, top muscle, top exercise, volume, or training summary.</p>
       </div>
 
       <div

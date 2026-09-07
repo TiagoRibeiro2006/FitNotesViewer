@@ -1,8 +1,7 @@
 import { ref } from 'vue'
+import { generateTrainingChatReply } from '../../../ai/chat/generateTrainingChatReply.js'
 
-const PLACEHOLDER_REPLY = 'This is not in my scope yet.'
-
-export function useTrainingAiChat() {
+export function useTrainingAiChat(trainingData) {
   const prompt = ref('')
   const messages = ref([])
   let nextMessageId = 1
@@ -13,7 +12,7 @@ export function useTrainingAiChat() {
 
     addMessage('user', question)
     prompt.value = ''
-    addMessage('assistant', PLACEHOLDER_REPLY)
+    addMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
     return true
   }
 

@@ -1,3 +1,5 @@
+import { calculatePeriodWeeks } from './trainingPeriod.js'
+
 const MINIMUM_WEEKLY_FREQUENCY = 2
 
 export function evaluateBodyRegionBalance(regions, periodDays = 7) {
@@ -31,18 +33,12 @@ export function evaluateBodyRegionBalance(regions, periodDays = 7) {
 }
 
 function hasSufficientWeeklyFrequency(upperFrequency, lowerFrequency, periodDays) {
-  const weeks = calculateWeeks(periodDays)
+  const weeks = calculatePeriodWeeks(periodDays)
   const upperFrequencyPerWeek = upperFrequency / weeks
   const lowerFrequencyPerWeek = lowerFrequency / weeks
 
   return upperFrequencyPerWeek >= MINIMUM_WEEKLY_FREQUENCY
     && lowerFrequencyPerWeek >= MINIMUM_WEEKLY_FREQUENCY
-}
-
-function calculateWeeks(periodDays) {
-  const days = Number(periodDays)
-  if (!Number.isFinite(days) || days <= 7) return 1
-  return days / 7
 }
 
 function readFrequency(region) {

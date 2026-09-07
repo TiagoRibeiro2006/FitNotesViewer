@@ -1,4 +1,5 @@
 import { evaluateBodyRegionBalance } from './utils/bodyRegionBalance.js'
+import { calculatePeriodWeeks } from './utils/trainingPeriod.js'
 
 export function generateTrainingFeedback(analysis, periodDays) {
   const paragraphs = []
@@ -163,9 +164,7 @@ function buildRegionFrequencyFeedback(balance, conclusion) {
 }
 
 function calculateWeeklyAverage(value, periodDays) {
-  const days = Number(periodDays)
-  const weeks = Number.isFinite(days) && days > 7 ? days / 7 : 1
-  return value / weeks
+  return value / calculatePeriodWeeks(periodDays)
 }
 
 function readMuscles(muscleMetrics) {
