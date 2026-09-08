@@ -128,6 +128,7 @@
 .body-ai-goal {
   min-width: 0;
   min-height: 112px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -175,8 +176,10 @@
 }
 
 .body-ai-goal strong {
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 13px;
 }
 
@@ -384,9 +387,23 @@
 
 @media (max-width: 390px) {
   .body-ai-card { padding: 15px; }
-  .body-ai-goal { min-height: 104px; padding: 10px; }
-  .body-ai-goal strong { font-size: 11px; }
-  .body-ai-goal small { font-size: 9px; }
+  .body-ai-goals { grid-template-columns: 1fr; }
+  .body-ai-goal {
+    min-height: 68px;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 2px;
+    justify-content: initial;
+    padding: 10px 12px;
+  }
+  .body-ai-goal-icon {
+    grid-row: 1 / 3;
+    margin-bottom: 0;
+  }
+  .body-ai-goal strong { font-size: 12px; }
+  .body-ai-goal small { font-size: 10px; }
 }
 
 .body-manage-toggle.is-active {
