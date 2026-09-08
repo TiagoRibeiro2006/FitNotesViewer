@@ -9,7 +9,6 @@ export function useBodyAiAnalysis() {
 
   function selectGoal(goal) {
     selectedGoal.value = goal
-    analysis.value = null
     error.value = ''
   }
 
