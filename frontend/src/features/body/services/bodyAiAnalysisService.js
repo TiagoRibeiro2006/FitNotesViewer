@@ -3,14 +3,16 @@ import {
   getBodyMeasurementHistory,
   getBodyTrackerData,
 } from '../../../data/repositories/bodyRepository.js'
+import { filterByDateInterval } from '../../charts/analytics/dateRanges.js'
 
-export async function analyzeStoredBodyWeight(goal) {
+export async function analyzeStoredBodyWeight(goal, startDate, endDate) {
   const tracker = await getBodyTrackerData()
   const bodyWeight = findBodyWeight(tracker.measurements)
   if (!bodyWeight) return analyzeBodyWeight([], goal)
 
   const records = await getBodyMeasurementHistory(bodyWeight)
-  return analyzeBodyWeight(records, goal)
+  const selectedRecords = filterByDateInterval(records, startDate, endDate)
+  return analyzeBodyWeight(selectedRecords, goal)
 }
 
 function findBodyWeight(measurements) {
