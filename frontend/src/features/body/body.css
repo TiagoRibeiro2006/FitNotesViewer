@@ -69,12 +69,6 @@
   cursor: pointer;
 }
 
-.body-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .body-ai-view {
   display: grid;
   gap: 14px;

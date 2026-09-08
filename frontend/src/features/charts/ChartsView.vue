@@ -1,15 +1,15 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useAiMode } from '../../app/useAiMode.js'
 import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import BodyAiView from '../body/components/BodyAiView.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
 const activeSection = ref('body')
-const { aiEnabled, toggleAi } = useAiMode()
+const aiEnabled = ref(false)
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -25,6 +25,10 @@ function showBodyCharts() {
 
 function showTrainingCharts() {
   activeSection.value = 'training'
+}
+
+function toggleAi() {
+  aiEnabled.value = !aiEnabled.value
 }
 
 </script>
@@ -64,6 +68,8 @@ function showTrainingCharts() {
     <p>{{ error }}</p>
     <button type="button" @click="load">Try again</button>
   </section>
+
+  <BodyAiView v-else-if="activeSection === 'body' && aiEnabled" />
 
   <BodyAnalyticsPanel
     v-else-if="activeSection === 'body'"
