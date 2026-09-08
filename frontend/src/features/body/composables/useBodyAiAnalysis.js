@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { analyzeStoredBodyWeight } from '../services/bodyAiAnalysisService.js'
 
 export function useBodyAiAnalysis() {
@@ -6,6 +6,11 @@ export function useBodyAiAnalysis() {
   const analysis = ref(null)
   const error = ref('')
   const loading = ref(false)
+  const analysisIsCurrent = computed(checkAnalysisIsCurrent)
+
+  function checkAnalysisIsCurrent() {
+    return Boolean(analysis.value && analysis.value.goal === selectedGoal.value)
+  }
 
   function selectGoal(goal) {
     selectedGoal.value = goal
@@ -13,7 +18,7 @@ export function useBodyAiAnalysis() {
   }
 
   async function generateAnalysis() {
-    if (!selectedGoal.value || loading.value) return
+    if (!selectedGoal.value || loading.value || analysisIsCurrent.value) return
 
     loading.value = true
     error.value = ''
@@ -30,6 +35,7 @@ export function useBodyAiAnalysis() {
 
   return {
     analysis,
+    analysisIsCurrent,
     error,
     generateAnalysis,
     loading,

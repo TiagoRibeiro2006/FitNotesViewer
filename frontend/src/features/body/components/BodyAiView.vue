@@ -10,6 +10,7 @@ const goals = [
 
 const {
   analysis,
+  analysisIsCurrent,
   error,
   generateAnalysis,
   loading,
@@ -67,7 +68,7 @@ const {
       <button
         class="body-ai-generate"
         type="button"
-        :disabled="!selectedGoal || loading"
+        :disabled="!selectedGoal || loading || analysisIsCurrent"
         @click="generateAnalysis"
       >
         {{ loading ? 'Analysing…' : 'Analyse body weight' }}
