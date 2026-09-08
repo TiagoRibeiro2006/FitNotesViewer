@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
+import { useAiMode } from '../../app/useAiMode.js'
 import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAiView from './components/BodyAiView.vue'
@@ -11,6 +12,8 @@ import { useBodyTracker } from './composables/useBodyTracker'
 const props = defineProps({
   startManaging: { type: Boolean, default: false },
 })
+
+const { aiEnabled, toggleAi: toggleGlobalAi } = useAiMode()
 
 const {
   addMeasurement,
@@ -30,7 +33,6 @@ const {
 const selectedItem = ref(null)
 const managing = ref(props.startManaging)
 const creatingMeasurement = ref(false)
-const aiEnabled = ref(false)
 
 onMounted(async () => {
   await load()
@@ -96,7 +98,7 @@ async function handleHeaderAction() {
 }
 
 function toggleAi() {
-  aiEnabled.value = !aiEnabled.value
+  toggleGlobalAi()
   managing.value = false
 }
 

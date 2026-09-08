@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useAiMode } from '../../app/useAiMode.js'
 import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
@@ -8,7 +9,7 @@ import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
 const activeSection = ref('body')
-const aiEnabled = ref(false)
+const { aiEnabled, toggleAi } = useAiMode()
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -26,9 +27,6 @@ function showTrainingCharts() {
   activeSection.value = 'training'
 }
 
-function toggleAi() {
-  aiEnabled.value = !aiEnabled.value
-}
 </script>
 
 <template>
