@@ -1,6 +1,8 @@
 <script setup>
 import BodyAiResult from './BodyAiResult.vue'
 import { useBodyAiAnalysis } from '../composables/useBodyAiAnalysis.js'
+import DateRangeControl from '../../charts/components/DateRangeControl.vue'
+import { useChartDateInterval } from '../../charts/composables/useChartDateInterval.js'
 
 const goals = [
   { id: 'cutting', label: 'Cutting', description: 'Lose weight', direction: 'down' },
@@ -8,6 +10,7 @@ const goals = [
   { id: 'bulking', label: 'Bulking', description: 'Gain weight', direction: 'up' },
 ]
 
+const { startDate: selectedStartDate, endDate: selectedEndDate } = useChartDateInterval()
 const {
   analysis,
   analysisIsCurrent,
@@ -16,7 +19,7 @@ const {
   loading,
   selectedGoal,
   selectGoal,
-} = useBodyAiAnalysis()
+} = useBodyAiAnalysis(selectedStartDate, selectedEndDate)
 </script>
 
 <template>
@@ -57,6 +60,17 @@ const {
         </button>
       </div>
 
+      <div class="chart-range-control body-ai-range-control">
+        <span>Analysis period</span>
+        <DateRangeControl
+          v-model:start-date="selectedStartDate"
+          v-model:end-date="selectedEndDate"
+          action-label="Analyse"
+          :action-disabled="!selectedGoal || loading || analysisIsCurrent"
+          @apply="generateAnalysis"
+        />
+      </div>
+
       <div class="body-ai-data-note">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3 5 6v5c0 4.6 2.8 8.3 7 10 4.2-1.7 7-5.4 7-10V6l-7-3Z" />
@@ -65,14 +79,6 @@ const {
         <span>Only your locally stored Body Weight values will be analysed.</span>
       </div>
 
-      <button
-        class="body-ai-generate"
-        type="button"
-        :disabled="!selectedGoal || loading || analysisIsCurrent"
-        @click="generateAnalysis"
-      >
-        {{ loading ? 'Analysing…' : 'Analyse body weight' }}
-      </button>
     </section>
 
     <BodyAiResult :analysis="analysis" :error="error" />

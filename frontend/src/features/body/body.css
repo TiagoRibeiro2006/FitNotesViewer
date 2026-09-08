@@ -202,6 +202,14 @@
   line-height: 1.4;
 }
 
+.body-ai-range-control {
+  margin-top: 16px;
+}
+
+.body-ai-range-control .date-interval-control {
+  margin-bottom: 0;
+}
+
 .body-ai-data-note svg {
   width: 18px;
   height: 18px;
@@ -211,24 +219,6 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-
-.body-ai-generate {
-  width: 100%;
-  min-height: 48px;
-  margin-top: 14px;
-  border: 0;
-  border-radius: var(--box-radius);
-  background: #f3f3f5;
-  color: #09090a;
-  font-size: 13px;
-  font-weight: 850;
-  cursor: pointer;
-}
-
-.body-ai-generate:disabled {
-  opacity: .3;
-  cursor: not-allowed;
 }
 
 .body-ai-result-card {
