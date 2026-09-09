@@ -1,6 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import BodyAiView from '../body/components/BodyAiView.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
@@ -28,20 +30,13 @@ function showTrainingCharts() {
 function toggleAi() {
   aiEnabled.value = !aiEnabled.value
 }
+
 </script>
 
 <template>
   <AppSectionHeader title="Charts">
     <template #action>
-      <button
-        class="charts-ai-toggle"
-        :class="{ 'is-active': aiEnabled }"
-        type="button"
-        :aria-pressed="aiEnabled"
-        @click="toggleAi"
-      >
-        AI {{ aiEnabled ? 'ON' : 'OFF' }}
-      </button>
+      <AiModeToggle :active="aiEnabled" @toggle="toggleAi" />
     </template>
   </AppSectionHeader>
 
@@ -73,6 +68,8 @@ function toggleAi() {
     <p>{{ error }}</p>
     <button type="button" @click="load">Try again</button>
   </section>
+
+  <BodyAiView v-else-if="activeSection === 'body' && aiEnabled" />
 
   <BodyAnalyticsPanel
     v-else-if="activeSection === 'body'"
