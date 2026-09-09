@@ -40,7 +40,7 @@ function scrollToLatestMessage() {
           <path d="M8 10h8M8 13h5" />
         </svg>
         <strong>Start a conversation</strong>
-        <p>Ask about your sets, workout count, top muscle, top exercise, volume, or training summary.</p>
+        <p>Ask about your history, progress, latest workout, best set, or a specific muscle and exercise.</p>
       </div>
 
       <div
@@ -63,6 +63,7 @@ function scrollToLatestMessage() {
           rows="1"
           placeholder="Ask something about your training…"
           maxlength="500"
+          @keydown.enter.exact.prevent="submitPrompt"
         ></textarea>
         <button type="submit" :disabled="!prompt.trim()" aria-label="Send question">
           <svg viewBox="0 0 24 24" aria-hidden="true">
