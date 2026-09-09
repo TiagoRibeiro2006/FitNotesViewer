@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useTrainingAiChat } from '../composables/useTrainingAiChat.js'
 
 const props = defineProps({
@@ -8,6 +8,8 @@ const props = defineProps({
 
 const { messages, prompt, sendPrompt } = useTrainingAiChat(props)
 const chatMessages = ref(null)
+
+onMounted(showLatestMessage)
 
 async function submitPrompt() {
   const messageSent = sendPrompt()
@@ -20,6 +22,11 @@ async function submitPrompt() {
 function scrollToLatestMessage() {
   if (!chatMessages.value) return
   chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+}
+
+async function showLatestMessage() {
+  await nextTick()
+  scrollToLatestMessage()
 }
 </script>
 
@@ -40,7 +47,7 @@ function scrollToLatestMessage() {
           <path d="M8 10h8M8 13h5" />
         </svg>
         <strong>Start a conversation</strong>
-        <p>Ask about your sets, workout count, top muscle, top exercise, volume, or training summary.</p>
+        <p>Ask about your history, progress, latest workout, best set, or a specific muscle and exercise.</p>
       </div>
 
       <div
@@ -61,8 +68,9 @@ function scrollToLatestMessage() {
           id="training-ai-prompt"
           v-model="prompt"
           rows="1"
-          placeholder="Ask something about your training…"
+          placeholder="Ask about your training…"
           maxlength="500"
+          @keydown.enter.exact.prevent="submitPrompt"
         ></textarea>
         <button type="submit" :disabled="!prompt.trim()" aria-label="Send question">
           <svg viewBox="0 0 24 24" aria-hidden="true">
