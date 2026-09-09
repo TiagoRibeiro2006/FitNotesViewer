@@ -4,12 +4,14 @@ import { useTrainingAiChat } from '../composables/useTrainingAiChat.js'
 
 const props = defineProps({
   sets: { type: Array, required: true },
+  focusOnMount: { type: Boolean, default: false },
 })
 
 const { messages, notice, prompt, sendPrompt } = useTrainingAiChat(props)
+const chatCard = ref(null)
 const chatMessages = ref(null)
 
-onMounted(showLatestMessage)
+onMounted(initializeChat)
 
 async function submitPrompt() {
   const messageSent = sendPrompt()
@@ -28,10 +30,15 @@ async function showLatestMessage() {
   await nextTick()
   scrollToLatestMessage()
 }
+
+async function initializeChat() {
+  await showLatestMessage()
+  if (props.focusOnMount) chatCard.value?.scrollIntoView({ block: 'start', behavior: 'auto' })
+}
 </script>
 
 <template>
-  <section class="chart-visual-card training-ai-chat-card">
+  <section ref="chatCard" class="chart-visual-card training-ai-chat-card">
     <div class="chart-card-heading training-ai-chat-heading">
       <div>
         <p class="eyebrow">AI TRAINING CHAT</p>

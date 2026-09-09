@@ -16,7 +16,12 @@ defineProps({
   summary: { type: Object, required: true },
 })
 
-const emit = defineEmits(['data-imported', 'data-deleted', 'manage-body-items'])
+const emit = defineEmits([
+  'data-imported',
+  'data-deleted',
+  'manage-body-items',
+  'open-training-chat',
+])
 const catalogMode = ref('muscles')
 const catalogOpen = ref(false)
 const chatLogsOpen = ref(false)
@@ -60,11 +65,13 @@ function closeChatLogs() {
 function createChat() {
   createTrainingChat()
   closeChatLogs()
+  emit('open-training-chat')
 }
 
 function selectChat(chatId) {
-  selectTrainingChat(chatId)
+  if (!selectTrainingChat(chatId)) return
   closeChatLogs()
+  emit('open-training-chat')
 }
 
 function dataImported(summary) {
