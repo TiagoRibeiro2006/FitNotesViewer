@@ -1,34 +1,35 @@
 import { ref } from 'vue'
 import { generateTrainingChatReply } from '../../../ai/chat/generateTrainingChatReply.js'
 
+const sessionMessages = ref([])
+let nextSessionMessageId = 1
+
 export function useTrainingAiChat(trainingData) {
   const prompt = ref('')
-  const messages = ref([])
-  let nextMessageId = 1
 
   function sendPrompt() {
     const question = prompt.value.trim()
     if (!question) return false
 
-    addMessage('user', question)
+    addSessionMessage('user', question)
     prompt.value = ''
-    addMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
+    addSessionMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
     return true
   }
 
-  function addMessage(role, text) {
-    messages.value.push({
-      id: nextMessageId,
-      role,
-      text,
-    })
-
-    nextMessageId += 1
-  }
-
   return {
-    messages,
+    messages: sessionMessages,
     prompt,
     sendPrompt,
   }
+}
+
+function addSessionMessage(role, text) {
+  sessionMessages.value.push({
+    id: nextSessionMessageId,
+    role,
+    text,
+  })
+
+  nextSessionMessageId += 1
 }
