@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { generateTrainingChatReply } from '../../../ai/chat/generateTrainingChatReply.js'
 
 const sessionMessages = ref([])
+const USER_MESSAGE_LIMIT = 20
 let nextSessionMessageId = 1
 
 export function useTrainingAiChat(trainingData) {
@@ -11,6 +12,7 @@ export function useTrainingAiChat(trainingData) {
     const question = prompt.value.trim()
     if (!question) return false
 
+    startNewSessionWhenFull()
     addSessionMessage('user', question)
     prompt.value = ''
     addSessionMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
@@ -22,6 +24,21 @@ export function useTrainingAiChat(trainingData) {
     prompt,
     sendPrompt,
   }
+}
+
+function startNewSessionWhenFull() {
+  if (countUserMessages() < USER_MESSAGE_LIMIT) return
+
+  sessionMessages.value = []
+  nextSessionMessageId = 1
+}
+
+function countUserMessages() {
+  let count = 0
+  for (const message of sessionMessages.value) {
+    if (message.role === 'user') count += 1
+  }
+  return count
 }
 
 function addSessionMessage(role, text) {
