@@ -61,7 +61,7 @@ function scrollToLatestMessage() {
           id="training-ai-prompt"
           v-model="prompt"
           rows="1"
-          placeholder="Ask something about your training…"
+          placeholder="Ask about your training…"
           maxlength="500"
           @keydown.enter.exact.prevent="submitPrompt"
         ></textarea>

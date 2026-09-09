@@ -1480,4 +1480,9 @@
   .training-ai-chat-message {
     max-width: 88%;
   }
+
+  .training-ai-chat-input-row textarea {
+    min-height: 48px;
+    resize: none;
+  }
 }
