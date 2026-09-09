@@ -1,7 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
+import TrainingChatLogsModal from '../ai-chat/components/TrainingChatLogsModal.vue'
+import {
+  createTrainingChat,
+  selectTrainingChat,
+  useTrainingChatSessionStore,
+} from '../ai-chat/services/trainingChatSessionStore.js'
 import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
+import SettingsAiLogsSection from './components/SettingsAiLogsSection.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 
@@ -12,6 +19,8 @@ defineProps({
 const emit = defineEmits(['data-imported', 'data-deleted', 'manage-body-items'])
 const catalogMode = ref('muscles')
 const catalogOpen = ref(false)
+const chatLogsOpen = ref(false)
+const { activeChatId, chatSummaries } = useTrainingChatSessionStore()
 
 onMounted(scrollToTop)
 
@@ -40,6 +49,24 @@ function closeCatalog() {
   catalogOpen.value = false
 }
 
+function openChatLogs() {
+  chatLogsOpen.value = true
+}
+
+function closeChatLogs() {
+  chatLogsOpen.value = false
+}
+
+function createChat() {
+  createTrainingChat()
+  closeChatLogs()
+}
+
+function selectChat(chatId) {
+  selectTrainingChat(chatId)
+  closeChatLogs()
+}
+
 function dataImported(summary) {
   emit('data-imported', summary)
 }
@@ -59,6 +86,8 @@ function dataDeleted() {
       @manage-body-items="openBodyItems"
     />
 
+    <SettingsAiLogsSection @open-logs="openChatLogs" />
+
     <SettingsDataSection
       :summary="summary"
       @data-imported="dataImported"
@@ -70,5 +99,14 @@ function dataDeleted() {
     :open="catalogOpen"
     :mode="catalogMode"
     @close="closeCatalog"
+  />
+
+  <TrainingChatLogsModal
+    :open="chatLogsOpen"
+    :chats="chatSummaries"
+    :active-chat-id="activeChatId"
+    @close="closeChatLogs"
+    @create="createChat"
+    @select="selectChat"
   />
 </template>
