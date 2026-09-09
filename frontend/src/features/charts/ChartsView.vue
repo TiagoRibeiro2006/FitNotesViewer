@@ -8,8 +8,12 @@ import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
-const activeSection = ref('body')
-const aiEnabled = ref(false)
+const props = defineProps({
+  openTrainingChat: { type: Boolean, default: false },
+})
+
+const activeSection = ref(props.openTrainingChat ? 'training' : 'body')
+const aiEnabled = ref(props.openTrainingChat)
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -76,7 +80,11 @@ function toggleAi() {
     :measurements="data.bodyMeasurements"
   />
 
-  <TrainingAiPanel v-else-if="aiEnabled" :data="data" />
+  <TrainingAiPanel
+    v-else-if="aiEnabled"
+    :data="data"
+    :focus-chat="openTrainingChat"
+  />
 
   <TrainingAnalyticsPanel v-else :data="data" />
 </template>
