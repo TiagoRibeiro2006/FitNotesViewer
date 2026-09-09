@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useTrainingAiChat } from '../composables/useTrainingAiChat.js'
 
 const props = defineProps({
@@ -8,6 +8,8 @@ const props = defineProps({
 
 const { messages, prompt, sendPrompt } = useTrainingAiChat(props)
 const chatMessages = ref(null)
+
+onMounted(showLatestMessage)
 
 async function submitPrompt() {
   const messageSent = sendPrompt()
@@ -20,6 +22,11 @@ async function submitPrompt() {
 function scrollToLatestMessage() {
   if (!chatMessages.value) return
   chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+}
+
+async function showLatestMessage() {
+  await nextTick()
+  scrollToLatestMessage()
 }
 </script>
 
