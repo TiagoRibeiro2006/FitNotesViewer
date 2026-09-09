@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { generateTrainingChatReply } from '../../../ai/chat/generateTrainingChatReply.js'
 
 const sessionMessages = ref([])
+const sessionNotice = ref('')
 const USER_MESSAGE_LIMIT = 20
 let nextSessionMessageId = 1
 
@@ -21,6 +22,7 @@ export function useTrainingAiChat(trainingData) {
 
   return {
     messages: sessionMessages,
+    notice: sessionNotice,
     prompt,
     sendPrompt,
   }
@@ -30,6 +32,7 @@ function startNewSessionWhenFull() {
   if (countUserMessages() < USER_MESSAGE_LIMIT) return
 
   sessionMessages.value = []
+  sessionNotice.value = 'A new chat was started because the previous conversation reached 20 messages.'
   nextSessionMessageId = 1
 }
 
