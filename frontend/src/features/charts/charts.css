@@ -1292,15 +1292,33 @@
 
 .training-ai-chat-status {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 6px 9px;
   border: 1px solid #3f96ff;
   border-radius: 999px;
   background: #142238;
   color: #62adff;
+  font-family: inherit;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: .06em;
   text-transform: uppercase;
+  cursor: pointer;
+}
+
+.training-ai-chat-status svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.training-ai-chat-status:active {
+  transform: scale(.97);
 }
 
 .training-ai-chat-messages {
