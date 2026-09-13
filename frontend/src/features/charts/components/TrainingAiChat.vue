@@ -7,7 +7,7 @@ const props = defineProps({
   focusOnMount: { type: Boolean, default: false },
 })
 
-const { messages, notice, prompt, sendPrompt } = useTrainingAiChat(props)
+const { messages, notice, prompt, sendPrompt, startNewChat } = useTrainingAiChat(props)
 const chatCard = ref(null)
 const chatMessages = ref(null)
 
@@ -44,7 +44,12 @@ async function initializeChat() {
         <p class="eyebrow">AI TRAINING CHAT</p>
         <h2>Ask about your training</h2>
       </div>
-      <span class="training-ai-chat-status">Local test</span>
+      <button class="training-ai-chat-status" type="button" @click="startNewChat">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New Chat</span>
+      </button>
     </div>
 
     <div ref="chatMessages" class="training-ai-chat-messages" aria-live="polite">

@@ -22,11 +22,17 @@ export function useTrainingAiChat(trainingData) {
     return true
   }
 
+  function startNewChat() {
+    prompt.value = ''
+    createTrainingChat()
+  }
+
   return {
     messages: activeMessages,
     notice: activeNotice,
     prompt,
     sendPrompt,
+    startNewChat,
   }
 }
 
