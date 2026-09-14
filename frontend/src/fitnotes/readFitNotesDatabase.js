@@ -295,7 +295,11 @@ function compareDatesAndIds(first, second) {
 }
 
 function compareDatesTimesAndIds(first, second) {
-  return compareDatesAndIds(first, second) || String(first.time).localeCompare(String(second.time))
+  const dateComparison = String(first.date).localeCompare(String(second.date))
+  if (dateComparison !== 0) return dateComparison
+
+  const timeComparison = String(first.time).localeCompare(String(second.time))
+  return timeComparison || compareIds(first, second)
 }
 
 function compareRoutineSections(first, second) {

@@ -45,12 +45,16 @@ function validateWorkoutColumns(columns) {
     'Weight',
     'Weight (kg)',
     'Weight (kgs)',
+    'Weight (kilograms)',
     'Weight (lbs)',
+    'Weight (pounds)',
     'Reps',
+    'Rep',
     'Repetitions',
     'Distance',
     'Time',
     'Duration',
+    'Duration (seconds)',
   ]
   if (columns.find(setColumns) < 0) {
     throw new Error('The CSV needs at least one weight, reps, distance or time column.')
@@ -78,13 +82,13 @@ function createImportBuilder() {
     const positions = workoutOrder.next(date, exerciseId)
     const weight = readMetricWeight(row, columns, rowNumber)
     const reps = parseCsvNumber(
-      columns.read(row, ['Reps', 'Repetitions']),
+      columns.read(row, ['Reps', 'Rep', 'Repetitions']),
       'reps',
       rowNumber,
     )
     const distance = parseCsvNumber(columns.read(row, ['Distance']), 'distance', rowNumber)
     const durationSeconds = parseDurationSeconds(
-      columns.read(row, ['Time', 'Duration', 'Duration Seconds']),
+      columns.read(row, ['Time', 'Duration', 'Duration (seconds)', 'Duration Seconds']),
       rowNumber,
     )
 

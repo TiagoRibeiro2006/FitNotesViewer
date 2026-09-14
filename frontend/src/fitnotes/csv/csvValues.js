@@ -5,8 +5,8 @@ export function parseCsvDate(value, rowNumber) {
   const iso = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/)
   if (iso) return buildDateKey(iso[1], iso[2], iso[3], rowNumber)
 
-  const european = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/)
-  if (european) return buildDateKey(european[3], european[2], european[1], rowNumber)
+  const localized = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/)
+  if (localized) return parseLocalizedDate(localized, rowNumber)
 
   const parsed = new Date(text)
   if (!Number.isNaN(parsed.getTime())) {
@@ -28,10 +28,16 @@ export function parseCsvNumber(value, label, rowNumber, fallback = 0) {
 }
 
 export function readMetricWeight(row, columns, rowNumber) {
-  const kilograms = columns.read(row, ['Weight (kg)', 'Weight (kgs)', 'Weight kg', 'Weight kgs'])
+  const kilograms = columns.read(row, [
+    'Weight (kg)',
+    'Weight (kgs)',
+    'Weight (kilograms)',
+    'Weight kg',
+    'Weight kgs',
+  ])
   if (kilograms) return parseCsvNumber(kilograms, 'weight', rowNumber)
 
-  const pounds = columns.read(row, ['Weight (lbs)', 'Weight lbs', 'Weight lb'])
+  const pounds = columns.read(row, ['Weight (lbs)', 'Weight (pounds)', 'Weight lbs', 'Weight lb'])
   if (pounds) return roundWeight(parseCsvNumber(pounds, 'weight', rowNumber) * POUNDS_TO_KILOGRAMS)
 
   const weight = parseCsvNumber(columns.read(row, ['Weight']), 'weight', rowNumber)
@@ -72,6 +78,17 @@ function buildDateKey(yearValue, monthValue, dayValue, rowNumber) {
   return String(year).padStart(4, '0')
     + '-' + String(month).padStart(2, '0')
     + '-' + String(day).padStart(2, '0')
+}
+
+function parseLocalizedDate(match, rowNumber) {
+  const first = Number(match[1])
+  const second = Number(match[2])
+  const year = match[3]
+
+  if (second > 12 && first <= 12) {
+    return buildDateKey(year, first, second, rowNumber)
+  }
+  return buildDateKey(year, second, first, rowNumber)
 }
 
 function isInvalidTimePart(value) {
