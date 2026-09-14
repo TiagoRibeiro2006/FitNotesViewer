@@ -1,35 +1,42 @@
 import { ref } from 'vue'
 import { generateTrainingChatReply } from '../../../ai/chat/generateTrainingChatReply.js'
-
-const sessionMessages = ref([])
-let nextSessionMessageId = 1
+import {
+  activeTrainingChatIsFull,
+  addTrainingChatMessage,
+  createTrainingChat,
+  useTrainingChatSessionStore,
+} from '../../ai-chat/services/trainingChatSessionStore.js'
 
 export function useTrainingAiChat(trainingData) {
   const prompt = ref('')
+  const { activeMessages, activeNotice } = useTrainingChatSessionStore()
 
   function sendPrompt() {
     const question = prompt.value.trim()
     if (!question) return false
 
-    addSessionMessage('user', question)
+    startNewChatWhenFull()
+    addTrainingChatMessage('user', question)
     prompt.value = ''
-    addSessionMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
+    addTrainingChatMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
     return true
   }
 
+  function startNewChat() {
+    prompt.value = ''
+    createTrainingChat()
+  }
+
   return {
-    messages: sessionMessages,
+    messages: activeMessages,
+    notice: activeNotice,
     prompt,
     sendPrompt,
+    startNewChat,
   }
 }
 
-function addSessionMessage(role, text) {
-  sessionMessages.value.push({
-    id: nextSessionMessageId,
-    role,
-    text,
-  })
-
-  nextSessionMessageId += 1
+function startNewChatWhenFull() {
+  if (!activeTrainingChatIsFull()) return
+  createTrainingChat('A new chat was started because the previous conversation reached 20 messages.')
 }

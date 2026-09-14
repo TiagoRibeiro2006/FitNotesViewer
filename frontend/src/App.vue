@@ -16,6 +16,7 @@ import { createEmptySummary } from './shared/models/summary'
 const summary = ref(createEmptySummary())
 const appReady = ref(false)
 const bodyManagementRequested = ref(false)
+const trainingChatRequested = ref(false)
 
 const {
   activeView,
@@ -49,12 +50,18 @@ function handleDataDeleted() {
 
 function handleNavigation(view) {
   bodyManagementRequested.value = false
+  trainingChatRequested.value = false
   navigateTo(view)
 }
 
 function openBodyManagement() {
   bodyManagementRequested.value = true
   navigateTo('body')
+}
+
+function openTrainingChat() {
+  trainingChatRequested.value = true
+  navigateTo('charts')
 }
 </script>
 
@@ -79,7 +86,10 @@ function openBodyManagement() {
       @select="selectCalendarDate"
     />
 
-    <ChartsView v-else-if="activeView === 'charts'" />
+    <ChartsView
+      v-else-if="activeView === 'charts'"
+      :open-training-chat="trainingChatRequested"
+    />
 
     <SettingsView
       v-else-if="activeView === 'settings'"
@@ -87,6 +97,7 @@ function openBodyManagement() {
       @data-imported="handleDataImported"
       @data-deleted="handleDataDeleted"
       @manage-body-items="openBodyManagement"
+      @open-training-chat="openTrainingChat"
     />
   </main>
 

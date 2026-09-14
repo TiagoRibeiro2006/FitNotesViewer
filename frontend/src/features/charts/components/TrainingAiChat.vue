@@ -4,12 +4,14 @@ import { useTrainingAiChat } from '../composables/useTrainingAiChat.js'
 
 const props = defineProps({
   sets: { type: Array, required: true },
+  focusOnMount: { type: Boolean, default: false },
 })
 
-const { messages, prompt, sendPrompt } = useTrainingAiChat(props)
+const { messages, notice, prompt, sendPrompt, startNewChat } = useTrainingAiChat(props)
+const chatCard = ref(null)
 const chatMessages = ref(null)
 
-onMounted(showLatestMessage)
+onMounted(initializeChat)
 
 async function submitPrompt() {
   const messageSent = sendPrompt()
@@ -28,19 +30,37 @@ async function showLatestMessage() {
   await nextTick()
   scrollToLatestMessage()
 }
+
+async function initializeChat() {
+  await showLatestMessage()
+  if (props.focusOnMount) chatCard.value?.scrollIntoView({ block: 'start', behavior: 'auto' })
+}
 </script>
 
 <template>
-  <section class="chart-visual-card training-ai-chat-card">
+  <section ref="chatCard" class="chart-visual-card training-ai-chat-card">
     <div class="chart-card-heading training-ai-chat-heading">
       <div>
         <p class="eyebrow">AI TRAINING CHAT</p>
         <h2>Ask about your training</h2>
       </div>
-      <span class="training-ai-chat-status">Local test</span>
+      <button class="training-ai-chat-status" type="button" @click="startNewChat">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New Chat</span>
+      </button>
     </div>
 
     <div ref="chatMessages" class="training-ai-chat-messages" aria-live="polite">
+      <div v-if="notice" class="training-ai-chat-notice" role="status">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v5M12 16h.01" />
+        </svg>
+        <p>{{ notice }}</p>
+      </div>
+
       <div v-if="!messages.length" class="training-ai-chat-empty">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
