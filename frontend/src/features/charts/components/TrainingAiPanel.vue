@@ -6,6 +6,7 @@ import TrainingPeriodAnalysis from './TrainingPeriodAnalysis.vue'
 
 const props = defineProps({
   data: { type: Object, required: true },
+  focusChat: { type: Boolean, default: false },
 })
 
 const sets = computed(readSets)
@@ -27,6 +28,6 @@ function readSets() {
       <p>Add sets in the Log to generate an AI training review.</p>
     </section>
 
-    <TrainingAiChat :sets="sets" />
+    <TrainingAiChat :sets="sets" :focus-on-mount="focusChat" />
   </div>
 </template>
