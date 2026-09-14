@@ -35,7 +35,7 @@ export function useFitNotesBackup(summary) {
 
   async function importSelectedFile() {
     if (!selectedFile.value) {
-      importError.value = 'Select a .fitnotes file first.'
+      importError.value = 'Select a .fitnotes or .csv file first.'
       return null
     }
 
@@ -56,10 +56,10 @@ export function useFitNotesBackup(summary) {
     }
   }
 
-  async function prepareExport(force = false) {
+  async function prepareExport(force = false, backupStored = summary.value?.backupStored) {
     clearExport()
     const sequence = exportSequence
-    if (!force && !summary.value?.backupStored) return
+    if (!force && !backupStored) return
 
     exporting.value = true
     exportError.value = ''

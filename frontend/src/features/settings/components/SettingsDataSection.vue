@@ -54,7 +54,7 @@ async function importFile() {
 
   emit('data-imported', importedSummary)
   await nextTick()
-  await prepareExport(true)
+  await prepareExport(false, importedSummary.backupStored)
 }
 
 function handleImport() {
@@ -100,7 +100,7 @@ function readConfirmationMessage() {
   if (confirmationAction.value === 'delete') {
     return 'This permanently removes the imported backup and all data stored on this device.'
   }
-  return 'This replaces all current data on this device with the selected FitNotes backup.'
+  return 'This replaces all current data on this device with the selected FitNotes file.'
 }
 
 function readConfirmationLabel() {
@@ -123,8 +123,8 @@ function readConfirmationBusy() {
 
     <section class="upload-card settings-upload-card">
       <label class="file-picker">
-        <input type="file" accept=".fitnotes" @change="onFileChange" />
-        <span>Choose .fitnotes</span>
+        <input type="file" accept=".fitnotes,.csv" @change="onFileChange" />
+        <span>Choose data file</span>
       </label>
 
       <p class="file-name">{{ fileLabel }}</p>
