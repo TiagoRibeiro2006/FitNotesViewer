@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import TypedConfirmationModal from '../../../shared/components/TypedConfirmationModal.vue'
 import { useFitNotesBackup } from '../composables/useFitNotesBackup'
+import ExportDataModal from './ExportDataModal.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -10,6 +11,7 @@ const props = defineProps({
 const emit = defineEmits(['data-imported', 'data-deleted'])
 const summary = computed(readSummary)
 const confirmationAction = ref('')
+const exportOpen = ref(false)
 const confirmationOpen = computed(readConfirmationOpen)
 const confirmationTitle = computed(readConfirmationTitle)
 const confirmationMessage = computed(readConfirmationMessage)
@@ -71,6 +73,14 @@ async function removeData() {
 
 function openDeleteConfirmation() {
   openConfirmation('delete')
+}
+
+function openExport() {
+  exportOpen.value = true
+}
+
+function closeExport() {
+  exportOpen.value = false
 }
 
 function openConfirmation(action) {
@@ -141,11 +151,8 @@ function readConfirmationBusy() {
         <strong>Export current data</strong>
         <p>Download the current workout data as a FitNotes backup.</p>
       </div>
-      <a v-if="exportUrl" class="settings-export-button" :href="exportUrl" :download="exportFileName">
-        Export .fitnotes
-      </a>
-      <button v-else class="settings-export-button" type="button" disabled>
-        {{ exporting ? 'Preparing…' : 'Export unavailable' }}
+      <button class="settings-export-button" type="button" @click="openExport">
+        Export data
       </button>
     </div>
 
@@ -179,4 +186,6 @@ function readConfirmationBusy() {
     @close="closeConfirmation"
     @confirm="confirmAction"
   />
+
+  <ExportDataModal :open="exportOpen" @close="closeExport" />
 </template>
