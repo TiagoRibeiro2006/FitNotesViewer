@@ -1,5 +1,7 @@
 const UPDATE_INTERVAL = 60 * 60 * 1000
 let registration
+let reloadWhenUpdated = false
+let updateReloadStarted = false
 
 export function registerServiceWorker() {
   if (!canRegisterServiceWorker()) return
@@ -12,6 +14,8 @@ function canRegisterServiceWorker() {
 
 async function register() {
   try {
+    reloadWhenUpdated = Boolean(navigator.serviceWorker.controller)
+    navigator.serviceWorker.addEventListener('controllerchange', reloadForUpdate)
     registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
       updateViaCache: 'none',
@@ -23,6 +27,13 @@ async function register() {
   } catch {
     registration = null
   }
+}
+
+function reloadForUpdate() {
+  if (!reloadWhenUpdated || updateReloadStarted) return
+
+  updateReloadStarted = true
+  window.location.reload()
 }
 
 function checkWhenVisible() {

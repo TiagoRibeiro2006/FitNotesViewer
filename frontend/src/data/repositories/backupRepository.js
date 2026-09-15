@@ -15,18 +15,20 @@ export async function saveFitNotesImport(parsed, file, bytes) {
   metadataStore.put({ key: 'summary', value: parsed.summary })
   metadataStore.put({ key: 'storageSchemaVersion', value: DB_VERSION })
   metadataStore.put({ key: 'importedAt', value: importedAt })
-  metadataStore.put({ key: 'source', value: 'fitnotes' })
+  metadataStore.put({ key: 'source', value: 'fitnotes-' + (parsed.summary.importFormat ?? 'sqlite') })
   metadataStore.put({ key: 'hasLocalChanges', value: false })
 
-  transaction.objectStore('backups').put({
-    key: 'current',
-    name: file.name,
-    size: file.size,
-    type: file.type || 'application/vnd.sqlite3',
-    lastModified: file.lastModified || null,
-    importedAt,
-    data: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-  })
+  if (parsed.summary.backupStored) {
+    transaction.objectStore('backups').put({
+      key: 'current',
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/vnd.sqlite3',
+      lastModified: file.lastModified || null,
+      importedAt,
+      data: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    })
+  }
 
   putMany(transaction.objectStore('exercises'), parsed.exercises)
   putMany(transaction.objectStore('workoutSets'), parsed.workoutSets)

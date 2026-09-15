@@ -5,13 +5,34 @@ export function ensureRequiredTables(db) {
 }
 
 function hasTable(db, tableName) {
-  const statement = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1;`)
+  const statement = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND LOWER(name) = LOWER(?) LIMIT 1;`)
   try {
     statement.bind([tableName])
     return statement.step()
   } finally {
     statement.free()
   }
+}
+
+export function tableRows(db, tableName) {
+  const storedName = findTableName(db, tableName)
+  if (!storedName) return []
+  return queryRows(db, `SELECT * FROM ${quoteIdentifier(storedName)};`)
+}
+
+function findTableName(db, tableName) {
+  const statement = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND LOWER(name) = LOWER(?) LIMIT 1;`)
+  try {
+    statement.bind([tableName])
+    if (!statement.step()) return null
+    return String(statement.getAsObject().name)
+  } finally {
+    statement.free()
+  }
+}
+
+function quoteIdentifier(value) {
+  return '"' + String(value).replaceAll('"', '""') + '"'
 }
 
 export function optionalRows(db, tableName, sql) {
