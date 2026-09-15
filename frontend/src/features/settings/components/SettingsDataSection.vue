@@ -1,7 +1,8 @@
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import TypedConfirmationModal from '../../../shared/components/TypedConfirmationModal.vue'
 import { useFitNotesBackup } from '../composables/useFitNotesBackup'
+import ExportDataModal from './ExportDataModal.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -10,6 +11,7 @@ const props = defineProps({
 const emit = defineEmits(['data-imported', 'data-deleted'])
 const summary = computed(readSummary)
 const confirmationAction = ref('')
+const exportOpen = ref(false)
 const confirmationOpen = computed(readConfirmationOpen)
 const confirmationTitle = computed(readConfirmationTitle)
 const confirmationMessage = computed(readConfirmationMessage)
@@ -17,6 +19,10 @@ const confirmationLabel = computed(readConfirmationLabel)
 const confirmationBusy = computed(readConfirmationBusy)
 
 const {
+  csvExportError,
+  csvExportFileName,
+  csvExporting,
+  csvExportUrl,
   deleteError,
   deleting,
   exportError,
@@ -31,14 +37,9 @@ const {
   deleteCurrentData,
   importSelectedFile,
   prepareExport,
+  prepareCsvExport,
   selectFile,
 } = useFitNotesBackup(summary)
-
-onMounted(initializeDataSection)
-
-function initializeDataSection() {
-  void prepareExport()
-}
 
 function readSummary() {
   return props.summary
@@ -53,8 +54,6 @@ async function importFile() {
   if (!importedSummary) return
 
   emit('data-imported', importedSummary)
-  await nextTick()
-  await prepareExport(false, importedSummary.backupStored)
 }
 
 function handleImport() {
@@ -71,6 +70,15 @@ async function removeData() {
 
 function openDeleteConfirmation() {
   openConfirmation('delete')
+}
+
+async function openExport() {
+  exportOpen.value = true
+  await Promise.all([prepareExport(), prepareCsvExport()])
+}
+
+function closeExport() {
+  exportOpen.value = false
 }
 
 function openConfirmation(action) {
@@ -141,15 +149,10 @@ function readConfirmationBusy() {
         <strong>Export current data</strong>
         <p>Download the current workout data as a FitNotes backup.</p>
       </div>
-      <a v-if="exportUrl" class="settings-export-button" :href="exportUrl" :download="exportFileName">
-        Export .fitnotes
-      </a>
-      <button v-else class="settings-export-button" type="button" disabled>
-        {{ exporting ? 'Preparing…' : 'Export unavailable' }}
+      <button class="settings-export-button" type="button" @click="openExport">
+        Export data
       </button>
     </div>
-
-    <p v-if="exportError" class="settings-export-error">{{ exportError }}</p>
 
     <div v-if="hasCurrentData" class="settings-data-action">
       <div>
@@ -178,5 +181,18 @@ function readConfirmationBusy() {
     :danger="confirmationAction === 'delete'"
     @close="closeConfirmation"
     @confirm="confirmAction"
+  />
+
+  <ExportDataModal
+    :open="exportOpen"
+    :csv-error="csvExportError"
+    :csv-file-name="csvExportFileName"
+    :csv-url="csvExportUrl"
+    :fitnotes-error="exportError"
+    :fitnotes-file-name="exportFileName"
+    :fitnotes-url="exportUrl"
+    :preparing-fitnotes="exporting"
+    :preparing-csv="csvExporting"
+    @close="closeExport"
   />
 </template>
