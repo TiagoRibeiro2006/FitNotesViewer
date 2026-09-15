@@ -120,3 +120,6 @@
   .settings-export-button,
   .settings-delete-button { width: 100%; }
 }
+.settings-data-import {
+  scroll-margin-top: calc(78px + env(safe-area-inset-top));
+}

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import {
   loadApplicationSummary,
@@ -9,6 +9,7 @@ import { useAppNavigation } from './app/useAppNavigation'
 import BodyTrackerView from './features/body/BodyTrackerView.vue'
 import CalendarView from './features/calendar/CalendarView.vue'
 import ChartsView from './features/charts/ChartsView.vue'
+import EmptyDataImportPrompt from './features/onboarding/EmptyDataImportPrompt.vue'
 import SettingsView from './features/settings/SettingsView.vue'
 import WorkoutLogView from './features/workouts/WorkoutLogView.vue'
 import { createEmptySummary } from './shared/models/summary'
@@ -17,6 +18,9 @@ const summary = ref(createEmptySummary())
 const appReady = ref(false)
 const bodyManagementRequested = ref(false)
 const trainingChatRequested = ref(false)
+const settingsImportRequested = ref(false)
+const emptyImportPromptDismissed = ref(false)
+const showEmptyImportPrompt = computed(readEmptyImportPromptVisibility)
 
 const {
   activeView,
@@ -40,17 +44,20 @@ function handleWorkoutChanged(updatedSummary) {
 
 function handleDataImported(importedSummary) {
   summary.value = importedSummary
+  settingsImportRequested.value = false
   resetSelectedDate()
 }
 
 function handleDataDeleted() {
   summary.value = createEmptySummary()
+  emptyImportPromptDismissed.value = false
   resetSelectedDate()
 }
 
 function handleNavigation(view) {
   bodyManagementRequested.value = false
   trainingChatRequested.value = false
+  settingsImportRequested.value = false
   navigateTo(view)
 }
 
@@ -62,6 +69,22 @@ function openBodyManagement() {
 function openTrainingChat() {
   trainingChatRequested.value = true
   navigateTo('charts')
+}
+
+function readEmptyImportPromptVisibility() {
+  return appReady.value
+    && summary.value?.isEmpty === true
+    && !emptyImportPromptDismissed.value
+}
+
+function dismissEmptyImportPrompt() {
+  emptyImportPromptDismissed.value = true
+}
+
+function openDataImport() {
+  dismissEmptyImportPrompt()
+  settingsImportRequested.value = true
+  navigateTo('settings')
 }
 </script>
 
@@ -94,6 +117,7 @@ function openTrainingChat() {
     <SettingsView
       v-else-if="activeView === 'settings'"
       :summary="summary"
+      :focus-data-import="settingsImportRequested"
       @data-imported="handleDataImported"
       @data-deleted="handleDataDeleted"
       @manage-body-items="openBodyManagement"
@@ -102,4 +126,10 @@ function openTrainingChat() {
   </main>
 
   <AppBottomNavigation :active-view="activeView" @navigate="handleNavigation" />
+
+  <EmptyDataImportPrompt
+    :open="showEmptyImportPrompt"
+    @close="dismissEmptyImportPrompt"
+    @import="openDataImport"
+  />
 </template>
