@@ -87,6 +87,24 @@ export async function getFitNotesExportData() {
   }
 }
 
+export async function getFitNotesCsvExportData() {
+  const database = await openAppDatabase()
+  const transaction = database.transaction(['workoutSets', 'exercises', 'categories'], 'readonly')
+  const done = transactionComplete(transaction)
+  const results = await Promise.all([
+    requestResult(transaction.objectStore('workoutSets').getAll()),
+    requestResult(transaction.objectStore('exercises').getAll()),
+    requestResult(transaction.objectStore('categories').getAll()),
+  ])
+  await done
+
+  return {
+    workoutSets: results[0] ?? [],
+    exercises: results[1] ?? [],
+    categories: results[2] ?? [],
+  }
+}
+
 export async function clearLocalData() {
   const database = await openAppDatabase()
   const stores = Object.keys(STORE_DEFINITIONS)

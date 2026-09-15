@@ -1,12 +1,22 @@
 export function createBackupFileName(date = new Date()) {
-  const parts = [
+  return `FitNotes_Backup_${createTimestamp(date)}.fitnotes`
+}
+
+export function createCsvFileName(date = new Date()) {
+  return `FitNotes_Export_${createTimestamp(date)}.csv`
+}
+
+function createTimestamp(date) {
+  const values = [
     date.getFullYear(),
     date.getMonth() + 1,
     date.getDate(),
     date.getHours(),
     date.getMinutes(),
     date.getSeconds(),
-  ].map((part) => String(part).padStart(2, '0'))
+  ]
+  const parts = []
+  for (const value of values) parts.push(String(value).padStart(2, '0'))
 
-  return `FitNotes_Backup_${parts.join('_')}.fitnotes`
+  return parts.join('_')
 }
