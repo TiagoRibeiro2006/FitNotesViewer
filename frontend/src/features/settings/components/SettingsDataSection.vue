@@ -113,7 +113,7 @@ function readConfirmationBusy() {
 </script>
 
 <template>
-  <section class="settings-card">
+  <section id="settings-data-import" class="settings-card settings-data-import">
     <div class="settings-section-heading">
       <div>
         <p class="eyebrow">DATA</p>
