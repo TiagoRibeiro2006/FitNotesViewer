@@ -138,13 +138,13 @@ function finishDownload() {
 }
 
 .export-format-button.is-enabled {
-  border-color: #3f8fef;
+  border-color: #fff;
   cursor: pointer;
 }
 
 .export-format-button.is-enabled b {
   background: #17273b;
-  color: #62a9ff;
+  color: #fff;
 }
 
 .export-format-button.is-enabled:active {
