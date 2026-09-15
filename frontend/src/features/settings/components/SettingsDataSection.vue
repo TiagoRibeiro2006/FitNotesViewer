@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import TypedConfirmationModal from '../../../shared/components/TypedConfirmationModal.vue'
 import { useFitNotesBackup } from '../composables/useFitNotesBackup'
 import ExportDataModal from './ExportDataModal.vue'
@@ -36,12 +36,6 @@ const {
   selectFile,
 } = useFitNotesBackup(summary)
 
-onMounted(initializeDataSection)
-
-function initializeDataSection() {
-  void prepareExport()
-}
-
 function readSummary() {
   return props.summary
 }
@@ -75,8 +69,9 @@ function openDeleteConfirmation() {
   openConfirmation('delete')
 }
 
-function openExport() {
+async function openExport() {
   exportOpen.value = true
+  await prepareExport()
 }
 
 function closeExport() {
@@ -156,8 +151,6 @@ function readConfirmationBusy() {
       </button>
     </div>
 
-    <p v-if="exportError" class="settings-export-error">{{ exportError }}</p>
-
     <div v-if="hasCurrentData" class="settings-data-action">
       <div>
         <strong>Delete current data</strong>
@@ -187,5 +180,12 @@ function readConfirmationBusy() {
     @confirm="confirmAction"
   />
 
-  <ExportDataModal :open="exportOpen" @close="closeExport" />
+  <ExportDataModal
+    :open="exportOpen"
+    :fitnotes-error="exportError"
+    :fitnotes-file-name="exportFileName"
+    :fitnotes-url="exportUrl"
+    :preparing-fitnotes="exporting"
+    @close="closeExport"
+  />
 </template>

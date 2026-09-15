@@ -2,12 +2,20 @@
 import ActionModal from '../../../shared/components/ActionModal.vue'
 
 defineProps({
+  fitnotesError: { type: String, default: '' },
+  fitnotesFileName: { type: String, default: '' },
+  fitnotesUrl: { type: String, default: '' },
+  preparingFitnotes: { type: Boolean, default: false },
   open: { type: Boolean, required: true },
 })
 
 const emit = defineEmits(['close'])
 
 function close() {
+  emit('close')
+}
+
+function finishDownload() {
   emit('close')
 }
 </script>
@@ -24,10 +32,23 @@ function close() {
     <p>Save a copy of your training data to your device.</p>
 
     <template #actions>
-      <button class="export-format-button" type="button" disabled>
+      <a
+        v-if="fitnotesUrl"
+        class="export-format-button is-enabled"
+        :href="fitnotesUrl"
+        :download="fitnotesFileName"
+        @click="finishDownload"
+      >
         <span>
           <strong>FitNotes backup</strong>
           <small>For restoring data in FitNotes</small>
+        </span>
+        <b>.fitnotes</b>
+      </a>
+      <button v-else class="export-format-button" type="button" disabled>
+        <span>
+          <strong>{{ preparingFitnotes ? 'Preparing backup…' : 'FitNotes backup unavailable' }}</strong>
+          <small>An imported .fitnotes backup is required</small>
         </span>
         <b>.fitnotes</b>
       </button>
@@ -39,6 +60,8 @@ function close() {
         </span>
         <b>.csv</b>
       </button>
+
+      <p v-if="fitnotesError" class="export-modal-error">{{ fitnotesError }}</p>
     </template>
   </ActionModal>
 </template>
@@ -61,6 +84,7 @@ function close() {
   background: #17171a;
   color: #fff;
   text-align: left;
+  text-decoration: none;
 }
 
 .export-format-button span {
@@ -93,5 +117,26 @@ function close() {
 
 .export-format-button:disabled {
   opacity: .55;
+}
+
+.export-format-button.is-enabled {
+  border-color: #3f8fef;
+  cursor: pointer;
+}
+
+.export-format-button.is-enabled b {
+  background: #17273b;
+  color: #62a9ff;
+}
+
+.export-format-button.is-enabled:active {
+  transform: scale(.99);
+}
+
+.export-modal-error {
+  margin: 0;
+  color: #ff8585;
+  font-size: 12px;
+  line-height: 1.4;
 }
 </style>
