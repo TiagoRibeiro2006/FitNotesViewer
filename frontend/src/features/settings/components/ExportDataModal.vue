@@ -2,9 +2,13 @@
 import ActionModal from '../../../shared/components/ActionModal.vue'
 
 defineProps({
+  csvError: { type: String, default: '' },
+  csvFileName: { type: String, default: '' },
+  csvUrl: { type: String, default: '' },
   fitnotesError: { type: String, default: '' },
   fitnotesFileName: { type: String, default: '' },
   fitnotesUrl: { type: String, default: '' },
+  preparingCsv: { type: Boolean, default: false },
   preparingFitnotes: { type: Boolean, default: false },
   open: { type: Boolean, required: true },
 })
@@ -53,15 +57,29 @@ function finishDownload() {
         <b>.fitnotes</b>
       </button>
 
-      <button class="export-format-button" type="button" disabled>
+      <a
+        v-if="csvUrl"
+        class="export-format-button is-enabled"
+        :href="csvUrl"
+        :download="csvFileName"
+        @click="finishDownload"
+      >
         <span>
           <strong>Spreadsheet data</strong>
           <small>For Excel, Sheets or another app</small>
         </span>
         <b>.csv</b>
+      </a>
+      <button v-else class="export-format-button" type="button" disabled>
+        <span>
+          <strong>{{ preparingCsv ? 'Preparing spreadsheet…' : 'Spreadsheet unavailable' }}</strong>
+          <small>Could not prepare the current workout data</small>
+        </span>
+        <b>.csv</b>
       </button>
 
       <p v-if="fitnotesError" class="export-modal-error">{{ fitnotesError }}</p>
+      <p v-if="csvError" class="export-modal-error">{{ csvError }}</p>
     </template>
   </ActionModal>
 </template>
