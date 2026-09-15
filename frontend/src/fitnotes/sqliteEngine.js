@@ -13,10 +13,19 @@ export function warmUpSqliteEngine() {
 
 export function loadSqliteEngine() {
   if (!sqliteEnginePromise) {
-    sqliteEnginePromise = initSqlJs(sqliteConfiguration)
+    sqliteEnginePromise = initializeSqliteEngine()
   }
 
   return sqliteEnginePromise
+}
+
+async function initializeSqliteEngine() {
+  try {
+    return await initSqlJs(sqliteConfiguration)
+  } catch (error) {
+    sqliteEnginePromise = null
+    throw error
+  }
 }
 
 function locateSqliteFile() {
