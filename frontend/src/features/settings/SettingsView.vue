@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import TrainingChatLogsModal from '../ai-chat/components/TrainingChatLogsModal.vue'
 import {
@@ -12,8 +12,9 @@ import SettingsAiLogsSection from './components/SettingsAiLogsSection.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 
-defineProps({
+const props = defineProps({
   summary: { type: Object, required: true },
+  focusDataImport: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -27,10 +28,35 @@ const catalogOpen = ref(false)
 const chatLogsOpen = ref(false)
 const { activeChatId, chatSummaries } = useTrainingChatSessionStore()
 
-onMounted(scrollToTop)
+onMounted(initializeSettingsView)
+watch(readFocusDataImport, focusDataImport)
+
+function initializeSettingsView() {
+  if (props.focusDataImport) {
+    void scrollToDataImport()
+    return
+  }
+  scrollToTop()
+}
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'auto' })
+}
+
+function readFocusDataImport() {
+  return props.focusDataImport
+}
+
+function focusDataImport(shouldFocus) {
+  if (shouldFocus) void scrollToDataImport()
+}
+
+async function scrollToDataImport() {
+  await nextTick()
+  document.getElementById('settings-data-import')?.scrollIntoView({
+    block: 'start',
+    behavior: 'auto',
+  })
 }
 
 function openCatalog(mode) {
