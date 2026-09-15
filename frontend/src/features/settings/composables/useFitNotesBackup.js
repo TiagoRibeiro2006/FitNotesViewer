@@ -1,13 +1,14 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { createFitNotesExport, parseFitNotesFile } from '../../../fitnotes'
+import { createFitNotesCsvExport, createFitNotesExport, parseFitNotesFile } from '../../../fitnotes'
 import {
   clearLocalData,
+  getFitNotesCsvExportData,
   getFitNotesExportData,
   saveFitNotesImport,
 } from '../../../data/repositories/backupRepository'
 import { requestPersistentStorage } from '../../../data/browserStorage'
 import { friendlyError } from '../../../shared/utils/errors'
-import { createBackupFileName } from '../backupFileName'
+import { createBackupFileName, createCsvFileName } from '../backupFileName'
 
 export function useFitNotesBackup(summary) {
   const selectedFile = ref(null)
@@ -19,12 +20,17 @@ export function useFitNotesBackup(summary) {
   const exportError = ref('')
   const exportUrl = ref('')
   const exportFileName = ref('')
+  const csvExporting = ref(false)
+  const csvExportError = ref('')
+  const csvExportUrl = ref('')
+  const csvExportFileName = ref('')
   let exportSequence = 0
+  let csvExportSequence = 0
 
   const fileLabel = computed(() => selectedFile.value?.name || 'No file selected')
   const hasCurrentData = computed(() => summary.value?.isEmpty !== true)
 
-  onBeforeUnmount(clearExport)
+  onBeforeUnmount(clearExports)
 
   function selectFile(file) {
     selectedFile.value = file
@@ -80,6 +86,26 @@ export function useFitNotesBackup(summary) {
     }
   }
 
+  async function prepareCsvExport() {
+    clearCsvExport()
+    const sequence = csvExportSequence
+    csvExporting.value = true
+    csvExportError.value = ''
+
+    try {
+      const data = await getFitNotesCsvExportData()
+      const csv = createFitNotesCsvExport(data)
+      if (sequence !== csvExportSequence) return
+
+      csvExportFileName.value = createCsvFileName()
+      csvExportUrl.value = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    } catch (error) {
+      if (sequence === csvExportSequence) csvExportError.value = friendlyError(error)
+    } finally {
+      if (sequence === csvExportSequence) csvExporting.value = false
+    }
+  }
+
   async function deleteCurrentData() {
     if (!hasCurrentData.value || deleting.value) return false
 
@@ -89,7 +115,7 @@ export function useFitNotesBackup(summary) {
     try {
       await clearLocalData()
       deleteError.value = ''
-      clearExport()
+      clearExports()
       return true
     } catch (error) {
       deleteError.value = friendlyError(error)
@@ -107,7 +133,24 @@ export function useFitNotesBackup(summary) {
     exporting.value = false
   }
 
+  function clearCsvExport() {
+    csvExportSequence += 1
+    if (csvExportUrl.value) URL.revokeObjectURL(csvExportUrl.value)
+    csvExportUrl.value = ''
+    csvExportFileName.value = ''
+    csvExporting.value = false
+  }
+
+  function clearExports() {
+    clearExport()
+    clearCsvExport()
+  }
+
   return {
+    csvExportError,
+    csvExportFileName,
+    csvExporting,
+    csvExportUrl,
     deleteError,
     deleting,
     exportError,
@@ -122,6 +165,7 @@ export function useFitNotesBackup(summary) {
     deleteCurrentData,
     importSelectedFile,
     prepareExport,
+    prepareCsvExport,
     selectFile,
   }
 }

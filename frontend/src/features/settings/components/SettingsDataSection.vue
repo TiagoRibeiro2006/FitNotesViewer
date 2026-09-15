@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, ref } from 'vue'
 import TypedConfirmationModal from '../../../shared/components/TypedConfirmationModal.vue'
 import { useFitNotesBackup } from '../composables/useFitNotesBackup'
 import ExportDataModal from './ExportDataModal.vue'
@@ -19,6 +19,10 @@ const confirmationLabel = computed(readConfirmationLabel)
 const confirmationBusy = computed(readConfirmationBusy)
 
 const {
+  csvExportError,
+  csvExportFileName,
+  csvExporting,
+  csvExportUrl,
   deleteError,
   deleting,
   exportError,
@@ -33,6 +37,7 @@ const {
   deleteCurrentData,
   importSelectedFile,
   prepareExport,
+  prepareCsvExport,
   selectFile,
 } = useFitNotesBackup(summary)
 
@@ -49,8 +54,6 @@ async function importFile() {
   if (!importedSummary) return
 
   emit('data-imported', importedSummary)
-  await nextTick()
-  await prepareExport(false, importedSummary.backupStored)
 }
 
 function handleImport() {
@@ -71,7 +74,7 @@ function openDeleteConfirmation() {
 
 async function openExport() {
   exportOpen.value = true
-  await prepareExport()
+  await Promise.all([prepareExport(), prepareCsvExport()])
 }
 
 function closeExport() {
@@ -182,10 +185,14 @@ function readConfirmationBusy() {
 
   <ExportDataModal
     :open="exportOpen"
+    :csv-error="csvExportError"
+    :csv-file-name="csvExportFileName"
+    :csv-url="csvExportUrl"
     :fitnotes-error="exportError"
     :fitnotes-file-name="exportFileName"
     :fitnotes-url="exportUrl"
     :preparing-fitnotes="exporting"
+    :preparing-csv="csvExporting"
     @close="closeExport"
   />
 </template>
