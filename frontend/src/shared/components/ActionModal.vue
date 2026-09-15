@@ -25,7 +25,7 @@ function close() {
     :modal-class="'action-modal ' + modalClass"
     @close="close"
   >
-    <button class="action-modal-close" type="button" aria-label="Close" @click="close">
+    <button class="modal-icon-button action-modal-close" type="button" aria-label="Close" @click="close">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m6 6 12 12M18 6 6 18" />
       </svg>
@@ -76,25 +76,6 @@ function close() {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #85858d;
-  cursor: pointer;
-}
-
-.action-modal-close svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
 }
 
 .action-modal-content {
