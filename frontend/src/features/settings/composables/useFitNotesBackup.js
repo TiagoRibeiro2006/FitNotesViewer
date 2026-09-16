@@ -40,7 +40,9 @@ export function useFitNotesBackup(summary) {
   }
 
   async function importSelectedFile() {
-    if (!selectedFile.value) {
+    if (importing.value) return null
+    const file = selectedFile.value
+    if (!file) {
       importError.value = 'Select a .fitnotes or .csv file first.'
       return null
     }
@@ -51,8 +53,8 @@ export function useFitNotesBackup(summary) {
 
     try {
       void requestPersistentStorage()
-      const { parsed, bytes } = await parseFitNotesFile(selectedFile.value)
-      await saveFitNotesImport(parsed, selectedFile.value, bytes)
+      const { parsed, bytes } = await parseFitNotesFile(file)
+      await saveFitNotesImport(parsed, file, bytes)
       return parsed.summary
     } catch (error) {
       importError.value = friendlyError(error)
