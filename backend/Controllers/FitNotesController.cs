@@ -24,10 +24,17 @@ public sealed class FitNotesController : ControllerBase
         CancellationToken cancellationToken)
     {
         if (file is null)
-            return BadRequest(new { message = "Select a .fitnotes file." });
+            return BadRequest(new { message = "Select a .fitnotes or .csv file." });
 
         try
         {
+            if (file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                // CSV import is handled on the frontend
+                // The frontend parseFitNotesFile function handles CSV parsing
+                return Ok(new { message = "CSV file received. Use the web interface to import this file.", type = "csv" });
+            }
+
             var summary = await _analyzer.AnalyzeAsync(file, cancellationToken);
             return Ok(summary);
         }
