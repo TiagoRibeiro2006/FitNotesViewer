@@ -121,13 +121,25 @@ async function saveAssignment() {
       </div>
 
       <div v-else class="body-ai-data-note">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="body-ai-data-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3 5 6v5c0 4.6 2.8 8.3 7 10 4.2-1.7 7-5.4 7-10V6l-7-3Z" />
           <path d="m9.5 12 1.7 1.7 3.5-4" />
         </svg>
         <span>
           {{ assignmentLoading ? 'Checking Body Weight source…' : `Using ${bodyWeight?.name || 'Body Weight'} for this analysis.` }}
         </span>
+        <button
+          type="button"
+          class="body-ai-source-edit"
+          aria-label="Change Body Weight source"
+          :disabled="assignmentLoading"
+          @click="openAssignment"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z" />
+            <path d="m13.8 6.7 3.5 3.5" />
+          </svg>
+        </button>
       </div>
 
       <p v-if="assignmentError && !assigning" class="body-ai-result-error body-ai-assignment-error">
