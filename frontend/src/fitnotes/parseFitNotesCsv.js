@@ -5,6 +5,7 @@ import {
   parseCsvNumber,
   parseDurationSeconds,
   readMetricWeight,
+  readMetricDistance,
 } from './csv/csvValues.js'
 
 const CATEGORY_COLOURS = [
@@ -86,7 +87,7 @@ function createImportBuilder() {
       'reps',
       rowNumber,
     )
-    const distance = parseCsvNumber(columns.read(row, ['Distance']), 'distance', rowNumber)
+    const distance = readMetricDistance(row, columns, rowNumber)
     const durationSeconds = parseDurationSeconds(
       columns.read(row, ['Time', 'Duration', 'Duration (seconds)', 'Duration Seconds']),
       rowNumber,

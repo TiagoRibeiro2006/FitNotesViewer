@@ -1,4 +1,19 @@
 const POUNDS_TO_KILOGRAMS = 0.45359237
+const DISTANCE_TO_KILOMETRES = new Map([
+  ['', 1], ['km', 1], ['kms', 1], ['kilometer', 1], ['kilometers', 1], ['kilometre', 1], ['kilometres', 1],
+  ['mi', 1.609344], ['mile', 1.609344], ['miles', 1.609344],
+  ['m', 0.001], ['meter', 0.001], ['meters', 0.001], ['metre', 0.001], ['metres', 0.001],
+  ['yd', 0.0009144], ['yard', 0.0009144], ['yards', 0.0009144],
+])
+
+export function readMetricDistance(row, columns, rowNumber) {
+  const distance = parseCsvNumber(columns.read(row, ['Distance']), 'distance', rowNumber)
+  if (distance === 0) return 0
+  const unit = columns.read(row, ['Distance Unit']).toLowerCase()
+  const factor = DISTANCE_TO_KILOMETRES.get(unit)
+  if (factor === undefined) throw new Error('CSV row ' + rowNumber + ' has an unsupported distance unit: ' + unit + '.')
+  return Math.round(distance * factor * 1e9) / 1e9
+}
 
 export function parseCsvDate(value, rowNumber) {
   const text = String(value ?? '').trim()
