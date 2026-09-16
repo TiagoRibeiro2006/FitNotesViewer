@@ -1,14 +1,21 @@
-import { parseFitNotesDatabase } from './parseFitNotesDatabase'
-import { parseFitNotesCsv } from './parseFitNotesCsv'
-import { isSqliteDatabase, validateFitNotesFile } from './fitNotesValidation'
+import { parseFitNotesCsv } from './parseFitNotesCsv.js'
+import { isSqliteDatabase, validateFitNotesFile, validateSqliteDatabase } from './fitNotesValidation.js'
+import { readFitNotesFileBytes } from './readFitNotesFileBytes.js'
 
 export async function parseFitNotesFile(file) {
   validateFitNotesFile(file)
 
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  const parsed = isSqliteDatabase(bytes)
-    ? await parseFitNotesDatabase(file, bytes)
-    : parseFitNotesCsv(file, decodeText(bytes))
+  const bytes = await readFitNotesFileBytes(file)
+  const isBackup = String(file.name).toLowerCase().endsWith('.fitnotes')
+  if (isBackup) validateSqliteDatabase(bytes)
+
+  let parsed
+  if (isSqliteDatabase(bytes)) {
+    const { parseFitNotesDatabase } = await import('./parseFitNotesDatabase.js')
+    parsed = await parseFitNotesDatabase(file, bytes)
+  } else {
+    parsed = parseFitNotesCsv(file, decodeText(bytes))
+  }
 
   return { bytes, parsed }
 }
