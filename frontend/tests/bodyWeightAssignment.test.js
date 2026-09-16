@@ -57,10 +57,28 @@ test('explicit assignment overrides automatic body weight detection', () => {
 
 test('placeholder body weight without a stored source still requires assignment', () => {
   const placeholder = { id: 'body-weight', name: 'Body Weight', unit: 'kg' }
-  const custom = measurement('scale', 'Scale Weight', 'kg')
 
   assert.equal(resolveBodyWeightMeasurement([placeholder], ''), null)
-  assert.equal(resolveBodyWeightMeasurement([placeholder, custom], '')?.id, undefined)
+})
+
+test('similar weight names are detected automatically', () => {
+  const scaleWeight = measurement('scale', 'Scale Weight', 'kg')
+  const muscleMass = measurement('muscle', 'Muscle Mass', 'kg')
+
+  assert.equal(resolveBodyWeightMeasurement([muscleMass, scaleWeight], '')?.id, 'scale')
+})
+
+test('exact Body Weight is preferred over other similar weight names', () => {
+  const morningWeight = measurement('morning', 'Morning Weight', 'kg')
+  const bodyWeight = measurement('body', 'Body Weight', 'kg')
+
+  assert.equal(resolveBodyWeightMeasurement([morningWeight, bodyWeight], '')?.id, 'body')
+})
+
+test('non-weight kg measurements are not selected automatically', () => {
+  const muscleMass = measurement('muscle', 'Muscle Mass', 'kg')
+
+  assert.equal(resolveBodyWeightMeasurement([muscleMass], ''), null)
 })
 
 
@@ -91,7 +109,7 @@ test('deleting Body Weight also hides the synthetic body weight fallback', () =>
 })
 
 
-test('synthetic empty body weight does not block assignment after the measurement is deleted', () => {
+test('synthetic empty body weight falls back to a similar real weight measurement', () => {
   const synthetic = {
     id: 'body-weight',
     name: 'Body Weight',
@@ -103,7 +121,7 @@ test('synthetic empty body weight does not block assignment after the measuremen
   }
   const scale = measurement('scale-weight', 'Scale Weight', 'kg')
 
-  assert.equal(resolveBodyWeightMeasurement([synthetic, scale], ''), null)
+  assert.equal(resolveBodyWeightMeasurement([synthetic, scale], '')?.id, 'scale-weight')
   assert.deepEqual(buildBodyWeightAssignmentOptions([], [synthetic, scale]).map((item) => item.id), ['scale-weight'])
 })
 
