@@ -351,15 +351,35 @@
   overflow: hidden;
 }
 
-.body-ai-preview-metrics span {
+.body-ai-preview-metrics > span,
+.body-ai-preview-metrics > button {
   min-width: 0;
   display: grid;
   gap: 5px;
   padding: 12px;
 }
 
-.body-ai-preview-metrics span + span {
+.body-ai-preview-metrics > span + *,
+.body-ai-preview-metrics > button + * {
   border-left: 1px solid #28282d;
+}
+
+.body-ai-preview-metric-toggle {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.body-ai-preview-metric-toggle:hover {
+  background: #18181b;
+}
+
+.body-ai-preview-metric-toggle:focus-visible {
+  outline: 2px solid #5f9f62;
+  outline-offset: -2px;
 }
 
 .body-ai-preview-metrics small {
