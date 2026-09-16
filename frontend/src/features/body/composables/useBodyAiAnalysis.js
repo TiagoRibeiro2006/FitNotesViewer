@@ -20,6 +20,12 @@ export function useBodyAiAnalysis(startDate, endDate) {
     )
   }
 
+  function resetAnalysis() {
+    analysis.value = null
+    analyzedRequest.value = null
+    error.value = ''
+  }
+
   function selectGoal(goal) {
     selectedGoal.value = goal
     error.value = ''
@@ -62,6 +68,7 @@ export function useBodyAiAnalysis(startDate, endDate) {
     error,
     generateAnalysis,
     loading,
+    resetAnalysis,
     selectedGoal,
     selectGoal,
   }
