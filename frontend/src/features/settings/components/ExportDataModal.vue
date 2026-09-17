@@ -33,7 +33,7 @@ function finishDownload() {
     modal-class="export-data-modal"
     @close="close"
   >
-    <p>Save a copy of your training data to your device.</p>
+    <p>Save a copy of your training and body data to your device.</p>
 
     <template #actions>
       <a
@@ -66,14 +66,14 @@ function finishDownload() {
       >
         <span>
           <strong>Spreadsheet data</strong>
-          <small>For Excel, Sheets or another app</small>
+          <small>Training + body data for Excel, Sheets or restore</small>
         </span>
         <b>.csv</b>
       </a>
       <button v-else class="export-format-button" type="button" disabled>
         <span>
           <strong>{{ preparingCsv ? 'Preparing spreadsheet…' : 'Spreadsheet unavailable' }}</strong>
-          <small>Could not prepare the current workout data</small>
+          <small>Could not prepare the current training and body data</small>
         </span>
         <b>.csv</b>
       </button>

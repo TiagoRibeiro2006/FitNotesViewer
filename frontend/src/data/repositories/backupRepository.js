@@ -72,36 +72,64 @@ export async function migrateLegacyLocalStorage() {
 
 export async function getFitNotesExportData() {
   const database = await openAppDatabase()
-  const transaction = database.transaction(['backups', 'workoutSets'], 'readonly')
+  const storeNames = [
+    'backups',
+    'workoutSets',
+    'bodyWeights',
+    'measurements',
+    'measurementUnits',
+    'measurementRecords',
+  ]
+  const transaction = database.transaction(storeNames, 'readonly')
   const done = transactionComplete(transaction)
-  const [record, workoutSets] = await Promise.all([
+  const results = await Promise.all([
     requestResult(transaction.objectStore('backups').get('current')),
     requestResult(transaction.objectStore('workoutSets').getAll()),
+    requestResult(transaction.objectStore('bodyWeights').getAll()),
+    requestResult(transaction.objectStore('measurements').getAll()),
+    requestResult(transaction.objectStore('measurementUnits').getAll()),
+    requestResult(transaction.objectStore('measurementRecords').getAll()),
   ])
   await done
 
+  const record = results[0]
   if (!record?.data) return null
   return {
     bytes: new Uint8Array(record.data.slice(0)),
-    workoutSets: workoutSets ?? [],
+    workoutSets: results[1] ?? [],
+    bodyWeights: results[2] ?? [],
+    measurements: results[3] ?? [],
+    measurementUnits: results[4] ?? [],
+    measurementRecords: results[5] ?? [],
   }
 }
 
 export async function getFitNotesCsvExportData() {
   const database = await openAppDatabase()
-  const transaction = database.transaction(['workoutSets', 'exercises', 'categories'], 'readonly')
+  const storeNames = [
+    'workoutSets',
+    'exercises',
+    'categories',
+    'bodyWeights',
+    'measurements',
+    'measurementUnits',
+    'measurementRecords',
+  ]
+  const transaction = database.transaction(storeNames, 'readonly')
   const done = transactionComplete(transaction)
-  const results = await Promise.all([
-    requestResult(transaction.objectStore('workoutSets').getAll()),
-    requestResult(transaction.objectStore('exercises').getAll()),
-    requestResult(transaction.objectStore('categories').getAll()),
-  ])
+  const results = await Promise.all(storeNames.map((storeName) => (
+    requestResult(transaction.objectStore(storeName).getAll())
+  )))
   await done
 
   return {
     workoutSets: results[0] ?? [],
     exercises: results[1] ?? [],
     categories: results[2] ?? [],
+    bodyWeights: results[3] ?? [],
+    measurements: results[4] ?? [],
+    measurementUnits: results[5] ?? [],
+    measurementRecords: results[6] ?? [],
   }
 }
 

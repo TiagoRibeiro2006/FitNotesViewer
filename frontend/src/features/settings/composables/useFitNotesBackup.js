@@ -76,7 +76,7 @@ export function useFitNotesBackup(summary) {
       const source = await getFitNotesExportData()
       if (!source) throw new Error('The original FitNotes backup is not available on this device.')
 
-      const bytes = await createFitNotesExport(source.bytes, source.workoutSets)
+      const bytes = await createFitNotesExport(source.bytes, source)
       if (sequence !== exportSequence) return
 
       exportFileName.value = createBackupFileName()
