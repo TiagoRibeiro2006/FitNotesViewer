@@ -1,4 +1,8 @@
 <script setup>
+import { ref } from 'vue'
+
+const pacePeriod = ref('week')
+const WEEKS_PER_MONTH = 365.25 / 12 / 7
 const props = defineProps({
   analysis: { type: Object, default: null },
   error: { type: String, default: '' },
@@ -24,9 +28,21 @@ function trendLabel() {
 
 function paceLabel() {
   if (!props.analysis?.hasEnoughData) return '—'
-  const value = props.analysis.weeklyChangePercent
+
+  const multiplier = pacePeriod.value === 'month' ? WEEKS_PER_MONTH : 1
+  const value = props.analysis.weeklyChangePercent * multiplier
   const sign = value > 0 ? '+' : ''
-  return sign + formatNumber(value) + '% / week'
+
+  return sign + formatNumber(value) + '% / ' + pacePeriod.value
+}
+
+function togglePacePeriod() {
+  pacePeriod.value = pacePeriod.value === 'week' ? 'month' : 'week'
+}
+
+function paceToggleLabel() {
+  const nextPeriod = pacePeriod.value === 'week' ? 'month' : 'week'
+  return 'Pace: ' + paceLabel() + '. Show pace per ' + nextPeriod
 }
 
 function consistencyLabel() {
@@ -96,7 +112,15 @@ function formatNumber(value) {
 
     <div class="body-ai-preview-metrics" aria-label="Body Weight analysis details">
       <span><small>Trend</small><strong>{{ trendLabel() }}</strong></span>
-      <span><small>Pace</small><strong>{{ paceLabel() }}</strong></span>
+      <button
+        class="body-ai-preview-metric-toggle"
+        type="button"
+        :aria-label="paceToggleLabel()"
+        :title="pacePeriod === 'week' ? 'Show pace per month' : 'Show pace per week'"
+        @click="togglePacePeriod"
+      >
+        <small>Pace</small><strong>{{ paceLabel() }}</strong>
+      </button>
       <span><small>Consistency</small><strong>{{ consistencyLabel() }}</strong></span>
     </div>
   </section>
