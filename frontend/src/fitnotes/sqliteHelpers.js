@@ -4,7 +4,7 @@ export function ensureRequiredTables(db) {
   }
 }
 
-function hasTable(db, tableName) {
+export function hasTable(db, tableName) {
   const statement = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND LOWER(name) = LOWER(?) LIMIT 1;`)
   try {
     statement.bind([tableName])

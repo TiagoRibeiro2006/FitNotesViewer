@@ -104,8 +104,8 @@ function mapBodyWeight(row) {
   return {
     id: readNumber(row, ['_id', 'id']),
     date: readDate(row, ['date']),
-    bodyWeightMetric: readNumber(row, ['body_weight_metric', 'bodyWeightMetric']),
-    bodyFat: readNumber(row, ['body_fat', 'bodyFat']),
+    bodyWeightMetric: readPositiveNullableNumber(row, ['body_weight_metric', 'bodyWeightMetric']),
+    bodyFat: readPositiveNullableNumber(row, ['body_fat', 'bodyFat']),
     comments: readNullable(row, ['comments', 'comment']),
   }
 }
@@ -247,6 +247,11 @@ function readNumber(row, names, fallback = null) {
   if (value === null || value === undefined || value === '') return fallback
   const number = Number(value)
   return Number.isFinite(number) ? number : fallback
+}
+
+function readPositiveNullableNumber(row, names) {
+  const value = readNumber(row, names, null)
+  return Number.isFinite(value) && value > 0 ? value : null
 }
 
 function readText(row, names, fallback = '') {
