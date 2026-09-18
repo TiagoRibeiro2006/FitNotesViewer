@@ -1,7 +1,15 @@
+const WEEKS_PER_MONTH = 365.25 / 12 / 7
+
 const GOAL_LABELS = {
   bulking: 'bulking',
   cutting: 'cutting',
   maintenance: 'maintenance',
+}
+
+const GOAL_TARGETS = {
+  bulking: 'about +0.5% to +2% of body weight per month',
+  cutting: 'about -0.5% to -1% of body weight per week',
+  maintenance: 'roughly stable body weight',
 }
 
 export function generateBodyWeightFeedback(trend, rating, goal) {
@@ -9,9 +17,10 @@ export function generateBodyWeightFeedback(trend, rating, goal) {
     return 'Add at least two Body Weight values on different days before generating a trend analysis.'
   }
 
-  const pace = formatSignedNumber(trend.weeklyChangePercent) + '% per week'
+  const pace = formatPace(trend, goal)
   const change = formatSignedNumber(trend.change) + ' kg'
   const goalLabel = GOAL_LABELS[goal] ?? 'your goal'
+  const target = GOAL_TARGETS[goal]
   let feedback = 'Your weight changed by ' + change + ' over '
     + trend.periodDays + ' days, an estimated pace of ' + pace + '.'
 
@@ -25,11 +34,23 @@ export function generateBodyWeightFeedback(trend, rating, goal) {
     feedback += ' The pace is outside the simple target range used for ' + goalLabel + '.'
   }
 
+  if (target) {
+    feedback += ' A practical target is ' + target + '.'
+  }
+
   if (trend.periodDays < 14) {
     feedback += ' Treat this as an early signal because the recorded period is still short.'
   }
 
   return feedback
+}
+
+function formatPace(trend, goal) {
+  if (goal === 'bulking') {
+    return formatSignedNumber(trend.weeklyChangePercent * WEEKS_PER_MONTH) + '% per month'
+  }
+
+  return formatSignedNumber(trend.weeklyChangePercent) + '% per week'
 }
 
 function formatSignedNumber(value) {

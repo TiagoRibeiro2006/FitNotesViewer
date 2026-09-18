@@ -1,6 +1,9 @@
 <script setup>
+import { onMounted } from 'vue'
 import BodyAiResult from './BodyAiResult.vue'
+import BodyWeightAssignmentView from './BodyWeightAssignmentView.vue'
 import { useBodyAiAnalysis } from '../composables/useBodyAiAnalysis.js'
+import { useBodyWeightAssignment } from '../composables/useBodyWeightAssignment.js'
 import DateRangeControl from '../../charts/components/DateRangeControl.vue'
 import { useChartDateInterval } from '../../charts/composables/useChartDateInterval.js'
 
@@ -17,13 +20,46 @@ const {
   error,
   generateAnalysis,
   loading,
+  resetAnalysis,
   selectedGoal,
   selectGoal,
 } = useBodyAiAnalysis(selectedStartDate, selectedEndDate)
+const {
+  assigning,
+  bodyWeight,
+  candidates,
+  closeAssignment,
+  confirmAssignment,
+  error: assignmentError,
+  load: loadAssignment,
+  loading: assignmentLoading,
+  needsAssignment,
+  openAssignment,
+  saving: assignmentSaving,
+  selectCandidate,
+  selectedId,
+} = useBodyWeightAssignment()
+
+onMounted(loadAssignment)
+
+async function saveAssignment() {
+  if (await confirmAssignment()) resetAnalysis()
+}
 </script>
 
 <template>
-  <div class="body-ai-view" aria-label="Body AI">
+  <BodyWeightAssignmentView
+    v-if="assigning"
+    :candidates="candidates"
+    :error="assignmentError"
+    :saving="assignmentSaving"
+    :selected-id="selectedId"
+    @close="closeAssignment"
+    @confirm="saveAssignment"
+    @select="selectCandidate"
+  />
+
+  <div v-else class="body-ai-view" aria-label="Body AI">
     <section class="body-ai-card body-ai-setup-card">
       <div class="body-ai-heading">
         <div>
@@ -66,19 +102,49 @@ const {
           v-model:start-date="selectedStartDate"
           v-model:end-date="selectedEndDate"
           action-label="Analyse"
-          :action-disabled="!selectedGoal || loading || analysisIsCurrent"
+          :action-disabled="!selectedGoal || loading || analysisIsCurrent || assignmentLoading || !bodyWeight"
           @apply="generateAnalysis"
         />
       </div>
 
-      <div class="body-ai-data-note">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
+      <div v-if="needsAssignment" class="body-ai-assignment-note">
+        <div class="body-ai-assignment-copy">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4v16M4 12h16" />
+          </svg>
+          <span>
+            <strong>Body Weight is not assigned</strong>
+            <small>Choose one of your kg measurements so Body AI knows which data to analyse.</small>
+          </span>
+        </div>
+        <button type="button" @click="openAssignment">Assign Body Weight</button>
+      </div>
+
+      <div v-else class="body-ai-data-note">
+        <svg class="body-ai-data-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3 5 6v5c0 4.6 2.8 8.3 7 10 4.2-1.7 7-5.4 7-10V6l-7-3Z" />
           <path d="m9.5 12 1.7 1.7 3.5-4" />
         </svg>
-        <span>Only your locally stored Body Weight values will be analysed.</span>
+        <span>
+          {{ assignmentLoading ? 'Checking Body Weight source…' : `Using ${bodyWeight?.name || 'Body Weight'} for this analysis.` }}
+        </span>
+        <button
+          type="button"
+          class="body-ai-source-edit"
+          aria-label="Change Body Weight source"
+          :disabled="assignmentLoading"
+          @click="openAssignment"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m4 16.5-.7 4.2 4.2-.7L18.8 8.7l-3.5-3.5L4 16.5Z" />
+            <path d="m13.8 6.7 3.5 3.5" />
+          </svg>
+        </button>
       </div>
 
+      <p v-if="assignmentError && !assigning" class="body-ai-result-error body-ai-assignment-error">
+        {{ assignmentError }}
+      </p>
     </section>
 
     <BodyAiResult :analysis="analysis" :error="error" />

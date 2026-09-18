@@ -131,7 +131,7 @@ function readConfirmationBusy() {
 
     <section class="upload-card settings-upload-card">
       <label class="file-picker">
-        <input type="file" accept=".fitnotes,.csv" @change="onFileChange" />
+        <input type="file" @change="onFileChange" />
         <span>Choose data file</span>
       </label>
 
@@ -147,7 +147,7 @@ function readConfirmationBusy() {
     <div v-if="hasCurrentData" class="settings-data-action">
       <div>
         <strong>Export current data</strong>
-        <p>Download the current workout data as a FitNotes backup.</p>
+        <p>Download the current training and body data as a complete backup.</p>
       </div>
       <button class="settings-export-button" type="button" @click="openExport">
         Export data
