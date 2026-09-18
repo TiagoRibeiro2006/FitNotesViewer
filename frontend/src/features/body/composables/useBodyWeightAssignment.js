@@ -30,7 +30,7 @@ export function useBodyWeightAssignment() {
   }
 
   function openAssignment() {
-    selectedId.value = ''
+    selectedId.value = bodyWeight.value?.id ? String(bodyWeight.value.id) : ''
     error.value = ''
     assigning.value = true
   }

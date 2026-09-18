@@ -7,12 +7,18 @@ export function resolveBodyWeightMeasurement(measurements, assignedId = '') {
     return isAssignableBodyWeightItem(assigned) ? assigned : null
   }
 
-  const namedBodyWeight = items.find((item) => {
-    return isAssignableBodyWeightItem(item)
-      && normalizeName(item?.name) === 'bodyweight'
-      && isAutomaticBodyWeightItem(item)
-  })
-  return namedBodyWeight ?? null
+  let bestMatch = null
+  let bestScore = 0
+
+  for (const item of items) {
+    if (!isAssignableBodyWeightItem(item) || !isAutomaticBodyWeightItem(item)) continue
+    const score = bodyWeightNameScore(item?.name)
+    if (score <= bestScore) continue
+    bestMatch = item
+    bestScore = score
+  }
+
+  return bestMatch
 }
 
 export function getBodyWeightDeletionIds(item) {
@@ -64,6 +70,26 @@ function appendOptions(options, seen, items) {
 
 function isAutomaticBodyWeightItem(item) {
   return item?.sourceType === 'measurement' || item?.bodyDefinitionExists === true
+}
+
+function bodyWeightNameScore(value) {
+  const name = normalizeName(value)
+  if (!name) return 0
+
+  if (name === 'bodyweight') return 100
+  if (name === 'weight') return 95
+  if (name === 'bodymass') return 90
+  if (name === 'pesocorporal') return 90
+  if (name === 'peso') return 85
+
+  const excluded = ['muscle', 'lean', 'fat', 'water', 'bone', 'visceral', 'musculo', 'gordura', 'agua', 'ossea']
+  if (excluded.some((term) => name.includes(term))) return 0
+
+  if (name.includes('bodyweight')) return 80
+  if (name.includes('bodymass')) return 75
+  if (name.includes('weight')) return 70
+  if (name.includes('pesocorporal')) return 70
+  return 0
 }
 
 function normalizeName(value) {
