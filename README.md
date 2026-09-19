@@ -14,6 +14,16 @@ FitNotesViewer is an alternative for FitNotes users on iOS and an interesting ch
 
 The interface keeps the simplicity of the other FitNotes versions while adding a cleaner view of your data and private, on-device AI insights.
 
+<p align="center">
+  <img src="docs/images/workout-log.png" width="31%" alt="FitNotesViewer workout log">
+  <img src="docs/images/training-charts.png" width="31%" alt="FitNotesViewer training charts">
+  <img src="docs/images/ai-training-analysis.png" width="31%" alt="FitNotesViewer AI training analysis">
+</p>
+
+<p align="center">
+  <sub>Workout logging · Training charts · On-device AI analysis</sub>
+</p>
+
 - **Body** — track body weight and other measurements over time.
 - **Calendar** — quickly find every day with a recorded workout.
 - **Log** — add, edit, copy and organise exercises and sets.
