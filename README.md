@@ -5,6 +5,10 @@
 <h1 align="center">FitNotesViewer</h1>
 
 <p align="center">
+  <a href="https://fitnotesviewer.pages.dev">fitnotesviewer.pages.dev</a>
+</p>
+
+<p align="center">
   A free and open-source alternative to FitNotes, built for people who want a simple workout tracker with more ways to understand their progress.
 </p>
 
@@ -35,3 +39,9 @@ The interface keeps the simplicity of the other FitNotes versions while adding a
 Import data from FitNotes on iOS or Android and export it again as a `.fitnotes` or `.csv` file whenever you need it. Your information stays on your device, allowing the app to continue working without an internet connection.
 
 FitNotesViewer is an independent project and is not affiliated with FitNotes.
+
+---
+
+<p align="center">
+  <sub>Want to know how it works? Read the <a href="DETAILS.md">technical details</a>.</sub>
+</p>
