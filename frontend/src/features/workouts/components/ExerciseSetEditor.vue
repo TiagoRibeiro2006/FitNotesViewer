@@ -4,6 +4,7 @@ import { useDragList } from '../../../shared/composables/useDragList'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
 import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
 import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 defineProps({
   canSave: { type: Boolean, default: false },
@@ -28,6 +29,7 @@ const emit = defineEmits([
   'save',
   'update-set',
 ])
+const { weightUnit } = useWeightUnitPreference()
 const { draggingIndex, startDrag } = useDragList(moveSet)
 
 function moveSet(fromIndex, toIndex) {
@@ -56,7 +58,7 @@ function exerciseStyle(exercise) {
 
     <div class="sets-grid sets-grid-header" aria-hidden="true">
       <span>Set</span>
-      <span>kg</span>
+      <span>{{ weightUnit }}</span>
       <span>Reps</span>
       <span></span>
     </div>
@@ -91,7 +93,7 @@ function exerciseStyle(exercise) {
           type="text"
           inputmode="decimal"
           placeholder="0"
-          aria-label="Weight in kilograms"
+          :aria-label="`Weight in ${weightUnit}`"
           @input="updateSet(index, 'weight', $event)"
         />
         <input

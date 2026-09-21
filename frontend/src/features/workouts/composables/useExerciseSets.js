@@ -8,14 +8,19 @@ import {
 } from '../../../data/repositories/workoutRepository'
 import { friendlyError } from '../../../shared/utils/errors'
 import {
+  clearSetDraft,
   createEmptySetDrafts,
   createNextSetDraft,
   createSetDrafts,
+  createStoredSetDrafts,
+  updateSetDraftWeight,
   validateSetDrafts,
 } from '../exerciseSetDrafts'
 import { calculateDraftProgress } from '../../../shared/utils/exerciseProgress'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 export function useExerciseSets(selectedDate, callbacks = {}) {
+  const { weightUnit } = useWeightUnitPreference()
   const saving = ref(false)
   const error = ref('')
   const selectedExercise = ref(null)
@@ -43,8 +48,8 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
       progressBaseline.value = result[2]
 
       hasExistingSets.value = currentSets.length > 0
-      previousSets.value = previous.sets
-      draftSets.value = chooseDraftSets(currentSets, previous.sets)
+      previousSets.value = createSetDrafts(previous.sets, weightUnit.value)
+      draftSets.value = chooseDraftSets(currentSets, previous.sets, weightUnit.value)
     } catch {
       error.value = 'Workout history for this exercise could not be loaded.'
       draftSets.value = createEmptySetDrafts()
@@ -59,8 +64,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
 
   function removeSet(index) {
     if (draftSets.value.length <= 1) {
-      draftSets.value[0].weight = ''
-      draftSets.value[0].reps = ''
+      clearSetDraft(draftSets.value[0])
       return
     }
 
@@ -78,7 +82,8 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     const set = draftSets.value[index]
     if (!set || !isEditableField(field)) return
 
-    set[field] = value
+    if (field === 'weight') updateSetDraftWeight(set, value)
+    else set[field] = value
     deleteConfirming.value = false
   }
 
@@ -92,10 +97,11 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     error.value = ''
 
     try {
+      const storedDrafts = createStoredSetDrafts(draftSets.value, weightUnit.value)
       const summary = await saveWorkoutExercise(
         selectedDate.value,
         selectedExercise.value,
-        draftSets.value,
+        storedDrafts,
       )
       callbacks.onChanged?.(summary)
       callbacks.onClose?.()
@@ -154,7 +160,8 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
   }
 
   function readDraftProgress() {
-    return calculateDraftProgress(draftSets.value, progressBaseline.value)
+    const storedDrafts = createStoredSetDrafts(draftSets.value, weightUnit.value)
+    return calculateDraftProgress(storedDrafts, progressBaseline.value)
   }
 
   return {
@@ -179,9 +186,9 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
   }
 }
 
-function chooseDraftSets(currentSets, previousSets) {
-  if (currentSets.length) return createSetDrafts(currentSets)
-  if (previousSets.length) return createSetDrafts(previousSets)
+function chooseDraftSets(currentSets, previousSets, displayUnit) {
+  if (currentSets.length) return createSetDrafts(currentSets, displayUnit)
+  if (previousSets.length) return createSetDrafts(previousSets, displayUnit)
   return createEmptySetDrafts()
 }
 
