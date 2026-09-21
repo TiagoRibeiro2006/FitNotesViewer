@@ -79,6 +79,10 @@ export async function getFitNotesExportData() {
     'measurements',
     'measurementUnits',
     'measurementRecords',
+    'categories',
+    'exercises',
+    'routineSectionExercises',
+    'routineSectionExerciseSets',
   ]
   const transaction = database.transaction(storeNames, 'readonly')
   const done = transactionComplete(transaction)
@@ -89,6 +93,10 @@ export async function getFitNotesExportData() {
     requestResult(transaction.objectStore('measurements').getAll()),
     requestResult(transaction.objectStore('measurementUnits').getAll()),
     requestResult(transaction.objectStore('measurementRecords').getAll()),
+    requestResult(transaction.objectStore('categories').getAll()),
+    requestResult(transaction.objectStore('exercises').getAll()),
+    requestResult(transaction.objectStore('routineSectionExercises').getAll()),
+    requestResult(transaction.objectStore('routineSectionExerciseSets').getAll()),
   ])
   await done
 
@@ -101,6 +109,10 @@ export async function getFitNotesExportData() {
     measurements: results[3] ?? [],
     measurementUnits: results[4] ?? [],
     measurementRecords: results[5] ?? [],
+    categories: results[6] ?? [],
+    exercises: results[7] ?? [],
+    routineSectionExercises: results[8] ?? [],
+    routineSectionExerciseSets: results[9] ?? [],
   }
 }
 

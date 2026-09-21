@@ -13,15 +13,7 @@ export async function createFitNotesExport(sourceBytes, data = {}) {
 
   try {
     ensureRequiredTables(db)
-    db.run('BEGIN TRANSACTION;')
-
-    try {
-      synchronizeFitNotesData(db, exportData)
-      db.run('COMMIT;')
-    } catch (error) {
-      db.run('ROLLBACK;')
-      throw error
-    }
+    synchronizeFitNotesData(db, exportData)
 
     return db.export()
   } finally {

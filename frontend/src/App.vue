@@ -13,9 +13,12 @@ import EmptyDataImportPrompt from './features/onboarding/EmptyDataImportPrompt.v
 import SettingsView from './features/settings/SettingsView.vue'
 import WorkoutLogView from './features/workouts/WorkoutLogView.vue'
 import { createEmptySummary } from './shared/models/summary'
+import { useAppInitialization } from './app/useAppInitialization'
 
-const summary = ref(createEmptySummary())
-const appReady = ref(false)
+const { summary, appReady, initializationError, initializing, initializeApp } = useAppInitialization(
+  loadApplicationSummary,
+  startBackgroundServices,
+)
 const bodyManagementRequested = ref(false)
 const trainingChatRequested = ref(false)
 const settingsImportRequested = ref(false)
@@ -31,12 +34,6 @@ const {
 } = useAppNavigation()
 
 onMounted(initializeApp)
-
-async function initializeApp() {
-  summary.value = await loadApplicationSummary()
-  appReady.value = true
-  startBackgroundServices()
-}
 
 function handleWorkoutChanged(updatedSummary) {
   summary.value = updatedSummary
@@ -89,7 +86,15 @@ function openDataImport() {
 </script>
 
 <template>
-  <main class="page-shell">
+  <main v-if="!appReady" class="page-shell">
+    <section v-if="initializationError" class="settings-card" role="alert">
+      <h1>Could not open your saved data</h1>
+      <p>{{ initializationError }}</p>
+      <button class="primary-button" :disabled="initializing" @click="initializeApp">Try again</button>
+    </section>
+    <p v-else role="status">Loading your data…</p>
+  </main>
+  <main v-else class="page-shell">
     <WorkoutLogView
       v-if="activeView === 'workouts'"
       :selected-date="selectedDate"
@@ -125,7 +130,7 @@ function openDataImport() {
     />
   </main>
 
-  <AppBottomNavigation :active-view="activeView" @navigate="handleNavigation" />
+  <AppBottomNavigation v-if="appReady" :active-view="activeView" @navigate="handleNavigation" />
 
   <EmptyDataImportPrompt
     :open="showEmptyImportPrompt"

@@ -5,12 +5,8 @@ import { warmUpSqliteEngine } from '../../fitnotes'
 import { createEmptySummary } from '../../shared/models/summary'
 
 export async function loadApplicationSummary() {
-  try {
-    await migrateLegacyLocalStorage()
-    return await getSummary() ?? createEmptySummary()
-  } catch {
-    return createEmptySummary()
-  }
+  await migrateLegacyLocalStorage()
+  return await getSummary() ?? createEmptySummary()
 }
 
 export function startBackgroundServices() {
