@@ -1,20 +1,46 @@
-import { DB_NAME, DB_VERSION, STORE_DEFINITIONS } from './schema'
+import { DB_NAME, DB_VERSION, STORE_DEFINITIONS } from './schema.js'
 
 let databasePromise
 
 export function openAppDatabase() {
-  if (!databasePromise) databasePromise = createDatabaseConnection()
+  if (!databasePromise) {
+    const connection = createDatabaseConnection(() => {
+      if (databasePromise === connection) databasePromise = undefined
+    })
+    databasePromise = connection
+    void connection.catch(() => {
+      if (databasePromise === connection) databasePromise = undefined
+    })
+  }
   return databasePromise
 }
 
-function createDatabaseConnection() {
+function createDatabaseConnection(onClosed) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
+    let failed = false
+
+    function fail(error) {
+      failed = true
+      reject(error)
+    }
 
     request.onupgradeneeded = () => configureStores(request)
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error ?? new Error('IndexedDB could not be opened.'))
-    request.onblocked = () => reject(new Error('IndexedDB upgrade is blocked by another open app window.'))
+    request.onsuccess = () => {
+      const database = request.result
+      if (failed) {
+        database.close()
+        return
+      }
+      database.onversionchange = () => {
+        database.close()
+        onClosed()
+      }
+      database.onclose = onClosed
+      resolve(database)
+    }
+    request.onerror = () => fail(request.error ?? new Error('IndexedDB could not be opened.'))
+    request.onblocked = () => fail(new Error('Close other app windows, then try again to open your saved data.'))
   })
 }
 
