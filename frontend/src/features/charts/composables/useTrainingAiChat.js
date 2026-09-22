@@ -6,10 +6,12 @@ import {
   createTrainingChat,
   useTrainingChatSessionStore,
 } from '../../ai-chat/services/trainingChatSessionStore.js'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 export function useTrainingAiChat(trainingData) {
   const prompt = ref('')
   const { activeMessages, activeNotice } = useTrainingChatSessionStore()
+  const { weightUnit } = useWeightUnitPreference()
 
   function sendPrompt() {
     const question = prompt.value.trim()
@@ -18,7 +20,7 @@ export function useTrainingAiChat(trainingData) {
     startNewChatWhenFull()
     addTrainingChatMessage('user', question)
     prompt.value = ''
-    addTrainingChatMessage('assistant', generateTrainingChatReply(question, trainingData?.sets))
+    addTrainingChatMessage('assistant', generateTrainingChatReply(question, trainingData?.sets, weightUnit.value))
     return true
   }
 
