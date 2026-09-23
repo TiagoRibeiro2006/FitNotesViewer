@@ -4,9 +4,12 @@ import {
   KILOGRAMS,
   POUNDS,
   convertWeight,
+  displayMeasurementUnit,
+  displayMeasurementValue,
   displayWeight,
   isWeightUnit,
   normalizeWeightUnit,
+  storeMeasurementValue,
   storeWeight,
 } from '../src/shared/units/weightUnits.js'
 
@@ -42,4 +45,18 @@ test('recognizes body measurement weight units', () => {
   assert.equal(isWeightUnit('lbs'), true)
   assert.equal(isWeightUnit('cm'), false)
   assert.equal(isWeightUnit('%'), false)
+})
+
+test('converts body weight measurements without changing other measurement types', () => {
+  assert.equal(Math.round(displayMeasurementValue(100, 'kg', POUNDS) * 10) / 10, 220.5)
+  assert.equal(Math.round(displayMeasurementValue(220.462262, 'lbs', KILOGRAMS)), 100)
+  assert.equal(displayMeasurementValue(42, 'cm', POUNDS), 42)
+  assert.equal(displayMeasurementUnit('kg', POUNDS), POUNDS)
+  assert.equal(displayMeasurementUnit('%', POUNDS), '%')
+})
+
+test('converts edited body weight values back to their storage unit', () => {
+  assert.equal(storeMeasurementValue('220.462262', 'kg', POUNDS), 100)
+  assert.equal(storeMeasurementValue('100', 'lbs', KILOGRAMS), 220.462262)
+  assert.equal(storeMeasurementValue('42.5', 'cm', POUNDS), 42.5)
 })

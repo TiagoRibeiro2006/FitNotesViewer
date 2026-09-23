@@ -32,6 +32,22 @@ export function storeWeight(value, inputUnit) {
   return kilograms === null ? null : roundForStorage(kilograms)
 }
 
+export function displayMeasurementValue(value, sourceUnit, displayUnit) {
+  if (!isWeightUnit(sourceUnit)) return readWeight(value)
+  return convertWeight(value, sourceUnit, displayUnit)
+}
+
+export function displayMeasurementUnit(sourceUnit, displayUnit) {
+  if (!isWeightUnit(sourceUnit)) return String(sourceUnit ?? '')
+  return normalizeWeightUnit(displayUnit)
+}
+
+export function storeMeasurementValue(value, storageUnit, inputUnit) {
+  if (!isWeightUnit(storageUnit)) return readWeight(value)
+  const storedValue = convertWeight(value, inputUnit, storageUnit)
+  return storedValue === null ? null : roundForStorage(storedValue)
+}
+
 export function isWeightUnit(unit) {
   const value = String(unit ?? '').trim().toLowerCase()
   return value === 'kg'
