@@ -80,7 +80,7 @@ export async function saveBodyWeightAssignment(itemId) {
   const tracker = await getBodyTrackerData()
   const candidates = buildBodyWeightAssignmentOptions(tracker.favorites, tracker.measurements)
   const selected = candidates.find((item) => String(item.id) === String(itemId))
-  if (!selected) throw new Error('Choose a valid kg measurement.')
+  if (!selected) throw new Error('Choose a valid weight measurement.')
 
   const database = await openAppDatabase()
   const transaction = database.transaction('metadata', 'readwrite')
