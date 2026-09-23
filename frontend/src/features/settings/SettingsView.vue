@@ -11,6 +11,7 @@ import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import SettingsAiLogsSection from './components/SettingsAiLogsSection.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
+import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -113,6 +114,8 @@ function dataDeleted() {
   <AppSectionHeader title="Settings" />
 
   <div class="settings-sections">
+    <SettingsUnitsSection />
+
     <SettingsManagementSection
       @manage-muscles="openMuscles"
       @manage-exercises="openExercises"

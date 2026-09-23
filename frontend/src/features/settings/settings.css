@@ -123,3 +123,61 @@
 .settings-data-import {
   scroll-margin-top: calc(78px + env(safe-area-inset-top));
 }
+
+.settings-unit-description {
+  margin: -2px 0 16px;
+  color: #777780;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.settings-unit-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settings-unit-option {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #303036;
+  border-radius: var(--box-radius);
+  background: #17171a;
+  color: #9a9aa2;
+  cursor: pointer;
+}
+
+.settings-unit-option span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: #242429;
+  color: #c7c7cc;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.settings-unit-option strong {
+  font-size: 14px;
+}
+
+.settings-unit-option.is-selected {
+  border-color: #3f8fef;
+  background: #121b27;
+  color: #fff;
+}
+
+.settings-unit-option.is-selected span {
+  background: #172d47;
+  color: #62a9ff;
+}
+
+.settings-unit-option:active {
+  transform: scale(.99);
+}
