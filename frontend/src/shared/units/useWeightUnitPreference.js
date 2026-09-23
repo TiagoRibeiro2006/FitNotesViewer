@@ -1,9 +1,12 @@
 import { readonly, ref } from 'vue'
 import {
+  displayMeasurementUnit,
+  displayMeasurementValue,
   displayWeight,
   KILOGRAMS,
   normalizeWeightUnit,
   POUNDS,
+  storeMeasurementValue,
   storeWeight,
 } from './weightUnits.js'
 
@@ -13,10 +16,25 @@ const weightUnit = ref(readSavedUnit())
 export function useWeightUnitPreference() {
   return {
     weightUnit: readonly(weightUnit),
+    displayMeasurementUnit: readMeasurementUnit,
+    displayMeasurementValue: readMeasurementValue,
     displayWeight: readDisplayWeight,
     setWeightUnit,
+    storeMeasurementValue: readStoredMeasurementValue,
     storeWeight: readStoredWeight,
   }
+}
+
+function readMeasurementValue(value, sourceUnit) {
+  return displayMeasurementValue(value, sourceUnit, weightUnit.value)
+}
+
+function readMeasurementUnit(sourceUnit) {
+  return displayMeasurementUnit(sourceUnit, weightUnit.value)
+}
+
+function readStoredMeasurementValue(value, storageUnit) {
+  return storeMeasurementValue(value, storageUnit, weightUnit.value)
 }
 
 function readDisplayWeight(valueInKilograms) {

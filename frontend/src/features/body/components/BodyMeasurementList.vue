@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const props = defineProps({
   sections: { type: Array, required: true },
@@ -25,6 +26,7 @@ const editingKey = ref('')
 const editingName = ref('')
 let skipNextMenuClick = false
 const { draggingIndex, startDrag } = useDragList(moveFavorite, saveFavoriteOrder)
+const { displayMeasurementValue, weightUnit } = useWeightUnitPreference()
 
 watch(readManaging, resetManagementState)
 
@@ -114,6 +116,14 @@ function saveName(item) {
   emit('edit-measurement', { item, name })
   cancelEditing()
 }
+
+function displayValue(item) {
+  return formatBodyValue(item, weightUnit.value)
+}
+
+function displayChange(item) {
+  return formatNumber(Math.abs(displayMeasurementValue(item.change, item.unit)))
+}
 </script>
 
 <template>
@@ -183,9 +193,9 @@ function saveName(item) {
               </button>
             </span>
             <span class="body-measurement-value">
-              <strong>{{ formatBodyValue(item) }}</strong>
+              <strong>{{ displayValue(item) }}</strong>
               <span v-if="item.change !== null" class="body-measurement-change">
-                {{ item.change < 0 ? '▼' : '▲' }} {{ formatNumber(Math.abs(item.change)) }}
+                {{ item.change < 0 ? '▼' : '▲' }} {{ displayChange(item) }}
               </span>
             </span>
             <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>
@@ -194,9 +204,9 @@ function saveName(item) {
           <button v-else class="body-measurement-copy" type="button" :aria-label="'Open ' + item.name" @click="openMeasurement(item)">
             <span class="body-measurement-name">{{ item.name }}</span>
             <span class="body-measurement-value">
-              <strong>{{ formatBodyValue(item) }}</strong>
+              <strong>{{ displayValue(item) }}</strong>
               <span v-if="item.change !== null" class="body-measurement-change">
-                {{ item.change < 0 ? '▼' : '▲' }} {{ formatNumber(Math.abs(item.change)) }}
+                {{ item.change < 0 ? '▼' : '▲' }} {{ displayChange(item) }}
               </span>
             </span>
             <small v-if="item.date">{{ formatBodyEntryDate(item) }}</small>

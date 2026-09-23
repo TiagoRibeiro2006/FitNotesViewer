@@ -4,6 +4,7 @@ import { dateToKey, timeToKey } from '../../../shared/utils/dates'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
 import { useBodyMeasurementDetails } from '../composables/useBodyMeasurementDetails'
 import BodyRecordModal from './BodyRecordModal.vue'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -27,6 +28,11 @@ const {
   load,
   updateValue,
 } = useBodyMeasurementDetails()
+const {
+  displayMeasurementUnit,
+  storeMeasurementValue,
+  weightUnit,
+} = useWeightUnitPreference()
 
 const canSave = computed(() => {
   if (!selectedDate.value || !selectedTime.value) return false
@@ -45,7 +51,8 @@ function initialize() {
 
 async function submit() {
   if (!canSave.value) return
-  if (!await addValue(props.item, value.value, selectedDate.value, selectedTime.value)) return
+  const storedValue = storeMeasurementValue(value.value, props.item.unit)
+  if (!await addValue(props.item, storedValue, selectedDate.value, selectedTime.value)) return
   value.value = ''
   resetDateTime()
   emit('changed')
@@ -58,7 +65,7 @@ function resetDateTime() {
 }
 
 function displayValue(record) {
-  return formatBodyValue({ ...props.item, value: record.value })
+  return formatBodyValue({ ...props.item, value: record.value }, weightUnit.value)
 }
 
 function openRecord(record) {
@@ -114,7 +121,7 @@ async function removeRecord() {
             autocomplete="off"
             placeholder="0"
           />
-          <span v-if="item.unit">{{ item.unit }}</span>
+          <span v-if="item.unit">{{ displayMeasurementUnit(item.unit) }}</span>
         </div>
 
         <div class="body-date-time-fields">
