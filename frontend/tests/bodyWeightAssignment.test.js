@@ -32,14 +32,15 @@ test('body weight assignment options keep favorites first and body page order af
   assert.deepEqual(options.map((item) => item.id), ['muscle', 'weight', 'water'])
 })
 
-test('body weight assignment only includes real kg measurements', () => {
+test('body weight assignment includes real weight measurements in kg or lb', () => {
   const options = buildBodyWeightAssignmentOptions([], [
     measurement('weight', 'Weight', 'kg'),
+    measurement('imperial-weight', 'Imperial Weight', 'lbs'),
     measurement('waist', 'Waist', 'cm'),
     { id: 'placeholder', name: 'Body Weight', unit: 'kg' },
   ])
 
-  assert.deepEqual(options.map((item) => item.id), ['weight'])
+  assert.deepEqual(options.map((item) => item.id), ['weight', 'imperial-weight'])
 })
 
 test('explicit assignment overrides automatic body weight detection', () => {

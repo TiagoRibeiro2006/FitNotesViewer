@@ -1,7 +1,9 @@
 import { computed, ref } from 'vue'
 import { analyzeStoredBodyWeight } from '../services/bodyAiAnalysisService.js'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 export function useBodyAiAnalysis(startDate, endDate) {
+  const { weightUnit } = useWeightUnitPreference()
   const selectedGoal = ref('')
   const analysis = ref(null)
   const analyzedRequest = ref(null)
@@ -43,6 +45,7 @@ export function useBodyAiAnalysis(startDate, endDate) {
         request.goal,
         request.startDate,
         request.endDate,
+        weightUnit.value,
       )
       analyzedRequest.value = request
     } catch {

@@ -1,5 +1,6 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers.js'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 const props = defineProps({
   candidates: { type: Array, required: true },
@@ -9,6 +10,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'confirm', 'select'])
+const {
+  displayMeasurementUnit,
+  displayMeasurementValue,
+} = useWeightUnitPreference()
 
 function selectCandidate(item) {
   emit('select', String(item.id))
@@ -18,7 +23,8 @@ function formatCurrentValue(item) {
   if (item.value === null || item.value === undefined || !Number.isFinite(Number(item.value))) {
     return 'No values yet'
   }
-  return `${formatNumber(Number(item.value))} kg`
+  const value = displayMeasurementValue(item.value, item.unit)
+  return `${formatNumber(value)} ${displayMeasurementUnit(item.unit)}`
 }
 </script>
 
@@ -38,7 +44,7 @@ function formatCurrentValue(item) {
       </div>
 
       <p class="body-ai-description body-weight-assignment-description">
-        Choose which kg measurement should be used as Body Weight for pace and goal analysis.
+        Choose which weight measurement should be used as Body Weight for pace and goal analysis.
       </p>
 
       <div v-if="candidates.length" class="body-weight-assignment-list" role="radiogroup" aria-label="Body Weight measurement">
@@ -67,8 +73,8 @@ function formatCurrentValue(item) {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M7 7h10M7 12h10M7 17h6" />
         </svg>
-        <strong>No kg measurements available</strong>
-        <p>Add a measurement using kg in Body Tracker, then return here to assign it.</p>
+        <strong>No weight measurements available</strong>
+        <p>Add a weight measurement in Body Tracker, then return here to assign it.</p>
       </div>
 
       <p v-if="error" class="body-ai-result-error">{{ error }}</p>

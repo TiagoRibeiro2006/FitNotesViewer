@@ -44,7 +44,7 @@ export function buildBodyWeightAssignmentOptions(favorites, measurements) {
 }
 
 export function isAssignableBodyWeightItem(item) {
-  if (!item || normalizeUnit(item.unit) !== 'kg') return false
+  if (!item || !isWeightUnit(item.unit)) return false
 
   if (item.sourceType === 'bodyWeight') {
     const hasStoredValue = item.value !== null
@@ -96,7 +96,4 @@ function normalizeName(value) {
   return String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
-function normalizeUnit(value) {
-  const unit = String(value ?? '').trim().toLowerCase()
-  return unit === 'kgs' ? 'kg' : unit
-}
+import { isWeightUnit } from '../shared/units/weightUnits.js'

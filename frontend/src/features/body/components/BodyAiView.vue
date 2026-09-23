@@ -114,7 +114,7 @@ async function saveAssignment() {
           </svg>
           <span>
             <strong>Body Weight is not assigned</strong>
-            <small>Choose one of your kg measurements so Body AI knows which data to analyse.</small>
+            <small>Choose one of your weight measurements so Body AI knows which data to analyse.</small>
           </span>
         </div>
         <button type="button" @click="openAssignment">Assign Body Weight</button>
