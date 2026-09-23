@@ -6,6 +6,7 @@ import { normalizeSelectableDateInterval } from '../analytics/dateRanges.js'
 import { useChartDateInterval } from '../composables/useChartDateInterval.js'
 import DateRangeControl from './DateRangeControl.vue'
 import TimeSeriesChart from './TimeSeriesChart.vue'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 const props = defineProps({
   measurements: { type: Array, required: true },
@@ -18,8 +19,13 @@ const appliedStartDate = ref(selectedStartDate.value)
 const appliedEndDate = ref(selectedEndDate.value)
 const scaleMode = ref('auto')
 const selectedMeasurement = computed(findSelectedMeasurement)
+const displayedMeasurement = computed(buildDisplayedMeasurement)
 const analytics = computed(buildAnalytics)
 const hasDateChanges = computed(readHasDateChanges)
+const {
+  displayMeasurementUnit,
+  displayMeasurementValue,
+} = useWeightUnitPreference()
 
 function findInitialMeasurementId() {
   for (const measurement of measurementOptions.value) {
@@ -56,10 +62,26 @@ function readFavoriteOrder(measurement) {
 
 function buildAnalytics() {
   return createBodyAnalytics(
-    selectedMeasurement.value,
+    displayedMeasurement.value,
     appliedStartDate.value,
     appliedEndDate.value,
   )
+}
+
+function buildDisplayedMeasurement() {
+  const measurement = selectedMeasurement.value
+  if (!measurement) return null
+
+  return {
+    ...measurement,
+    unit: displayMeasurementUnit(measurement.unit),
+    records: measurement.records.map(function convertRecord(record) {
+      return {
+        ...record,
+        value: displayMeasurementValue(record.value, measurement.unit),
+      }
+    }),
+  }
 }
 
 function applyDateInterval() {
@@ -86,7 +108,7 @@ function setZeroScale() {
 
 function formatValue(value) {
   if (value === null) return '—'
-  const unit = selectedMeasurement.value?.unit
+  const unit = displayedMeasurement.value?.unit
   return `${formatNumber(value)}${unit ? ` ${unit}` : ''}`
 }
 
@@ -160,7 +182,7 @@ function formatChangePercent() {
     <section v-if="analytics.records.length" class="chart-visual-card body-line-chart-card">
       <div class="chart-card-heading chart-card-heading-compact">
         <div>
-          <p class="eyebrow">{{ selectedMeasurement?.unit || 'VALUE' }}</p>
+          <p class="eyebrow">{{ displayedMeasurement?.unit || 'VALUE' }}</p>
           <h2>{{ selectedMeasurement?.name }}</h2>
         </div>
         <p class="chart-current-value">{{ formatValue(analytics.current) }}</p>
@@ -168,7 +190,7 @@ function formatChangePercent() {
       <TimeSeriesChart
         :records="analytics.records"
         :scale-mode="scaleMode"
-        :unit="selectedMeasurement?.unit"
+        :unit="displayedMeasurement?.unit"
       />
     </section>
 
@@ -202,7 +224,7 @@ function formatChangePercent() {
       </article>
       <article>
         <span>Low — High</span>
-        <strong>{{ formatRange() }} {{ analytics.minimum === null ? '' : selectedMeasurement?.unit }}</strong>
+        <strong>{{ formatRange() }} {{ analytics.minimum === null ? '' : displayedMeasurement?.unit }}</strong>
       </article>
     </section>
   </div>
