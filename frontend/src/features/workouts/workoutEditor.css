@@ -500,6 +500,56 @@
   text-transform: uppercase;
 }
 
+.rep-max-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #242424;
+}
+
+.rep-max-heading .exercise-details-title {
+  min-width: 0;
+  flex: 1;
+  border-bottom: 0;
+}
+
+.rep-max-unit-toggle {
+  min-width: 66px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-right: 12px;
+  padding: 0 10px;
+  border: 1px solid #315d91;
+  border-radius: 10px;
+  background: #142238;
+  color: #62a9ff;
+  cursor: pointer;
+}
+
+.rep-max-unit-toggle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rep-max-unit-toggle span {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.rep-max-unit-toggle:active {
+  transform: scale(.97);
+}
+
 .exercise-history-day {
   padding: 15px 16px 10px;
   border-bottom: 1px solid #242424;
