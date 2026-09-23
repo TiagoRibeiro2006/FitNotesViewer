@@ -1,5 +1,11 @@
 import { readonly, ref } from 'vue'
-import { KILOGRAMS, normalizeWeightUnit, POUNDS } from './weightUnits.js'
+import {
+  displayWeight,
+  KILOGRAMS,
+  normalizeWeightUnit,
+  POUNDS,
+  storeWeight,
+} from './weightUnits.js'
 
 const STORAGE_KEY = 'fitnotes-viewer-weight-unit'
 const weightUnit = ref(readSavedUnit())
@@ -7,8 +13,18 @@ const weightUnit = ref(readSavedUnit())
 export function useWeightUnitPreference() {
   return {
     weightUnit: readonly(weightUnit),
+    displayWeight: readDisplayWeight,
     setWeightUnit,
+    storeWeight: readStoredWeight,
   }
+}
+
+function readDisplayWeight(valueInKilograms) {
+  return displayWeight(valueInKilograms, weightUnit.value)
+}
+
+function readStoredWeight(value) {
+  return storeWeight(value, weightUnit.value)
 }
 
 function setWeightUnit(unit) {

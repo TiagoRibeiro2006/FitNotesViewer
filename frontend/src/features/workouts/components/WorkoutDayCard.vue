@@ -1,6 +1,7 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
 import { useDragList } from '../../../shared/composables/useDragList'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 defineProps({
   dateLabel: { type: String, required: true },
@@ -12,6 +13,7 @@ defineProps({
 
 const emit = defineEmits(['add', 'copy', 'edit', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
 const { draggingIndex, startDrag } = useDragList(moveExercise, saveExerciseOrder)
+const { displayWeight, weightUnit } = useWeightUnitPreference()
 
 function moveExercise(fromIndex, toIndex) {
   emit('move-exercise', fromIndex, toIndex)
@@ -83,7 +85,7 @@ function saveExerciseOrder() {
                 </svg>
                 <span v-else>{{ setIndex + 1 }}</span>
               </span>
-              <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(set.weight) }}</span> kg</span>
+              <span class="exercise-set-weight"><span class="exercise-set-value">{{ formatNumber(displayWeight(set.weight)) }}</span> {{ weightUnit }}</span>
               <span class="exercise-set-reps"><span class="exercise-set-value">{{ set.reps }}</span> reps</span>
             </span>
           </span>
