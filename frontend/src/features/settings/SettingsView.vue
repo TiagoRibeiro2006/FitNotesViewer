@@ -114,13 +114,13 @@ function dataDeleted() {
   <AppSectionHeader title="Settings" />
 
   <div class="settings-sections">
-    <SettingsUnitsSection />
-
     <SettingsManagementSection
       @manage-muscles="openMuscles"
       @manage-exercises="openExercises"
       @manage-body-items="openBodyItems"
     />
+
+    <SettingsUnitsSection />
 
     <SettingsAiLogsSection @open-logs="openChatLogs" />
 

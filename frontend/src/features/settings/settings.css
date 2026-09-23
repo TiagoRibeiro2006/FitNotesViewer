@@ -139,9 +139,8 @@
 
 .settings-unit-option {
   min-height: 62px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  place-items: center;
   padding: 10px 12px;
   border: 1px solid #303036;
   border-radius: var(--box-radius);
@@ -161,10 +160,6 @@
   color: #c7c7cc;
   font-size: 13px;
   font-weight: 850;
-}
-
-.settings-unit-option strong {
-  font-size: 14px;
 }
 
 .settings-unit-option.is-selected {

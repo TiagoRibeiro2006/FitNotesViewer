@@ -31,11 +31,11 @@ function selectUnit(unit) {
         class="settings-unit-option"
         :class="{ 'is-selected': weightUnit === option.id }"
         type="button"
+        :aria-label="option.label"
         :aria-pressed="weightUnit === option.id"
         @click="selectUnit(option.id)"
       >
         <span>{{ option.symbol }}</span>
-        <strong>{{ option.label }}</strong>
       </button>
     </div>
   </section>
