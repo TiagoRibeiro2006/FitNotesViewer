@@ -2,10 +2,12 @@
 import { computed, ref } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { calculateRepMaxTable } from '../oneRepMaxCalculator'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const weight = ref('')
 const reps = ref('')
 const table = computed(readTable)
+const { weightUnit } = useWeightUnitPreference()
 
 function readTable() {
   return calculateRepMaxTable(weight.value, reps.value)
@@ -22,7 +24,7 @@ function hasValue(row) {
 
     <div class="rep-max-inputs">
       <label>
-        <span>Weight (kg)</span>
+        <span>Weight ({{ weightUnit }})</span>
         <input v-model="weight" type="text" inputmode="decimal" placeholder="0" />
       </label>
       <label>
@@ -37,7 +39,7 @@ function hasValue(row) {
           <strong>{{ row.targetReps }}</strong>
           <span>RM</span>
         </div>
-        <strong v-if="hasValue(row)" class="rep-max-result">{{ formatNumber(row.weight) }} <small>kg</small></strong>
+        <strong v-if="hasValue(row)" class="rep-max-result">{{ formatNumber(row.weight) }} <small>{{ weightUnit }}</small></strong>
         <span v-else class="exercise-record-empty">—</span>
       </div>
     </div>
