@@ -141,6 +141,10 @@ function exerciseStyle(exercise) {
 
     <ExerciseHistoryPanel v-if="showHistory" :exercise-id="exercise.id" />
     <ExerciseRecordsPanel v-if="showRecords" :exercise-id="exercise.id" />
-    <ExerciseOneRepMaxPanel v-if="showCalculator" />
+    <ExerciseOneRepMaxPanel
+      v-if="showCalculator"
+      :initial-weight="sets[0]?.weight"
+      :initial-reps="sets[0]?.reps"
+    />
   </div>
 </template>
