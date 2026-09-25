@@ -29,15 +29,28 @@ The project deliberately avoids a large UI framework. Its interface is built wit
 
 ## Application structure
 
-The source code is separated by responsibility:
+```text
+FitNotesViewer/
+├── docs/
+│   └── images/        # Images used in the project documentation
+├── public/
+│   └── icons/         # App icons and static installable-app files
+├── src/               # Application source code
+├── tests/             # Automated tests and fixtures
+├── index.html
+├── package.json
+└── vite.config.js
+```
 
-- `app` starts the application, controls the main navigation and background services.
-- `features` contains user-facing areas such as Body, Calendar, Log, Charts and Settings.
-- `data` owns IndexedDB access, repositories, default catalogues and data mapping.
-- `fitnotes` reads, validates, imports, updates and exports `.fitnotes` and `.csv` files.
-- `ai` contains the local training, body-weight and chatbot analysis engines.
-- `shared` contains reusable components, models and utilities.
-- `styles` contains shared visual rules used throughout the app.
+Inside `src`, the code is separated by responsibility:
+
+- `src/app` starts the application, controls the main navigation and background services.
+- `src/features` contains user-facing areas such as Body, Calendar, Log, Charts and Settings.
+- `src/data` owns IndexedDB access, repositories, default catalogues and data mapping.
+- `src/fitnotes` reads, validates, imports, updates and exports `.fitnotes` and `.csv` files.
+- `src/ai` contains the local training, body-weight and chatbot analysis engines.
+- `src/shared` contains reusable components, models and utilities.
+- `src/styles` contains shared visual rules used throughout the app.
 
 Vue components focus on presentation and interaction, while repositories and small service functions handle storage and domain operations. This keeps individual files easier to understand and change.
 
