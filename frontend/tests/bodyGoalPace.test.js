@@ -46,3 +46,10 @@ test('body feedback reports cut pace per week and includes the target range', ()
   assert.match(feedback, /% per week/)
   assert.match(feedback, /-0\.5% to -1%/)
 })
+
+test('body feedback presents the absolute change in the selected unit', () => {
+  const result = evaluateBodyWeightGoal(trend(1), 'bulking')
+  const feedback = generateBodyWeightFeedback(trend(1), result, 'bulking', 'lb')
+
+  assert.match(feedback, /\+2\.2 lb/)
+})

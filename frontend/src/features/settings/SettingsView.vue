@@ -11,6 +11,7 @@ import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import SettingsAiLogsSection from './components/SettingsAiLogsSection.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
+import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -118,6 +119,8 @@ function dataDeleted() {
       @manage-exercises="openExercises"
       @manage-body-items="openBodyItems"
     />
+
+    <SettingsUnitsSection />
 
     <SettingsAiLogsSection @open-logs="openChatLogs" />
 

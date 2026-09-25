@@ -1,10 +1,16 @@
 import { formatDate } from '../../shared/utils/dates'
 import { formatNumber } from '../../shared/utils/numbers'
+import {
+  displayMeasurementUnit,
+  displayMeasurementValue,
+} from '../../shared/units/weightUnits'
 
-export function formatBodyValue(item) {
+export function formatBodyValue(item, weightUnit) {
   if (item.value === null) return 'No data yet'
-  const separator = item.unit === '%' ? '' : ' '
-  return `${formatNumber(item.value)}${separator}${item.unit}`
+  const value = displayMeasurementValue(item.value, item.unit, weightUnit)
+  const unit = displayMeasurementUnit(item.unit, weightUnit)
+  const separator = unit === '%' ? '' : ' '
+  return `${formatNumber(value)}${separator}${unit}`
 }
 
 export function formatBodyEntryDate(item) {

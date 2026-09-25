@@ -2,7 +2,7 @@ import { evaluateBodyWeightGoal } from './evaluateBodyWeightGoal.js'
 import { generateBodyWeightFeedback } from './generateBodyWeightFeedback.js'
 import { calculateBodyWeightTrend } from './metrics/bodyWeightTrend.js'
 
-export function analyzeBodyWeight(records, goal) {
+export function analyzeBodyWeight(records, goal, weightUnit) {
   const trend = calculateBodyWeightTrend(records)
   const rating = evaluateBodyWeightGoal(trend, goal)
 
@@ -10,6 +10,6 @@ export function analyzeBodyWeight(records, goal) {
     goal,
     ...trend,
     rating,
-    feedback: generateBodyWeightFeedback(trend, rating, goal),
+    feedback: generateBodyWeightFeedback(trend, rating, goal, weightUnit),
   }
 }

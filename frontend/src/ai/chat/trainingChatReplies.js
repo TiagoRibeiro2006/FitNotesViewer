@@ -1,8 +1,13 @@
-export function createTrainingChatReply(intent, language, statistics, entity) {
+import {
+  displayWeight,
+  normalizeWeightUnit,
+} from '../../shared/units/weightUnits.js'
+
+export function createTrainingChatReply(intent, language, statistics, entity, weightUnit) {
   if (intent === 'greeting') return greetingReply(language)
   if (intent === 'help') return helpReply(language)
   if (!statistics.totalSets) return emptyTrainingReply(language)
-  if (entity && supportsEntity(intent)) return entityReply(intent, language, entity)
+  if (entity && supportsEntity(intent)) return entityReply(intent, language, entity, weightUnit)
   if (intent === 'summary') return summaryReply(language, statistics)
   if (intent === 'total-sets') return totalSetsReply(language, statistics)
   if (intent === 'total-reps') return totalRepsReply(language, statistics)
@@ -12,10 +17,10 @@ export function createTrainingChatReply(intent, language, statistics, entity) {
   if (intent === 'top-muscle') return topMuscleReply(language, statistics)
   if (intent === 'least-muscle') return leastMuscleReply(language, statistics)
   if (intent === 'top-exercise') return topExerciseReply(language, statistics)
-  if (intent === 'volume') return volumeReply(language, statistics)
+  if (intent === 'volume') return volumeReply(language, statistics, weightUnit)
   if (intent === 'progress') return progressReply(language, statistics)
   if (intent === 'recent-workout') return recentWorkoutReply(language, statistics)
-  if (intent === 'best-set') return bestSetReply(language, statistics.heaviestSet)
+  if (intent === 'best-set') return bestSetReply(language, statistics.heaviestSet, weightUnit)
   if (intent === 'date-range') return dateRangeReply(language, statistics)
   if (intent === 'distribution') return distributionReply(language, statistics)
   if (intent === 'advice') return adviceReply(language, statistics)
@@ -175,9 +180,9 @@ function topExerciseReply(language, statistics) {
     + ' across ' + pluralize(exercise.workouts, 'workout', 'workouts') + '.'
 }
 
-function volumeReply(language, statistics) {
-  if (language === 'pt') return 'O volume total registado é ' + formatVolume(statistics.totalVolume, language) + '.'
-  return 'Your recorded total training volume is ' + formatVolume(statistics.totalVolume, language) + '.'
+function volumeReply(language, statistics, weightUnit) {
+  if (language === 'pt') return 'O volume total registado é ' + formatVolume(statistics.totalVolume, language, weightUnit) + '.'
+  return 'Your recorded total training volume is ' + formatVolume(statistics.totalVolume, language, weightUnit) + '.'
 }
 
 function progressReply(language, statistics) {
@@ -209,17 +214,17 @@ function recentWorkoutReply(language, statistics) {
     + ', with ' + pluralize(workout.reps, 'rep', 'reps') + '.'
 }
 
-function bestSetReply(language, set) {
+function bestSetReply(language, set, weightUnit) {
   if (!set) return emptyTrainingReply(language)
   const exercise = set.exerciseName || (language === 'pt' ? 'exercício desconhecido' : 'unknown exercise')
 
   if (language === 'pt') {
-    return 'O set com mais peso foi ' + formatWeight(set.weight, language) + ' × '
+    return 'O set com mais peso foi ' + formatWeight(set.weight, language, weightUnit) + ' × '
       + pluralize(set.reps, 'repetição', 'repetições') + ' em ' + exercise
       + formatOptionalDate(set.date, language) + '.'
   }
 
-  return 'Your heaviest set was ' + formatWeight(set.weight, language) + ' × '
+  return 'Your heaviest set was ' + formatWeight(set.weight, language, weightUnit) + ' × '
     + pluralize(set.reps, 'rep', 'reps') + ' on ' + exercise
     + formatOptionalDate(set.date, language) + '.'
 }
@@ -275,17 +280,17 @@ function adviceReply(language, statistics) {
   return 'Your history does not show an obvious issue. Keep repeating your main exercises and aim for small improvements in weight or reps without losing consistency.'
 }
 
-function entityReply(intent, language, entity) {
+function entityReply(intent, language, entity, weightUnit) {
   const group = entity.group
   if (intent === 'total-sets') return entitySetsReply(language, group)
   if (intent === 'total-reps') return entityRepsReply(language, group)
   if (intent === 'workout-count' || intent === 'frequency') return entityFrequencyReply(language, group)
-  if (intent === 'volume') return entityVolumeReply(language, group)
-  if (intent === 'best-set') return entityBestSetReply(language, entity)
-  return entitySummaryReply(language, entity)
+  if (intent === 'volume') return entityVolumeReply(language, group, weightUnit)
+  if (intent === 'best-set') return entityBestSetReply(language, entity, weightUnit)
+  return entitySummaryReply(language, entity, weightUnit)
 }
 
-function entitySummaryReply(language, entity) {
+function entitySummaryReply(language, entity, weightUnit) {
   const group = entity.group
   const label = entity.type === 'muscle'
     ? (language === 'pt' ? 'músculo' : 'muscle')
@@ -295,13 +300,13 @@ function entitySummaryReply(language, entity) {
     return group.name + ' é um ' + label + ' com ' + pluralize(group.sets, 'set', 'sets')
       + ' em ' + pluralize(group.workouts, 'treino', 'treinos')
       + '. Representa ' + formatPercentage(group.distribution, language)
-      + ' dos teus sets e soma ' + formatVolume(group.volume, language) + ' de volume.'
+      + ' dos teus sets e soma ' + formatVolume(group.volume, language, weightUnit) + ' de volume.'
   }
 
   return group.name + ' is a logged ' + label + ' with ' + pluralize(group.sets, 'set', 'sets')
     + ' across ' + pluralize(group.workouts, 'workout', 'workouts')
     + '. It represents ' + formatPercentage(group.distribution, language)
-    + ' of your sets and ' + formatVolume(group.volume, language) + ' of volume.'
+    + ' of your sets and ' + formatVolume(group.volume, language, weightUnit) + ' of volume.'
 }
 
 function entitySetsReply(language, group) {
@@ -319,23 +324,23 @@ function entityFrequencyReply(language, group) {
   return group.name + ' appears in ' + pluralize(group.workouts, 'different workout', 'different workouts') + '.'
 }
 
-function entityVolumeReply(language, group) {
-  if (language === 'pt') return group.name + ' tem ' + formatVolume(group.volume, language) + ' de volume registado.'
-  return group.name + ' has ' + formatVolume(group.volume, language) + ' of logged volume.'
+function entityVolumeReply(language, group, weightUnit) {
+  if (language === 'pt') return group.name + ' tem ' + formatVolume(group.volume, language, weightUnit) + ' de volume registado.'
+  return group.name + ' has ' + formatVolume(group.volume, language, weightUnit) + ' of logged volume.'
 }
 
-function entityBestSetReply(language, entity) {
+function entityBestSetReply(language, entity, weightUnit) {
   const set = entity.group.bestSet
   if (!set) return emptyTrainingReply(language)
 
   if (language === 'pt') {
     return 'O melhor set registado de ' + entity.group.name + ' por peso foi '
-      + formatWeight(set.weight, language) + ' × ' + pluralize(set.reps, 'repetição', 'repetições')
+      + formatWeight(set.weight, language, weightUnit) + ' × ' + pluralize(set.reps, 'repetição', 'repetições')
       + formatOptionalDate(set.date, language) + '.'
   }
 
   return 'The heaviest logged set for ' + entity.group.name + ' was '
-    + formatWeight(set.weight, language) + ' × ' + pluralize(set.reps, 'rep', 'reps')
+    + formatWeight(set.weight, language, weightUnit) + ' × ' + pluralize(set.reps, 'rep', 'reps')
     + formatOptionalDate(set.date, language) + '.'
 }
 
@@ -368,12 +373,14 @@ function formatPercentage(value, language) {
   return formatNumber(value, language) + '%'
 }
 
-function formatWeight(value, language) {
-  return formatNumber(value, language) + ' kg'
+function formatWeight(value, language, weightUnit) {
+  const unit = normalizeWeightUnit(weightUnit)
+  return formatNumber(displayWeight(value, unit), language) + ' ' + unit
 }
 
-function formatVolume(value, language) {
-  return Number(value).toLocaleString(readLocale(language), { maximumFractionDigits: 1 }) + ' kg'
+function formatVolume(value, language, weightUnit) {
+  const unit = normalizeWeightUnit(weightUnit)
+  return Number(displayWeight(value, unit)).toLocaleString(readLocale(language), { maximumFractionDigits: 1 }) + ' ' + unit
 }
 
 function formatDateRange(statistics, language) {

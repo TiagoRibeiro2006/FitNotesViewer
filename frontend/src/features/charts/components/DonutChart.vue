@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 const props = defineProps({
   entries: { type: Array, required: true },
@@ -15,6 +16,7 @@ const segments = computed(buildSegments)
 const total = computed(calculateTotal)
 const selectedSegment = computed(readSelectedSegment)
 const popoverStyle = computed(buildPopoverStyle)
+const { displayWeight, weightUnit } = useWeightUnitPreference()
 
 onMounted(addOutsideListener)
 onBeforeUnmount(removeOutsideListener)
@@ -113,13 +115,17 @@ function handleOutsidePointer(event) {
 }
 
 function formatTotal() {
-  return compactNumber(total.value)
+  return compactNumber(readDisplayValue(total.value))
 }
 
 function formatEntryValue(entry) {
-  const value = compactNumber(entry.chartValue)
-  if (props.metric === 'volume') return `${value} kg`
+  const value = compactNumber(readDisplayValue(entry.chartValue))
+  if (props.metric === 'volume') return `${value} ${weightUnit.value}`
   return `${value} ${props.metricLabel}`
+}
+
+function readDisplayValue(value) {
+  return props.metric === 'volume' ? displayWeight(value) : value
 }
 
 function formatPercentage(entry) {

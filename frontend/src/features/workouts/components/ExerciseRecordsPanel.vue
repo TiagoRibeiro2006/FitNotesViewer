@@ -4,12 +4,14 @@ import { formatDate } from '../../../shared/utils/dates'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { useExerciseHistory } from '../composables/useExerciseHistory'
 import { buildExerciseRecords } from '../exerciseRecords'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const props = defineProps({
   exerciseId: { type: [Number, String], required: true },
 })
 
 const { days, error, loading, load } = useExerciseHistory()
+const { displayWeight, weightUnit } = useWeightUnitPreference()
 const records = computed(readRecords)
 
 watch(readExerciseId, load, { immediate: true })
@@ -46,7 +48,7 @@ function isExact(record) {
         </div>
 
         <div v-if="hasValue(record)" class="exercise-record-result" :class="{ 'is-higher-reps': !isExact(record) }">
-          <strong>{{ formatNumber(record.weight) }} <small>kg ×</small> {{ record.reps }}</strong>
+          <strong>{{ formatNumber(displayWeight(record.weight)) }} <small>{{ weightUnit }} ×</small> {{ record.reps }}</strong>
           <time :datetime="record.date">{{ formatDate(record.date) }}</time>
         </div>
         <span v-else class="exercise-record-empty">—</span>

@@ -12,13 +12,14 @@ const GOAL_TARGETS = {
   maintenance: 'roughly stable body weight',
 }
 
-export function generateBodyWeightFeedback(trend, rating, goal) {
+export function generateBodyWeightFeedback(trend, rating, goal, weightUnit) {
   if (!trend?.hasEnoughData) {
     return 'Add at least two Body Weight values on different days before generating a trend analysis.'
   }
 
   const pace = formatPace(trend, goal)
-  const change = formatSignedNumber(trend.change) + ' kg'
+  const unit = normalizeWeightUnit(weightUnit)
+  const change = formatSignedNumber(displayWeight(trend.change, unit)) + ' ' + unit
   const goalLabel = GOAL_LABELS[goal] ?? 'your goal'
   const target = GOAL_TARGETS[goal]
   let feedback = 'Your weight changed by ' + change + ' over '
@@ -57,3 +58,7 @@ function formatSignedNumber(value) {
   const rounded = Number(value).toLocaleString('en-US', { maximumFractionDigits: 2 })
   return value > 0 ? '+' + rounded : rounded
 }
+import {
+  displayWeight,
+  normalizeWeightUnit,
+} from '../../shared/units/weightUnits.js'

@@ -3,12 +3,14 @@ import { watch } from 'vue'
 import { formatDate } from '../../../shared/utils/dates'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { useExerciseHistory } from '../composables/useExerciseHistory'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const props = defineProps({
   exerciseId: { type: [Number, String], required: true },
 })
 
 const { days, error, loading, load } = useExerciseHistory()
+const { displayWeight, weightUnit } = useWeightUnitPreference()
 
 watch(readExerciseId, load, { immediate: true })
 
@@ -38,7 +40,7 @@ function readExerciseId() {
           </svg>
           <span v-else>{{ index + 1 }}</span>
         </span>
-        <strong>{{ formatNumber(set.weight) }} <small>kg</small></strong>
+        <strong>{{ formatNumber(displayWeight(set.weight)) }} <small>{{ weightUnit }}</small></strong>
         <strong>{{ formatNumber(set.reps) }} <small>reps</small></strong>
       </div>
     </article>

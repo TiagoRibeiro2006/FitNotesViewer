@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 const props = defineProps({
   error: { type: String, default: '' },
@@ -10,6 +11,7 @@ const emit = defineEmits(['close', 'save'])
 const name = ref('')
 const unit = ref('kg')
 const canSave = computed(readCanSave)
+const { weightUnit } = useWeightUnitPreference()
 
 function readCanSave() {
   return name.value.trim().length > 0
@@ -51,7 +53,7 @@ function submit() {
       <label>
         <span>Unit</span>
         <select v-model="unit">
-          <option value="kg">kg</option>
+          <option value="kg">{{ weightUnit }}</option>
           <option value="cm">cm</option>
           <option value="%">%</option>
         </select>

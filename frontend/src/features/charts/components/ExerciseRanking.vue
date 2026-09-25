@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatNumber } from '../../../shared/utils/numbers.js'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
 const props = defineProps({
   exercises: { type: Array, required: true },
@@ -9,6 +10,7 @@ const props = defineProps({
 
 const ranking = computed(buildRanking)
 const maximum = computed(readMaximum)
+const { displayWeight, weightUnit } = useWeightUnitPreference()
 
 function buildRanking() {
   return [...props.exercises]
@@ -31,11 +33,12 @@ function barStyle(exercise) {
 }
 
 function formatValue(exercise) {
-  const value = Number(exercise[props.metric]) || 0
+  const storedValue = Number(exercise[props.metric]) || 0
+  const value = props.metric === 'volume' ? displayWeight(storedValue) : storedValue
   const formatted = value >= 10000
     ? new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value)
     : formatNumber(value)
-  return props.metric === 'volume' ? `${formatted} kg` : formatted
+  return props.metric === 'volume' ? `${formatted} ${weightUnit.value}` : formatted
 }
 </script>
 

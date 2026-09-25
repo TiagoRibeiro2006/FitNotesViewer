@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { formatBodyEntryDate } from '../bodyFormatters'
+import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -14,6 +15,11 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save', 'delete'])
 const value = ref('')
 const deleteConfirming = ref(false)
+const {
+  displayMeasurementUnit,
+  displayMeasurementValue,
+  storeMeasurementValue,
+} = useWeightUnitPreference()
 
 const canSave = computed(() => {
   const text = String(value.value).trim()
@@ -25,7 +31,9 @@ const canSave = computed(() => {
 watch(() => [props.open, props.record], resetForm)
 
 function resetForm() {
-  value.value = props.record?.value ?? ''
+  value.value = props.record
+    ? displayMeasurementValue(props.record.value, props.item.unit)
+    : ''
   deleteConfirming.value = false
 }
 
@@ -34,7 +42,8 @@ function close() {
 }
 
 function submit() {
-  if (canSave.value && !props.saving) emit('save', value.value)
+  if (!canSave.value || props.saving) return
+  emit('save', storeMeasurementValue(value.value, props.item.unit))
 }
 
 function requestDelete() {
@@ -78,7 +87,7 @@ function requestDelete() {
           inputmode="decimal"
           autocomplete="off"
         />
-        <span v-if="item.unit">{{ item.unit }}</span>
+        <span v-if="item.unit">{{ displayMeasurementUnit(item.unit) }}</span>
       </div>
 
       <p v-if="error" class="editor-error body-value-error">{{ error }}</p>

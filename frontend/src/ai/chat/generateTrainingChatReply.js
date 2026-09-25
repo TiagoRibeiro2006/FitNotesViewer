@@ -6,12 +6,12 @@ import { classifyTrainingIntent } from './trainingIntentClassifier.js'
 import { refineTrainingIntent } from './trainingIntentHints.js'
 import { detectTrainingQuestionLanguage } from './trainingQuestionLanguage.js'
 
-export function generateTrainingChatReply(question, sets) {
+export function generateTrainingChatReply(question, sets, weightUnit) {
   const language = detectTrainingQuestionLanguage(question)
   const classifiedIntent = classifyTrainingIntent(TRAINING_CHAT_MODEL, question)
   const intent = refineTrainingIntent(question, classifiedIntent)
   const statistics = buildTrainingChatStatistics(sets)
   const entity = findTrainingEntity(question, statistics)
 
-  return createTrainingChatReply(intent, language, statistics, entity)
+  return createTrainingChatReply(intent, language, statistics, entity, weightUnit)
 }
