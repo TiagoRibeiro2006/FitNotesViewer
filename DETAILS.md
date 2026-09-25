@@ -6,7 +6,7 @@ FitNotesViewer was designed primarily for iPhone and iOS users. Publishing a nat
 
 The website behaves like an installable app through Progressive Web App features. It can be added to the home screen, opens in its own standalone window and, after the required files have been loaded once, continues working without an internet connection.
 
-There is no backend, user account or remote database. Training data never needs to be sent to a server: it is stored locally by the browser on the user's device. Internally this uses IndexedDB, which is the browser's local structured storage, rather than a central online database.
+FitNotesViewer does not require user accounts or a remote database. Training data stays on the user's device and is stored with IndexedDB, the browser's local structured storage.
 
 This approach also allows the same application to work on Android and desktop browsers without maintaining separate native versions.
 
@@ -99,7 +99,7 @@ The chatbot uses local tokenisation, intent classification, entity matching and 
 
 ## Development and verification
 
-The frontend lives in the `frontend` directory. The main commands are:
+Run the development commands from the `frontend` directory:
 
 ```text
 npm install
