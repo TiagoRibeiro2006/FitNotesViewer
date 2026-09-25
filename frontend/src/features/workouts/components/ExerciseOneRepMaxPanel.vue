@@ -8,8 +8,13 @@ import {
   nextRepMaxWeightUnit,
 } from '../oneRepMaxUnitConverter.js'
 
-const weight = ref('')
-const reps = ref('')
+const props = defineProps({
+  initialWeight: { type: [Number, String], default: '' },
+  initialReps: { type: [Number, String], default: '' },
+})
+
+const weight = ref(props.initialWeight)
+const reps = ref(props.initialReps)
 const table = computed(readTable)
 const { weightUnit } = useWeightUnitPreference()
 const calculatorUnit = ref(weightUnit.value)
