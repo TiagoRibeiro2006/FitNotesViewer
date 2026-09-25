@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/icons/icon-192.png" width="96" height="96" alt="FitNotesViewer icon">
+  <img src="public/icons/icon-192.png" width="96" height="96" alt="FitNotesViewer icon">
 </p>
 
 <h1 align="center">FitNotesViewer</h1>

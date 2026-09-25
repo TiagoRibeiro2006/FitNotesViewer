@@ -99,7 +99,7 @@ The chatbot uses local tokenisation, intent classification, entity matching and 
 
 ## Development and verification
 
-Run the development commands from the `frontend` directory:
+Run the development commands from the project root:
 
 ```text
 npm install

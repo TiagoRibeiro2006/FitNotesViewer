@@ -1,7 +1,7 @@
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
+# Generated application files
+node_modules/
+dist/
+.env
 
 # IDE
 .vscode/
