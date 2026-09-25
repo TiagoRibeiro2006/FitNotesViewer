@@ -50,6 +50,21 @@ export function selectTrainingChat(chatId) {
   return true
 }
 
+export function deleteTrainingChat(chatId) {
+  const index = findChatIndex(chatId)
+  if (index < 0) return false
+
+  const deletingActiveChat = activeChatId.value === chatId
+  chats.value.splice(index, 1)
+
+  if (deletingActiveChat) {
+    if (chats.value.length) activeChatId.value = chats.value[0].id
+    else createTrainingChat()
+  }
+
+  return true
+}
+
 export function addTrainingChatMessage(role, text) {
   const chat = findActiveChat()
   if (!chat) return null
@@ -86,6 +101,13 @@ function findChat(chatId) {
     if (chat.id === chatId) return chat
   }
   return null
+}
+
+function findChatIndex(chatId) {
+  for (let index = 0; index < chats.value.length; index += 1) {
+    if (chats.value[index].id === chatId) return index
+  }
+  return -1
 }
 
 function readActiveMessages() {
