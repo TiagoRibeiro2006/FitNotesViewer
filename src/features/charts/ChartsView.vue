@@ -1,11 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
+import { useChartSectionPreference } from './composables/useChartSectionPreference.js'
 
-const activeSection = ref('body')
+const { activeSection, selectSection } = useChartSectionPreference()
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -15,13 +16,6 @@ async function initializeCharts() {
   window.scrollTo({ top: 0, behavior: 'auto' })
 }
 
-function showBodyCharts() {
-  activeSection.value = 'body'
-}
-
-function showTrainingCharts() {
-  activeSection.value = 'training'
-}
 </script>
 
 <template>
@@ -31,14 +25,16 @@ function showTrainingCharts() {
     <button
       type="button"
       :class="{ 'is-active': activeSection === 'body' }"
-      @click="showBodyCharts"
+      :aria-pressed="activeSection === 'body'"
+      @click="selectSection('body')"
     >
       Body
     </button>
     <button
       type="button"
       :class="{ 'is-active': activeSection === 'training' }"
-      @click="showTrainingCharts"
+      :aria-pressed="activeSection === 'training'"
+      @click="selectSection('training')"
     >
       Training
     </button>
