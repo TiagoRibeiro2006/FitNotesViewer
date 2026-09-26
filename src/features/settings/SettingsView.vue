@@ -1,15 +1,7 @@
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
-import TrainingChatLogsModal from '../ai-chat/components/TrainingChatLogsModal.vue'
-import {
-  createTrainingChat,
-  deleteTrainingChat,
-  selectTrainingChat,
-  useTrainingChatSessionStore,
-} from '../ai-chat/services/trainingChatSessionStore.js'
 import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
-import SettingsAiLogsSection from './components/SettingsAiLogsSection.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
@@ -23,12 +15,9 @@ const emit = defineEmits([
   'data-imported',
   'data-deleted',
   'manage-body-items',
-  'open-training-chat',
 ])
 const catalogMode = ref('muscles')
 const catalogOpen = ref(false)
-const chatLogsOpen = ref(false)
-const { activeChatId, chatSummaries } = useTrainingChatSessionStore()
 
 onMounted(initializeSettingsView)
 watch(readFocusDataImport, focusDataImport)
@@ -82,30 +71,6 @@ function closeCatalog() {
   catalogOpen.value = false
 }
 
-function openChatLogs() {
-  chatLogsOpen.value = true
-}
-
-function closeChatLogs() {
-  chatLogsOpen.value = false
-}
-
-function createChat() {
-  createTrainingChat()
-  closeChatLogs()
-  emit('open-training-chat')
-}
-
-function selectChat(chatId) {
-  if (!selectTrainingChat(chatId)) return
-  closeChatLogs()
-  emit('open-training-chat')
-}
-
-function deleteChat(chatId) {
-  deleteTrainingChat(chatId)
-}
-
 function dataImported(summary) {
   emit('data-imported', summary)
 }
@@ -127,8 +92,6 @@ function dataDeleted() {
 
     <SettingsUnitsSection />
 
-    <SettingsAiLogsSection @open-logs="openChatLogs" />
-
     <SettingsDataSection
       :summary="summary"
       @data-imported="dataImported"
@@ -140,15 +103,5 @@ function dataDeleted() {
     :open="catalogOpen"
     :mode="catalogMode"
     @close="closeCatalog"
-  />
-
-  <TrainingChatLogsModal
-    :open="chatLogsOpen"
-    :chats="chatSummaries"
-    :active-chat-id="activeChatId"
-    @close="closeChatLogs"
-    @create="createChat"
-    @select="selectChat"
-    @delete="deleteChat"
   />
 </template>
