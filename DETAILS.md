@@ -48,7 +48,6 @@ Inside `src`, the code is separated by responsibility:
 - `src/features` contains user-facing areas such as Body, Calendar, Log, Charts and Settings.
 - `src/data` owns IndexedDB access, repositories, default catalogues and data mapping.
 - `src/fitnotes` reads, validates, imports, updates and exports `.fitnotes` and `.csv` files.
-- `src/ai` contains the local training, body-weight and chatbot analysis engines.
 - `src/shared` contains reusable components, models and utilities.
 - `src/styles` contains shared visual rules used throughout the app.
 
@@ -62,7 +61,6 @@ All imported and newly created information is stored in IndexedDB on the current
 - weights, repetitions, distance and duration;
 - muscles and exercise catalogues;
 - body measurements and their history;
-- locally generated analysis and AI chat history;
 - app metadata and the original backup when available.
 
 The app does not require authentication, analytics tracking or an external API. Deleting the app's browser data also removes its local information, so regular `.fitnotes` or `.csv` exports are recommended as backups.
@@ -83,32 +81,7 @@ The project contains its own CSV reader and writer. It supports FitNotes exports
 
 Vite generates a versioned service worker during the production build. It stores the application shell, JavaScript, CSS, icons and SQLite WebAssembly file in the browser cache. Navigation uses the network when it is available and falls back to the cached app when it is not.
 
-The first visit still requires a connection to download the website. After that initial load, normal use, data editing, charts, import/export and local analysis can work offline.
-
-## How the AI works
-
-The AI features run entirely on the device and do not use an external LLM, cloud model or machine-learning service. They are deterministic JavaScript analysis engines: the same input always produces the same result.
-
-### Training analysis
-
-The training engine calculates metrics such as:
-
-- workout and muscle frequency;
-- sets per muscle and their distribution;
-- upper- and lower-body balance;
-- exercise and set consistency;
-- training volume and progress;
-- activity across a selected date range.
-
-Those metrics are scored and converted into ratings, category details and readable feedback. The analysis explains what stands out and points to possible improvements without sending the workout history away from the device.
-
-### Body-weight analysis
-
-The body engine evaluates the user's weight trend within a selected period and interprets it according to the chosen goal: cutting, maintenance or bulking.
-
-### Training chatbot
-
-The chatbot uses local tokenisation, intent classification, entity matching and calculated training statistics. It can recognise supported questions about workouts, muscles, exercises, volume, frequency and progress, then build a response from the user's own data. It is intentionally limited to the training information that the app can verify.
+The first visit still requires a connection to download the website. After that initial load, normal use, data editing, charts and import/export can work offline.
 
 ## Development and verification
 

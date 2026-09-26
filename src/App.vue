@@ -20,7 +20,6 @@ const { summary, appReady, initializationError, initializing, initializeApp } = 
   startBackgroundServices,
 )
 const bodyManagementRequested = ref(false)
-const trainingChatRequested = ref(false)
 const settingsImportRequested = ref(false)
 const emptyImportPromptDismissed = ref(false)
 const showEmptyImportPrompt = computed(readEmptyImportPromptVisibility)
@@ -53,7 +52,6 @@ function handleDataDeleted() {
 
 function handleNavigation(view) {
   bodyManagementRequested.value = false
-  trainingChatRequested.value = false
   settingsImportRequested.value = false
   navigateTo(view)
 }
@@ -61,11 +59,6 @@ function handleNavigation(view) {
 function openBodyManagement() {
   bodyManagementRequested.value = true
   navigateTo('body')
-}
-
-function openTrainingChat() {
-  trainingChatRequested.value = true
-  navigateTo('charts')
 }
 
 function readEmptyImportPromptVisibility() {
@@ -114,10 +107,7 @@ function openDataImport() {
       @select="selectCalendarDate"
     />
 
-    <ChartsView
-      v-else-if="activeView === 'charts'"
-      :open-training-chat="trainingChatRequested"
-    />
+    <ChartsView v-else-if="activeView === 'charts'" />
 
     <SettingsView
       v-else-if="activeView === 'settings'"
@@ -126,7 +116,6 @@ function openDataImport() {
       @data-imported="handleDataImported"
       @data-deleted="handleDataDeleted"
       @manage-body-items="openBodyManagement"
-      @open-training-chat="openTrainingChat"
     />
   </main>
 

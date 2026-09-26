@@ -4,11 +4,7 @@ import { normalizeNonNegativeNumber } from '../../shared/utils/validation'
 import { DEFAULT_BODY_MEASUREMENTS, DEFAULT_BODY_UNITS } from '../defaults/bodyMeasurements'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
-import {
-  buildBodyWeightAssignmentOptions,
-  getBodyWeightDeletionIds,
-  resolveBodyWeightMeasurement,
-} from '../bodyWeightAssignment.js'
+import { getBodyWeightDeletionIds } from '../bodyWeightAssignment.js'
 
 const FAVORITE_DEFINITIONS = [
   { id: 'body-fat', name: 'Body Fat', aliases: ['Body Fat'], unit: '%', field: 'bodyFat' },
@@ -56,37 +52,6 @@ async function ensureDefaultBodyMeasurements(database) {
   for (const unit of DEFAULT_BODY_UNITS) unitStore.put(unit)
   for (const measurement of DEFAULT_BODY_MEASUREMENTS) measurementStore.put(measurement)
   await transactionComplete(transaction)
-}
-
-export async function getBodyWeightAssignmentState() {
-  const tracker = await getBodyTrackerData()
-  const database = await openAppDatabase()
-  const transaction = database.transaction('metadata', 'readonly')
-  const done = transactionComplete(transaction)
-  const assignmentRecord = await requestResult(transaction.objectStore('metadata').get('bodyWeightMeasurementId'))
-  await done
-
-  const assignedId = String(assignmentRecord?.value ?? '')
-  const bodyWeight = resolveBodyWeightMeasurement(tracker.measurements, assignedId)
-
-  return {
-    assignedId: bodyWeight && String(bodyWeight.id) === assignedId ? assignedId : '',
-    bodyWeight,
-    candidates: buildBodyWeightAssignmentOptions(tracker.favorites, tracker.measurements),
-  }
-}
-
-export async function saveBodyWeightAssignment(itemId) {
-  const tracker = await getBodyTrackerData()
-  const candidates = buildBodyWeightAssignmentOptions(tracker.favorites, tracker.measurements)
-  const selected = candidates.find((item) => String(item.id) === String(itemId))
-  if (!selected) throw new Error('Choose a valid weight measurement.')
-
-  const database = await openAppDatabase()
-  const transaction = database.transaction('metadata', 'readwrite')
-  transaction.objectStore('metadata').put({ key: 'bodyWeightMeasurementId', value: String(selected.id) })
-  await transactionComplete(transaction)
-  return selected
 }
 
 export async function saveBodyFavoriteIds(ids) {
