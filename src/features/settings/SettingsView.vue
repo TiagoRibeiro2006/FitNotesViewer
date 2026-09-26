@@ -4,6 +4,7 @@ import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
 import TrainingChatLogsModal from '../ai-chat/components/TrainingChatLogsModal.vue'
 import {
   createTrainingChat,
+  deleteTrainingChat,
   selectTrainingChat,
   useTrainingChatSessionStore,
 } from '../ai-chat/services/trainingChatSessionStore.js'
@@ -101,6 +102,10 @@ function selectChat(chatId) {
   emit('open-training-chat')
 }
 
+function deleteChat(chatId) {
+  deleteTrainingChat(chatId)
+}
+
 function dataImported(summary) {
   emit('data-imported', summary)
 }
@@ -144,5 +149,6 @@ function dataDeleted() {
     @close="closeChatLogs"
     @create="createChat"
     @select="selectChat"
+    @delete="deleteChat"
   />
 </template>
