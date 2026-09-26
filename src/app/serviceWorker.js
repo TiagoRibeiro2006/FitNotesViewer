@@ -1,4 +1,5 @@
 const UPDATE_INTERVAL = 60 * 60 * 1000
+const UPDATE_NOTICE_KEY = 'fitnotes-viewer-update-notice'
 let registration
 let reloadWhenUpdated = false
 let updateReloadStarted = false
@@ -6,6 +7,18 @@ let updateReloadStarted = false
 export function registerServiceWorker() {
   if (!canRegisterServiceWorker()) return
   window.addEventListener('load', register)
+}
+
+export function consumeAppUpdateNotice() {
+  try {
+    const storage = globalThis.sessionStorage
+    if (!storage) return false
+    const shouldShow = storage.getItem(UPDATE_NOTICE_KEY) === 'true'
+    storage.removeItem(UPDATE_NOTICE_KEY)
+    return shouldShow
+  } catch {
+    return false
+  }
 }
 
 function canRegisterServiceWorker() {
@@ -33,7 +46,16 @@ function reloadForUpdate() {
   if (!reloadWhenUpdated || updateReloadStarted) return
 
   updateReloadStarted = true
+  markAppUpdated()
   window.location.reload()
+}
+
+function markAppUpdated() {
+  try {
+    globalThis.sessionStorage?.setItem(UPDATE_NOTICE_KEY, 'true')
+  } catch {
+    // Updating still succeeds when session storage is unavailable.
+  }
 }
 
 function checkWhenVisible() {
