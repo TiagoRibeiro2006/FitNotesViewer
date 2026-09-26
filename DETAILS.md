@@ -6,7 +6,7 @@ FitNotesViewer was designed primarily for iPhone and iOS users. Publishing a nat
 
 The website behaves like an installable app through Progressive Web App features. It can be added to the home screen, opens in its own standalone window and, after the required files have been loaded once, continues working without an internet connection.
 
-There is no backend, user account or remote database. Training data never needs to be sent to a server: it is stored locally by the browser on the user's device. Internally this uses IndexedDB, which is the browser's local structured storage, rather than a central online database.
+FitNotesViewer does not require user accounts or a remote database. Training data stays on the user's device and is stored with IndexedDB, the browser's local structured storage.
 
 This approach also allows the same application to work on Android and desktop browsers without maintaining separate native versions.
 
@@ -29,15 +29,28 @@ The project deliberately avoids a large UI framework. Its interface is built wit
 
 ## Application structure
 
-The source code is separated by responsibility:
+```text
+FitNotesViewer/
+├── docs/
+│   └── images/        # Images used in the project documentation
+├── public/
+│   └── icons/         # App icons and static installable-app files
+├── src/               # Application source code
+├── tests/             # Automated tests and fixtures
+├── index.html
+├── package.json
+└── vite.config.js
+```
 
-- `app` starts the application, controls the main navigation and background services.
-- `features` contains user-facing areas such as Body, Calendar, Log, Charts and Settings.
-- `data` owns IndexedDB access, repositories, default catalogues and data mapping.
-- `fitnotes` reads, validates, imports, updates and exports `.fitnotes` and `.csv` files.
-- `ai` contains the local training, body-weight and chatbot analysis engines.
-- `shared` contains reusable components, models and utilities.
-- `styles` contains shared visual rules used throughout the app.
+Inside `src`, the code is separated by responsibility:
+
+- `src/app` starts the application, controls the main navigation and background services.
+- `src/features` contains user-facing areas such as Body, Calendar, Log, Charts and Settings.
+- `src/data` owns IndexedDB access, repositories, default catalogues and data mapping.
+- `src/fitnotes` reads, validates, imports, updates and exports `.fitnotes` and `.csv` files.
+- `src/ai` contains the local training, body-weight and chatbot analysis engines.
+- `src/shared` contains reusable components, models and utilities.
+- `src/styles` contains shared visual rules used throughout the app.
 
 Vue components focus on presentation and interaction, while repositories and small service functions handle storage and domain operations. This keeps individual files easier to understand and change.
 
@@ -99,7 +112,7 @@ The chatbot uses local tokenisation, intent classification, entity matching and 
 
 ## Development and verification
 
-The frontend lives in the `frontend` directory. The main commands are:
+Run the development commands from the project root:
 
 ```text
 npm install

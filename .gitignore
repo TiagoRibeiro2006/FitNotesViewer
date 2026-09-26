@@ -1,11 +1,7 @@
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-
-# Backend
-backend/bin/
-backend/obj/
+# Generated application files
+node_modules/
+dist/
+.env
 
 # IDE
 .vscode/
