@@ -7,13 +7,15 @@ import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
 import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
+import { useChartSectionPreference } from './composables/useChartSectionPreference.js'
 
 const props = defineProps({
   openTrainingChat: { type: Boolean, default: false },
 })
 
-const activeSection = ref(props.openTrainingChat ? 'training' : 'body')
 const aiEnabled = ref(props.openTrainingChat)
+const { activeSection, selectSection } = useChartSectionPreference()
+if (props.openTrainingChat) selectSection('training')
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -21,14 +23,6 @@ onMounted(initializeCharts)
 async function initializeCharts() {
   await load()
   window.scrollTo({ top: 0, behavior: 'auto' })
-}
-
-function showBodyCharts() {
-  activeSection.value = 'body'
-}
-
-function showTrainingCharts() {
-  activeSection.value = 'training'
 }
 
 function toggleAi() {
@@ -48,14 +42,16 @@ function toggleAi() {
     <button
       type="button"
       :class="{ 'is-active': activeSection === 'body' }"
-      @click="showBodyCharts"
+      :aria-pressed="activeSection === 'body'"
+      @click="selectSection('body')"
     >
       Body
     </button>
     <button
       type="button"
       :class="{ 'is-active': activeSection === 'training' }"
-      @click="showTrainingCharts"
+      :aria-pressed="activeSection === 'training'"
+      @click="selectSection('training')"
     >
       Training
     </button>
