@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
+import AppUpdateNotice from './app/AppUpdateNotice.vue'
+import { consumeAppUpdateNotice } from './app/serviceWorker'
 import {
   loadApplicationSummary,
   startBackgroundServices,
@@ -22,6 +24,7 @@ const { summary, appReady, initializationError, initializing, initializeApp } = 
 const bodyManagementRequested = ref(false)
 const settingsImportRequested = ref(false)
 const emptyImportPromptDismissed = ref(false)
+const updateNoticeVisible = ref(consumeAppUpdateNotice())
 const showEmptyImportPrompt = computed(readEmptyImportPromptVisibility)
 
 const {
@@ -120,6 +123,8 @@ function openDataImport() {
   </main>
 
   <AppBottomNavigation v-if="appReady" :active-view="activeView" @navigate="handleNavigation" />
+
+  <AppUpdateNotice v-if="updateNoticeVisible" @close="updateNoticeVisible = false" />
 
   <EmptyDataImportPrompt
     :open="showEmptyImportPrompt"
