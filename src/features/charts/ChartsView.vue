@@ -1,19 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import AiModeToggle from '../../shared/components/AiModeToggle.vue'
 import AppSectionHeader from '../../shared/components/AppSectionHeader.vue'
-import BodyAiView from '../body/components/BodyAiView.vue'
 import BodyAnalyticsPanel from './components/BodyAnalyticsPanel.vue'
-import TrainingAiPanel from './components/TrainingAiPanel.vue'
 import TrainingAnalyticsPanel from './components/TrainingAnalyticsPanel.vue'
 import { useChartsData } from './composables/useChartsData.js'
 
-const props = defineProps({
-  openTrainingChat: { type: Boolean, default: false },
-})
-
-const activeSection = ref(props.openTrainingChat ? 'training' : 'body')
-const aiEnabled = ref(props.openTrainingChat)
+const activeSection = ref('body')
 const { data, error, loading, load } = useChartsData()
 
 onMounted(initializeCharts)
@@ -30,19 +22,10 @@ function showBodyCharts() {
 function showTrainingCharts() {
   activeSection.value = 'training'
 }
-
-function toggleAi() {
-  aiEnabled.value = !aiEnabled.value
-}
-
 </script>
 
 <template>
-  <AppSectionHeader title="Charts">
-    <template #action>
-      <AiModeToggle :active="aiEnabled" @toggle="toggleAi" />
-    </template>
-  </AppSectionHeader>
+  <AppSectionHeader title="Charts" />
 
   <nav class="charts-section-tabs" aria-label="Chart category">
     <button
@@ -73,17 +56,9 @@ function toggleAi() {
     <button type="button" @click="load">Try again</button>
   </section>
 
-  <BodyAiView v-else-if="activeSection === 'body' && aiEnabled" />
-
   <BodyAnalyticsPanel
     v-else-if="activeSection === 'body'"
     :measurements="data.bodyMeasurements"
-  />
-
-  <TrainingAiPanel
-    v-else-if="aiEnabled"
-    :data="data"
-    :focus-chat="openTrainingChat"
   />
 
   <TrainingAnalyticsPanel v-else :data="data" />
