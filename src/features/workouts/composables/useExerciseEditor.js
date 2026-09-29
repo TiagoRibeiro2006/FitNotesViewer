@@ -69,6 +69,7 @@ export function useExerciseEditor(selectedDate, callbacks = {}) {
     error: sets.error,
     filteredExercises: catalog.filteredExercises,
     hasExistingSets: sets.hasExistingSets,
+    hasUnsavedChanges: sets.hasUnsavedChanges,
     loading: catalog.loading,
     saving: sets.saving,
     searchQuery: catalog.searchQuery,

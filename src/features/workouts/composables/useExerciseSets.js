@@ -11,6 +11,7 @@ import {
   clearSetDraft,
   createEmptySetDrafts,
   createNextSetDraft,
+  createSetDraftFingerprint,
   createSetDrafts,
   createStoredSetDrafts,
   updateSetDraftWeight,
@@ -29,9 +30,11 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
   const progressBaseline = ref({ points: [] })
   const hasExistingSets = ref(false)
   const deleteConfirming = ref(false)
+  const initialDraftFingerprint = ref(createSetDraftFingerprint([]))
   const title = computed(readTitle)
   const canSave = computed(canSaveDrafts)
   const draftProgress = computed(readDraftProgress)
+  const hasUnsavedChanges = computed(readHasUnsavedChanges)
 
   async function open(exercise) {
     selectedExercise.value = exercise
@@ -50,9 +53,11 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
       hasExistingSets.value = currentSets.length > 0
       previousSets.value = createSetDrafts(previous.sets, weightUnit.value)
       draftSets.value = chooseDraftSets(currentSets, previous.sets, weightUnit.value)
+      rememberInitialDrafts()
     } catch {
       error.value = 'Workout history for this exercise could not be loaded.'
       draftSets.value = createEmptySetDrafts()
+      rememberInitialDrafts()
     }
   }
 
@@ -149,6 +154,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     draftSets.value = []
     previousSets.value = []
     progressBaseline.value = { points: [] }
+    rememberInitialDrafts()
   }
 
   function readTitle() {
@@ -164,6 +170,14 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     return calculateDraftProgress(storedDrafts, progressBaseline.value)
   }
 
+  function readHasUnsavedChanges() {
+    return createSetDraftFingerprint(draftSets.value) !== initialDraftFingerprint.value
+  }
+
+  function rememberInitialDrafts() {
+    initialDraftFingerprint.value = createSetDraftFingerprint(draftSets.value)
+  }
+
   return {
     canSave,
     deleteConfirming,
@@ -171,6 +185,7 @@ export function useExerciseSets(selectedDate, callbacks = {}) {
     draftSets,
     error,
     hasExistingSets,
+    hasUnsavedChanges,
     saving,
     selectedExercise,
     title,
