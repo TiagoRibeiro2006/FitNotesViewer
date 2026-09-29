@@ -47,3 +47,11 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
     </div>
   </BaseModal>
 </template>
+
+<style>
+.modal-layer.unsaved-changes-layer {
+  background: rgba(0, 0, 0, .58);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+</style>
