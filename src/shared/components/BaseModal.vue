@@ -1,6 +1,8 @@
 <script setup>
 import { onBeforeUnmount, onMounted, watch } from 'vue'
 
+let openModalCount = 0
+
 const props = defineProps({
   open: { type: Boolean, required: true },
   ariaLabel: { type: String, required: true },
@@ -9,11 +11,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+let bodyLocked = false
 
 watch(readOpenState, updateBodyState)
 
-onMounted(startListening)
-onBeforeUnmount(stopListening)
+onMounted(mount)
+onBeforeUnmount(unmount)
 
 function readOpenState() {
   return props.open
@@ -23,13 +26,21 @@ function startListening() {
   window.addEventListener('keydown', handleKeyDown)
 }
 
-function stopListening() {
+function mount() {
+  startListening()
+  updateBodyState(props.open)
+}
+
+function unmount() {
   window.removeEventListener('keydown', handleKeyDown)
-  if (props.open) document.body.classList.remove('modal-open')
+  updateBodyState(false)
 }
 
 function updateBodyState(open) {
-  document.body.classList.toggle('modal-open', open)
+  if (open === bodyLocked) return
+  bodyLocked = open
+  openModalCount = Math.max(0, openModalCount + (open ? 1 : -1))
+  document.body.classList.toggle('modal-open', openModalCount > 0)
 }
 
 function handleKeyDown(event) {

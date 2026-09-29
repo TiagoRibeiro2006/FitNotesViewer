@@ -61,6 +61,13 @@ export function createStoredSetDrafts(drafts, displayUnit = KILOGRAMS) {
   return storedDrafts
 }
 
+export function createSetDraftFingerprint(drafts) {
+  return JSON.stringify(drafts.map((draft) => ({
+    weight: comparableDraftValue(draft.weight),
+    reps: comparableDraftValue(draft.reps),
+  })))
+}
+
 export function updateSetDraftWeight(draft, value) {
   draft.weight = value
   draft.storedWeight = null
@@ -94,6 +101,13 @@ export function validateSetDrafts(drafts) {
 
 function isBlank(value) {
   return value === '' || value === null || value === undefined
+}
+
+function comparableDraftValue(value) {
+  if (isBlank(value)) return null
+  const normalized = String(value).trim().replace(',', '.')
+  const number = Number(normalized)
+  return Number.isFinite(number) ? number : normalized
 }
 
 function createSetDraft(weight, reps, storedWeight, weightEdited) {

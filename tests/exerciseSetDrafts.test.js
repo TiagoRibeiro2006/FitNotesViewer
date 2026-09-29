@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  createSetDraftFingerprint,
   createNextSetDraft,
   createSetDrafts,
   createStoredSetDrafts,
@@ -33,4 +34,34 @@ test('new sets preserve the conversion state of the source set', () => {
   assert.equal(next.weight, drafts[0].weight)
   assert.equal(next.storedWeight, 80)
   assert.equal(next.weightEdited, false)
+})
+
+test('set draft fingerprints detect meaningful edits and order changes', () => {
+  const original = [
+    { weight: '100', reps: 8 },
+    { weight: '90', reps: 10 },
+  ]
+
+  assert.equal(
+    createSetDraftFingerprint(original),
+    createSetDraftFingerprint([
+      { weight: '100.0', reps: '8' },
+      { weight: 90, reps: '10' },
+    ]),
+  )
+  assert.notEqual(
+    createSetDraftFingerprint(original),
+    createSetDraftFingerprint([...original].reverse()),
+  )
+  assert.notEqual(
+    createSetDraftFingerprint(original),
+    createSetDraftFingerprint([{ weight: '100', reps: 9 }, original[1]]),
+  )
+})
+
+test('set draft fingerprints distinguish blank and invalid edits', () => {
+  assert.notEqual(
+    createSetDraftFingerprint([{ weight: '', reps: '' }]),
+    createSetDraftFingerprint([{ weight: 'invalid', reps: '' }]),
+  )
 })
