@@ -10,6 +10,7 @@ import ExerciseBottomNavigation from './ExerciseBottomNavigation.vue'
 import ExerciseCatalogMenu from './ExerciseCatalogMenu.vue'
 import ExerciseSetEditor from './ExerciseSetEditor.vue'
 import MuscleDetailsEditor from './MuscleDetailsEditor.vue'
+import UnsavedExerciseChangesModal from './UnsavedExerciseChangesModal.vue'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -20,6 +21,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'data-changed'])
 const catalogActive = ref(false)
+const confirmingExit = ref(false)
 const selectedOption = ref('')
 const callbacks = {
   onChanged: notifyDataChanged,
@@ -39,6 +41,7 @@ const {
   error,
   filteredExercises,
   hasExistingSets,
+  hasUnsavedChanges,
   loading,
   saving,
   searchQuery,
@@ -81,6 +84,7 @@ function readModalTitle() {
 }
 
 function handleOpenChange(open) {
+  confirmingExit.value = false
   if (!open) return
   catalogActive.value = false
   catalogManager.reset()
@@ -103,6 +107,7 @@ function closeAfterSave() {
 
 function close(force = false) {
   if (!force && saving.value) return
+  confirmingExit.value = false
   catalogActive.value = false
   catalogManager.reset()
   selectedOption.value = ''
@@ -111,7 +116,7 @@ function close(force = false) {
 }
 
 function goBack() {
-  if (saving.value || detailsSaving.value || catalogManager.saving.value) return
+  if (confirmingExit.value || saving.value || detailsSaving.value || catalogManager.saving.value) return
   selectedOption.value = ''
 
   if (catalogActive.value) {
@@ -128,11 +133,40 @@ function goBack() {
   }
 
   if (step.value === 'sets' && !props.exercise) {
-    void startPicker()
+    requestEditorExit()
+    return
+  }
+
+  if (step.value === 'sets') {
+    requestEditorExit()
     return
   }
 
   close()
+}
+
+function requestEditorExit() {
+  if (hasUnsavedChanges.value) {
+    confirmingExit.value = true
+    return
+  }
+
+  if (props.exercise) close()
+  else void startPicker()
+}
+
+function cancelExit() {
+  if (!saving.value) confirmingExit.value = false
+}
+
+function discardAndExit() {
+  if (saving.value) return
+  close(true)
+}
+
+function saveAndExit() {
+  if (!canSave.value || saving.value) return
+  void save()
 }
 
 function selectOption(option) {
@@ -257,4 +291,14 @@ function selectOption(option) {
       />
     </template>
   </BaseModal>
+
+  <UnsavedExerciseChangesModal
+    :open="confirmingExit"
+    :busy="saving"
+    :can-save="canSave"
+    :error="error"
+    @cancel="cancelExit"
+    @discard="discardAndExit"
+    @save="saveAndExit"
+  />
 </template>
