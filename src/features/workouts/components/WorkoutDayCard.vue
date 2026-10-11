@@ -101,6 +101,13 @@ function saveExerciseOrder() {
         <span>Add Exercise</span>
       </button>
 
+      <button v-if="exercises.length >= 2" class="day-action day-reorder-exercises" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 4v16m-4-4 4 4 4-4M16 20V4m-4 4 4-4 4 4" />
+        </svg>
+        <span>Change Order</span>
+      </button>
+
       <button v-if="!exercises.length" class="day-action day-copy-previous" type="button" @click="emit('copy')">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="8" y="8" width="11" height="11" rx="2" />
