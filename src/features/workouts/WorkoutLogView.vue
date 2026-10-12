@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { formatDate, shiftDateKey, todayKey } from '../../shared/utils/dates'
 import CopyWorkoutDayModal from './components/CopyWorkoutDayModal.vue'
+import ChangeExerciseOrderModal from './components/ChangeExerciseOrderModal.vue'
 import WorkoutDayCard from './components/WorkoutDayCard.vue'
 import WorkoutExerciseModal from './components/WorkoutExerciseModal.vue'
 import { useWorkoutDay } from './composables/useWorkoutDay'
@@ -16,6 +17,7 @@ const selectedDate = computed(() => props.selectedDate)
 const exerciseModalOpen = ref(false)
 const exerciseModalTarget = ref(null)
 const copyModalOpen = ref(false)
+const orderModalOpen = ref(false)
 const {
   error,
   exercises,
@@ -70,6 +72,14 @@ function closeExerciseModal() {
   exerciseModalTarget.value = null
 }
 
+function openOrderModal() {
+  orderModalOpen.value = true
+}
+
+function closeOrderModal() {
+  orderModalOpen.value = false
+}
+
 async function handleWorkoutChanged(summary) {
   emit('summary-changed', summary)
   await load()
@@ -87,6 +97,7 @@ async function handleWorkoutChanged(summary) {
     @next="changeDay(1)"
     @today="goToToday"
     @add="openExercisePicker"
+    @reorder="openOrderModal"
     @edit="editExercise"
     @move-exercise="moveExercise"
     @save-exercise-order="saveExerciseOrder"
@@ -100,6 +111,15 @@ async function handleWorkoutChanged(summary) {
     :exercise="exerciseModalTarget"
     @close="closeExerciseModal"
     @data-changed="handleWorkoutChanged"
+  />
+
+  <ChangeExerciseOrderModal
+    :open="orderModalOpen"
+    :date="selectedDate"
+    :date-label="selectedDateLong"
+    :exercises="exercises"
+    @close="closeOrderModal"
+    @saved="load"
   />
 
   <CopyWorkoutDayModal
