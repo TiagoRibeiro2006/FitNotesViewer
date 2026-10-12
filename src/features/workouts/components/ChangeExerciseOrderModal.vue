@@ -1,7 +1,8 @@
 <script setup>
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseOrder } from '../composables/useExerciseOrder.js'
+import ResetExerciseOrderModal from './ResetExerciseOrderModal.vue'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -11,6 +12,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'saved'])
 const order = useExerciseOrder()
+const resetting = ref(false)
 
 watch(readOpen, initialize)
 
@@ -19,14 +21,29 @@ function readOpen() {
 }
 
 function initialize(open) {
+  resetting.value = false
   if (open) order.open(props.exercises, props.date)
 }
 
 async function close() {
+  if (resetting.value) return
   if (await order.save()) {
     emit('saved')
     emit('close')
   }
+}
+
+function requestReset() {
+  if (order.changed.value && !order.saving.value) resetting.value = true
+}
+
+function cancelReset() {
+  resetting.value = false
+}
+
+function resetOrder() {
+  order.reset()
+  cancelReset()
 }
 </script>
 
@@ -40,7 +57,15 @@ async function close() {
         <p>{{ dateLabel }}</p>
         <h2>Change Order</h2>
       </div>
-      <span class="modal-header-spacer"></span>
+      <button
+        class="modal-icon-button exercise-order-reset"
+        type="button"
+        aria-label="Restore original order"
+        :disabled="!order.changed.value || order.saving.value"
+        @click="requestReset"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6" /></svg>
+      </button>
     </header>
     <div class="exercise-order-content">
       <ol class="exercise-order-list">
@@ -60,9 +85,18 @@ async function close() {
       <p v-if="order.saving.value" role="status">Saving order…</p>
     </div>
   </BaseModal>
+  <ResetExerciseOrderModal :open="resetting" @cancel="cancelReset" @reset="resetOrder" />
 </template>
 
 <style scoped>
+.exercise-order-reset:not(:disabled) {
+  border-color: #64646d;
+  color: #fff;
+}
+.exercise-order-reset:disabled {
+  opacity: .3;
+  cursor: default;
+}
 .exercise-order-content {
   padding: 16px;
   overflow-y: auto;
