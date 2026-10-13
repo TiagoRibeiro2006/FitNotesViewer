@@ -30,6 +30,8 @@ async function verifyOrder(t) {
   order.move(0, 1)
   assert.deepEqual(order.exercises.value.map(readId), [2, 1])
   assert.equal(order.changed.value, true)
+  assert.equal(order.originalPosition(1), 1)
+  assert.equal(order.originalPosition(2), 2)
   assert.deepEqual(items.map(readId), [1, 2])
   order.reset()
   assert.equal(order.changed.value, false)

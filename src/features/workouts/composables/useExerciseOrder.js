@@ -24,6 +24,13 @@ export function useExerciseOrder() {
     return exercise.id !== original[index]?.id
   }
 
+  function originalPosition(exerciseId) {
+    for (let index = 0; index < original.length; index += 1) {
+      if (original[index].id === exerciseId) return index + 1
+    }
+    return null
+  }
+
   function move(index, direction) {
     const target = index + direction
     if (saving.value || target < 0 || target >= exercises.value.length) return
@@ -59,5 +66,5 @@ export function useExerciseOrder() {
     return exercise.id
   }
 
-  return { exercises, changed, saving, error, open, move, reset, save }
+  return { exercises, changed, saving, error, open, move, reset, save, originalPosition }
 }
