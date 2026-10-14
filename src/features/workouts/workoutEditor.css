@@ -792,8 +792,8 @@
   }
 
   .modal-header {
-    min-height: calc(72px + env(safe-area-inset-top));
-    padding-top: max(12px, env(safe-area-inset-top));
+    min-height: calc(72px + env(safe-area-inset-top, 0px) + var(--header-top-spacing));
+    padding-top: calc(max(12px, env(safe-area-inset-top, 0px)) + var(--header-top-spacing));
   }
 
   .exercise-picker-list {
