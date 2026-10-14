@@ -50,7 +50,7 @@ function resetOrder() {
 <template>
   <BaseModal :open="open" aria-label="Change Order" @close="close">
     <header class="modal-header">
-      <button class="modal-icon-button" type="button" aria-label="Save order and close" :disabled="order.saving.value" @click="close">
+      <button class="modal-icon-button" :class="{ 'exercise-order-close-changed': order.changed.value }" type="button" aria-label="Save order and close" :disabled="order.saving.value" @click="close">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
       </button>
       <div class="modal-heading">
@@ -92,6 +92,14 @@ function resetOrder() {
 </template>
 
 <style scoped>
+.exercise-order-close-changed {
+  border-color: #3f96ff;
+  background: #142238;
+  color: #62adff;
+}
+.exercise-order-close-changed:active {
+  background: #203957;
+}
 .exercise-order-reset:not(:disabled) {
   border-color: #64646d;
   color: #fff;
