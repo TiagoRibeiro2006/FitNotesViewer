@@ -303,3 +303,12 @@
 }
 
 .day-copy-previous:active { transform: scale(.98); }
+
+.day-reorder-exercises {
+  border: 1px solid #48484d;
+  background: #19191b;
+  color: #fff;
+  cursor: pointer;
+}
+
+.day-reorder-exercises:active { transform: scale(.98); }
