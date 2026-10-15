@@ -25,13 +25,11 @@ function chooseAbs() {
 <template>
   <ActionModal :open="open" aria-label="Choose muscle icon" title="Choose an icon" layer-class="muscle-icon-picker-layer" @close="close">
     <div class="muscle-icon-options" :style="{ '--category-color': colour }">
-      <button type="button" :aria-pressed="selected === ''" @click="chooseNone">
+      <button type="button" aria-label="No icon" :aria-pressed="selected === ''" @click="chooseNone">
         <span class="muscle-icon-empty" aria-hidden="true">∅</span>
-        <span>No icon</span>
       </button>
-      <button type="button" :aria-pressed="selected === 'abs'" @click="chooseAbs">
+      <button type="button" aria-label="Abs" :aria-pressed="selected === 'abs'" @click="chooseAbs">
         <ExerciseMuscleIndicator icon-id="abs" />
-        <span>Abs</span>
       </button>
     </div>
   </ActionModal>
@@ -45,16 +43,16 @@ function chooseAbs() {
 }
 .muscle-icon-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, 48px);
+  gap: 10px;
 }
 .muscle-icon-options button {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-height: 105px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   border: 1px solid #35353b;
   border-radius: var(--box-radius);
   background: #19191b;
