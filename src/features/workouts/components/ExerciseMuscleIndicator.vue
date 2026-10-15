@@ -1,11 +1,15 @@
 <script setup>
 import { computed } from 'vue'
+import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
 
-const props = defineProps({ name: { type: String, default: '' } })
+const props = defineProps({
+  name: { type: String, default: '' },
+  iconId: { type: String, default: undefined },
+})
 const isAbs = computed(readIsAbs)
 
 function readIsAbs() {
-  return props.name.trim().toLowerCase() === 'abs'
+  return resolveMuscleIcon(props.name, props.iconId) === 'abs'
 }
 </script>
 

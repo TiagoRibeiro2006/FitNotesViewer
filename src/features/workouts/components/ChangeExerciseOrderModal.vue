@@ -81,7 +81,7 @@ function muscleStyle(exercise) {
             <strong>{{ exercise.name }}</strong>
           </div>
           <div class="exercise-order-controls">
-            <span class="exercise-order-muscle" :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" /></span>
+            <span class="exercise-order-muscle" :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" /></span>
             <button type="button" :aria-label="`Move ${exercise.name} up`" :disabled="index === 0 || order.saving.value" @click="order.move(index, -1)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>
             </button>
