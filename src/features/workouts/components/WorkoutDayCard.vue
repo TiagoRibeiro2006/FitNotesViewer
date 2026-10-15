@@ -1,5 +1,7 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
+import { androidColorToCss } from '../../../shared/utils/colors'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
@@ -21,6 +23,10 @@ function moveExercise(fromIndex, toIndex) {
 
 function saveExerciseOrder() {
   emit('save-exercise-order')
+}
+
+function muscleStyle(exercise) {
+  return { '--category-color': androidColorToCss(exercise.categoryColor) }
 }
 
 </script>
@@ -57,6 +63,7 @@ function saveExerciseOrder() {
       >
         <div class="exercise-row-heading">
           <button class="exercise-row-title" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
+            <span :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" /></span>
             <strong>{{ exercise.name }}</strong>
           </button>
           <button
