@@ -102,12 +102,3 @@ function exerciseStyle(exercise) {
     </button>
   </div>
 </template>
-
-<style scoped>
-.exercise-picker-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-}
-</style>
