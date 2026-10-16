@@ -32,8 +32,8 @@ body.modal-open {
   grid-template-columns: 52px 1fr 52px;
   align-items: center;
   gap: 10px;
-  min-height: 82px;
-  padding: 14px 16px;
+  min-height: calc(82px + var(--header-top-spacing));
+  padding: calc(14px + var(--header-top-spacing)) 16px 14px;
   border-bottom: 1px solid #202020;
   background: rgba(9, 9, 9, .96);
 }
