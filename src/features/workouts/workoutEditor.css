@@ -133,6 +133,13 @@
   opacity: .62;
 }
 
+.exercise-picker-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+}
+
 .exercise-picker-copy {
   min-width: 0;
   display: flex;
