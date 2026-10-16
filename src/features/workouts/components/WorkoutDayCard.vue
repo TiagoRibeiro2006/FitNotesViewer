@@ -63,7 +63,7 @@ function muscleStyle(exercise) {
       >
         <div class="exercise-row-heading">
           <button class="exercise-row-title" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
-            <span :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" /></span>
+            <span :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" /></span>
             <strong>{{ exercise.name }}</strong>
           </button>
           <button

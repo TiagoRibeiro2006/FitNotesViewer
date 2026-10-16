@@ -49,7 +49,7 @@ function exerciseStyle(exercise) {
 <template>
   <div class="set-editor">
     <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
-      <ExerciseMuscleIndicator :name="exercise.categoryName" />
+      <ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" />
       <div>
         <strong>{{ exercise.name }}</strong>
         <small>{{ exercise.categoryName }}</small>

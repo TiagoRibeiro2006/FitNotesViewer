@@ -55,7 +55,7 @@ function subtitle(item, mode) {
       @click="emit('select', item)"
     >
       <span class="exercise-picker-indicator">
-        <ExerciseMuscleIndicator :name="mode === 'muscles' ? item.name : item.categoryName" />
+        <ExerciseMuscleIndicator :name="mode === 'muscles' ? item.name : item.categoryName" :icon-id="mode === 'muscles' ? item.iconId : item.categoryIcon" />
       </span>
       <span class="exercise-picker-copy">
         <strong>{{ item.name }}</strong>

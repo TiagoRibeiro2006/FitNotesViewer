@@ -92,7 +92,7 @@ function exerciseStyle(exercise) {
       @click="emit('select', exercise)"
     >
       <span class="exercise-picker-indicator">
-        <ExerciseMuscleIndicator :name="exercise.categoryName" />
+        <ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" />
       </span>
       <span class="exercise-picker-copy">
         <strong>{{ exercise.name }}</strong>
