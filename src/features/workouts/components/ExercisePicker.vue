@@ -1,6 +1,7 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { exerciseMeta } from '../exerciseFormatters'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
 
 defineProps({
   categories: { type: Array, required: true },
@@ -90,7 +91,9 @@ function exerciseStyle(exercise) {
       type="button"
       @click="emit('select', exercise)"
     >
-      <span class="exercise-color-dot"></span>
+      <span class="exercise-picker-indicator">
+        <ExerciseMuscleIndicator :name="exercise.categoryName" />
+      </span>
       <span class="exercise-picker-copy">
         <strong>{{ exercise.name }}</strong>
         <small>{{ exercise.categoryName }} · {{ exerciseMeta(exercise) }}</small>
@@ -99,3 +102,12 @@ function exerciseStyle(exercise) {
     </button>
   </div>
 </template>
+
+<style scoped>
+.exercise-picker-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+}
+</style>
