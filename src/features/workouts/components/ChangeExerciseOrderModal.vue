@@ -70,7 +70,10 @@ function resetOrder() {
     <div class="exercise-order-content">
       <ol class="exercise-order-list">
         <li v-for="(exercise, index) in order.exercises.value" :key="exercise.id" class="exercise-order-row">
-          <strong>{{ exercise.name }}</strong>
+          <div class="exercise-order-name">
+            <span class="exercise-order-number" :aria-label="`Original position ${order.originalPosition(exercise.id)}`">{{ order.originalPosition(exercise.id) }}</span>
+            <strong>{{ exercise.name }}</strong>
+          </div>
           <div class="exercise-order-controls">
             <button type="button" :aria-label="`Move ${exercise.name} up`" :disabled="index === 0 || order.saving.value" @click="order.move(index, -1)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>
@@ -121,6 +124,21 @@ function resetOrder() {
 .exercise-order-row strong {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.exercise-order-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.exercise-order-number {
+  flex-shrink: 0;
+  min-width: 24px;
+  color: #8f8f96;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 .exercise-order-controls {
   display: flex;
