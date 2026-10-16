@@ -21,6 +21,7 @@ const name = ref('')
 const iconId = ref('')
 const iconPickerOpen = ref(false)
 const canSave = computed(readCanSave)
+const iconLabel = computed(readIconLabel)
 
 watch(readMuscle, fillForm, { immediate: true })
 
@@ -37,6 +38,11 @@ function fillForm(muscle) {
 
 function readCanSave() {
   return name.value.trim().length > 0 && /^#[0-9a-f]{6}$/i.test(colour.value)
+}
+
+function readIconLabel() {
+  if (!iconId.value) return 'No icon'
+  return (iconId.value.charAt(0).toUpperCase() + iconId.value.slice(1)).replaceAll('-', ' ')
 }
 
 function submit() {
@@ -78,7 +84,7 @@ function selectIcon(icon) {
       <span>Icon</span>
       <button class="muscle-icon-field" type="button" :style="{ '--category-color': colour }" :disabled="saving" @click="openIconPicker">
         <ExerciseMuscleIndicator :icon-id="iconId" />
-        <span>{{ iconId === 'abs' ? 'Abs' : 'No icon' }}</span>
+        <span>{{ iconLabel }}</span>
         <span class="exercise-chevron" aria-hidden="true">›</span>
       </button>
     </div>
