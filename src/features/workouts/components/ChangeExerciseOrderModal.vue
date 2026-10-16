@@ -3,6 +3,8 @@ import { ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseOrder } from '../composables/useExerciseOrder.js'
 import ResetExerciseOrderModal from './ResetExerciseOrderModal.vue'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import { androidColorToCss } from '../../../shared/utils/colors'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -45,6 +47,10 @@ function resetOrder() {
   order.reset()
   cancelReset()
 }
+
+function muscleStyle(exercise) {
+  return { '--category-color': androidColorToCss(exercise.categoryColor) }
+}
 </script>
 
 <template>
@@ -75,6 +81,7 @@ function resetOrder() {
             <strong>{{ exercise.name }}</strong>
           </div>
           <div class="exercise-order-controls">
+            <span class="exercise-order-muscle" :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" /></span>
             <button type="button" :aria-label="`Move ${exercise.name} up`" :disabled="index === 0 || order.saving.value" @click="order.move(index, -1)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>
             </button>
@@ -152,6 +159,13 @@ function resetOrder() {
   display: flex;
   flex-shrink: 0;
   gap: 4px;
+}
+.exercise-order-muscle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  margin-right: 4px;
 }
 .exercise-order-controls button {
   display: grid;
