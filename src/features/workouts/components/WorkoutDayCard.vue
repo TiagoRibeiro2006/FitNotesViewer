@@ -11,7 +11,7 @@ defineProps({
   reordering: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['add', 'copy', 'edit', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
+const emit = defineEmits(['add', 'copy', 'edit', 'reorder', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
 const { draggingIndex, startDrag } = useDragList(moveExercise, saveExerciseOrder)
 const { displayWeight, weightUnit } = useWeightUnitPreference()
 
@@ -101,7 +101,7 @@ function saveExerciseOrder() {
         <span>Add Exercise</span>
       </button>
 
-      <button v-if="exercises.length >= 2" class="day-action day-reorder-exercises" type="button">
+      <button v-if="exercises.length >= 2" class="day-action day-reorder-exercises" type="button" :disabled="reordering" @click="emit('reorder')">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M8 4v16m-4-4 4 4 4-4M16 20V4m-4 4 4-4 4 4" />
         </svg>
