@@ -83,7 +83,7 @@ function selectIcon(icon) {
     <div class="exercise-details-field">
       <span>Icon</span>
       <button class="muscle-icon-field" type="button" :style="{ '--category-color': colour }" :disabled="saving" @click="openIconPicker">
-        <ExerciseMuscleIndicator :icon-id="iconId" />
+        <ExerciseMuscleIndicator :icon-id="iconId" preview />
         <span>{{ iconLabel }}</span>
         <span class="exercise-chevron" aria-hidden="true">›</span>
       </button>

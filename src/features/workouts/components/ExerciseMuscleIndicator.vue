@@ -1,14 +1,18 @@
 <script setup>
 import { computed } from 'vue'
 import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
+import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 
 const props = defineProps({
   name: { type: String, default: '' },
   iconId: { type: String, default: undefined },
+  preview: { type: Boolean, default: false },
 })
+const { iconsEnabled } = useMuscleAppearance()
 const icon = computed(readIcon)
 
 function readIcon() {
+  if (!props.preview && !iconsEnabled.value) return ''
   return resolveMuscleIcon(props.name, props.iconId)
 }
 </script>
