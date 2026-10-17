@@ -188,7 +188,7 @@ function muscleStyle(exercise) {
 .exercise-order-controls button:active:not(:disabled) {
   background: #303034;
 }
-.exercise-order-controls svg {
+.exercise-order-controls button > svg {
   width: 22px;
   height: 22px;
   fill: none;
