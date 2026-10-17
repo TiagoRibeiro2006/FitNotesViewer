@@ -1,6 +1,6 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 
 defineProps({
   items: { type: Array, required: true },

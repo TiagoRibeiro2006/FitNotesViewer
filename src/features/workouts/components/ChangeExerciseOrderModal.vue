@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import BaseModal from '../../../shared/components/BaseModal.vue'
 import { useExerciseOrder } from '../composables/useExerciseOrder.js'
 import ResetExerciseOrderModal from './ResetExerciseOrderModal.vue'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 
