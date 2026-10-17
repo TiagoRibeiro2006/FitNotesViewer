@@ -119,4 +119,7 @@ function readIcon() {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+.muscle-icon-eye {
+  fill: var(--surface-color, #101010);
+}
 </style>

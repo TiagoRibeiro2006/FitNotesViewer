@@ -1,6 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue'
 import BodyMeasurementIcon from './BodyMeasurementIcon.vue'
+import MuscleIconPicker from '../../workouts/components/MuscleIconPicker.vue'
+import MuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
+import { bodyMeasurementIcon } from '../bodyMeasurementIcons.js'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
@@ -25,6 +28,8 @@ const activeMenuKey = ref('')
 const deleteConfirmingKey = ref('')
 const editingKey = ref('')
 const editingName = ref('')
+const editingIcon = ref('')
+const iconPickerOpen = ref(false)
 let skipNextMenuClick = false
 const { draggingIndex, startDrag } = useDragList(moveFavorite, saveFavoriteOrder)
 const { displayMeasurementValue, weightUnit } = useWeightUnitPreference()
@@ -42,6 +47,7 @@ function closeMenu() {
 
 function resetManagementState() {
   closeMenu()
+  cancelEditing()
   editingKey.value = ''
   editingName.value = ''
 }
@@ -98,6 +104,7 @@ function chooseAction(action, item, sectionId) {
     deleteConfirmingKey.value = ''
     editingKey.value = key
     editingName.value = item.name
+    editingIcon.value = bodyMeasurementIcon(item.name, item.iconId)
     return
   }
 
@@ -112,6 +119,7 @@ function chooseAction(action, item, sectionId) {
 }
 
 function cancelEditing() {
+  iconPickerOpen.value = false
   editingKey.value = ''
   editingName.value = ''
 }
@@ -119,12 +127,25 @@ function cancelEditing() {
 function saveName(item) {
   const name = editingName.value.trim()
   if (!name || props.managementSaving) return
-  emit('edit-measurement', { item, name })
+  emit('edit-measurement', { item, name, iconId: editingIcon.value })
   cancelEditing()
 }
 
 function displayValue(item) {
   return formatBodyValue(item, weightUnit.value)
+}
+
+function openIconPicker() {
+  iconPickerOpen.value = true
+}
+
+function closeIconPicker() {
+  iconPickerOpen.value = false
+}
+
+function selectIcon(iconId) {
+  editingIcon.value = iconId
+  closeIconPicker()
 }
 
 function displayChange(item) {
@@ -199,6 +220,10 @@ function displayChange(item) {
                 </svg>
               </button>
             </span>
+            <button class="body-icon-edit-button" type="button" aria-label="Choose measurement icon" :disabled="managementSaving" @click="openIconPicker">
+              <MuscleIndicator v-if="editingIcon" :icon-id="editingIcon" preview />
+              <span v-else aria-hidden="true">∅</span>
+            </button>
             <span class="body-measurement-value">
               <strong>{{ displayValue(item) }}</strong>
               <span v-if="item.change !== null" class="body-measurement-change">
@@ -210,7 +235,7 @@ function displayChange(item) {
 
           <button v-else class="body-measurement-copy" type="button" :aria-label="'Open ' + item.name" @click="openMeasurement(item)">
             <span class="body-measurement-name">
-              <BodyMeasurementIcon :name="item.name" />
+              <BodyMeasurementIcon :name="item.name" :icon-id="item.iconId" />
               <span>{{ item.name }}</span>
             </span>
             <span class="body-measurement-value">
@@ -264,5 +289,6 @@ function displayChange(item) {
         </article>
       </div>
     </section>
+    <MuscleIconPicker :open="iconPickerOpen" :selected="editingIcon" colour="#4b9cff" @select="selectIcon" @close="closeIconPicker" />
   </div>
 </template>

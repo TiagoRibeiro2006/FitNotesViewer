@@ -14,22 +14,28 @@ import {
   normalizeMeasurementUnit,
 } from '../mappers/bodyTrackerData.js'
 import { getBodyWeightDeletionIds } from '../bodyWeightAssignment.js'
+import { resolveMuscleIcon } from '../../shared/models/muscleIcons.js'
 
 export async function getBodyTrackerData() {
   const database = await openAppDatabase()
   await ensureDefaultBodyMeasurements(database)
   const transaction = database.transaction(['metadata', 'bodyWeights', 'measurements', 'measurementUnits', 'measurementRecords'], 'readonly')
   const done = transactionComplete(transaction)
-  const [favoritesRecord, deletedRecord, bodyWeights, measurements, units, records] = await Promise.all([
+  const [favoritesRecord, deletedRecord, bodyWeights, measurements, units, records, iconsRecord] = await Promise.all([
     requestResult(transaction.objectStore('metadata').get('bodyFavoriteIds')),
     requestResult(transaction.objectStore('metadata').get('bodyDeletedIds')),
     requestResult(transaction.objectStore('bodyWeights').getAll()),
     requestResult(transaction.objectStore('measurements').getAll()),
     requestResult(transaction.objectStore('measurementUnits').getAll()),
     requestResult(transaction.objectStore('measurementRecords').getAll()),
+    requestResult(transaction.objectStore('metadata').get('bodyMeasurementIcons')),
   ])
   await done
-  return buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value, deletedRecord?.value)
+  const data = buildBodyTrackerData(bodyWeights, measurements, units, records, favoritesRecord?.value, deletedRecord?.value)
+  for (const item of [...data.favorites, ...data.measurements]) {
+    item.iconId = iconsRecord?.value?.[item.id]
+  }
+  return data
 }
 
 async function ensureDefaultBodyMeasurements(database) {
@@ -208,12 +214,15 @@ export async function deleteBodyMeasurement(item) {
   return getBodyTrackerData()
 }
 
-export async function updateBodyMeasurementName(item, rawName) {
+export async function updateBodyMeasurementName(item, rawName, iconId) {
   const name = normalizeMeasurementName(rawName)
   const database = await openAppDatabase()
-  const lookupTransaction = database.transaction('measurements', 'readonly')
+  const lookupTransaction = database.transaction(['measurements', 'metadata'], 'readonly')
   const lookupDone = transactionComplete(lookupTransaction)
-  const measurements = await requestResult(lookupTransaction.objectStore('measurements').getAll())
+  const [measurements, iconsRecord] = await Promise.all([
+    requestResult(lookupTransaction.objectStore('measurements').getAll()),
+    requestResult(lookupTransaction.objectStore('metadata').get('bodyMeasurementIcons')),
+  ])
   await lookupDone
 
   const measurementId = findMeasurementId(item, measurements ?? [])
@@ -227,6 +236,12 @@ export async function updateBodyMeasurementName(item, rawName) {
 
   const updatedAt = new Date().toISOString()
   const transaction = database.transaction(['measurements', 'metadata'], 'readwrite')
+  if (typeof iconId === 'string') {
+    transaction.objectStore('metadata').put({
+      key: 'bodyMeasurementIcons',
+      value: { ...iconsRecord?.value, [item.id]: resolveMuscleIcon('', iconId) },
+    })
+  }
   transaction.objectStore('measurements').put({
     ...measurement,
     name,

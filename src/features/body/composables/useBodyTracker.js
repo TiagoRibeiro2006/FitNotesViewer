@@ -111,7 +111,7 @@ export function useBodyTracker() {
     error.value = ''
 
     try {
-      applyTrackerData(await updateBodyMeasurementName(payload.item, payload.name))
+      applyTrackerData(await updateBodyMeasurementName(payload.item, payload.name, payload.iconId))
     } catch {
       error.value = 'Measurement name could not be updated in local storage.'
     } finally {
