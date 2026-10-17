@@ -90,8 +90,11 @@ function openMeasurement(item) {
 
 function chooseAction(action, item, sectionId) {
   if (action === 'edit-measurement') {
-    closeMenu()
-    editingKey.value = menuKey(sectionId, item.id)
+    const key = menuKey(sectionId, item.id)
+    if (editingKey.value === key) return
+    activeMenuKey.value = key
+    deleteConfirmingKey.value = ''
+    editingKey.value = key
     editingName.value = item.name
     return
   }
