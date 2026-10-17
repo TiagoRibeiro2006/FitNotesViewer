@@ -20,6 +20,62 @@ function chooseNone() {
 function chooseAbs() {
   emit('select', 'abs')
 }
+
+function chooseLats() {
+  emit('select', 'lats')
+}
+
+function chooseGlutes() {
+  emit('select', 'glutes')
+}
+
+function chooseBiceps() {
+  emit('select', 'biceps')
+}
+
+function chooseSideDelts() {
+  emit('select', 'side-delts')
+}
+
+function chooseChest() {
+  emit('select', 'chest')
+}
+
+function chooseAdductors() {
+  emit('select', 'adductors')
+}
+
+function chooseTriceps() {
+  emit('select', 'triceps')
+}
+
+function chooseFrontDelts() {
+  emit('select', 'front-delts')
+}
+
+function chooseRearDelts() {
+  emit('select', 'rear-delts')
+}
+
+function chooseTraps() {
+  emit('select', 'traps')
+}
+
+function chooseHamstrings() {
+  emit('select', 'hamstrings')
+}
+
+function chooseCalfs() {
+  emit('select', 'calfs')
+}
+
+function chooseQuads() {
+  emit('select', 'quads')
+}
+
+function chooseForearm() {
+  emit('select', 'forearm')
+}
 </script>
 
 <template>
@@ -30,6 +86,48 @@ function chooseAbs() {
       </button>
       <button type="button" aria-label="Abs" :aria-pressed="selected === 'abs'" @click="chooseAbs">
         <ExerciseMuscleIndicator icon-id="abs" />
+      </button>
+      <button type="button" aria-label="Lats" :aria-pressed="selected === 'lats'" @click="chooseLats">
+        <ExerciseMuscleIndicator icon-id="lats" />
+      </button>
+      <button type="button" aria-label="Glutes" :aria-pressed="selected === 'glutes'" @click="chooseGlutes">
+        <ExerciseMuscleIndicator icon-id="glutes" />
+      </button>
+      <button type="button" aria-label="Biceps" :aria-pressed="selected === 'biceps'" @click="chooseBiceps">
+        <ExerciseMuscleIndicator icon-id="biceps" />
+      </button>
+      <button type="button" aria-label="Side delts" :aria-pressed="selected === 'side-delts'" @click="chooseSideDelts">
+        <ExerciseMuscleIndicator icon-id="side-delts" />
+      </button>
+      <button type="button" aria-label="Chest" :aria-pressed="selected === 'chest'" @click="chooseChest">
+        <ExerciseMuscleIndicator icon-id="chest" />
+      </button>
+      <button type="button" aria-label="Adductors" :aria-pressed="selected === 'adductors'" @click="chooseAdductors">
+        <ExerciseMuscleIndicator icon-id="adductors" />
+      </button>
+      <button type="button" aria-label="Triceps" :aria-pressed="selected === 'triceps'" @click="chooseTriceps">
+        <ExerciseMuscleIndicator icon-id="triceps" />
+      </button>
+      <button type="button" aria-label="Front delts" :aria-pressed="selected === 'front-delts'" @click="chooseFrontDelts">
+        <ExerciseMuscleIndicator icon-id="front-delts" />
+      </button>
+      <button type="button" aria-label="Rear delts" :aria-pressed="selected === 'rear-delts'" @click="chooseRearDelts">
+        <ExerciseMuscleIndicator icon-id="rear-delts" />
+      </button>
+      <button type="button" aria-label="Traps" :aria-pressed="selected === 'traps'" @click="chooseTraps">
+        <ExerciseMuscleIndicator icon-id="traps" />
+      </button>
+      <button type="button" aria-label="Hamstrings" :aria-pressed="selected === 'hamstrings'" @click="chooseHamstrings">
+        <ExerciseMuscleIndicator icon-id="hamstrings" />
+      </button>
+      <button type="button" aria-label="Calfs" :aria-pressed="selected === 'calfs'" @click="chooseCalfs">
+        <ExerciseMuscleIndicator icon-id="calfs" />
+      </button>
+      <button type="button" aria-label="Quads" :aria-pressed="selected === 'quads'" @click="chooseQuads">
+        <ExerciseMuscleIndicator icon-id="quads" />
+      </button>
+      <button type="button" aria-label="Forearm" :aria-pressed="selected === 'forearm'" @click="chooseForearm">
+        <ExerciseMuscleIndicator icon-id="forearm" />
       </button>
     </div>
   </ActionModal>
