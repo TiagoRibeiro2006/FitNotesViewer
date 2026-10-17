@@ -8,6 +8,7 @@ export function synchronizeFitNotesData(db, data = {}) {
   db.run('BEGIN TRANSACTION;')
   try {
     db.run('PRAGMA defer_foreign_keys = ON;')
+    prepareMuscleIcons(db)
     synchronizeFitNotesDatabase(db, snapshot)
     synchronizeBodyData(db, snapshot)
     db.run('COMMIT;')
@@ -16,6 +17,19 @@ export function synchronizeFitNotesData(db, data = {}) {
     throw error
   }
 }
+
+function prepareMuscleIcons(db) {
+  if (!hasTable(db, 'Category')) return
+  const columns = queryRows(db, 'PRAGMA table_info(Category);')
+  if (!columns.some(isIconColumn)) {
+    db.run('ALTER TABLE Category ADD COLUMN fitnotes_viewer_icon_id TEXT;')
+  }
+}
+
+function isIconColumn(column) {
+  return column.name === 'fitnotes_viewer_icon_id'
+}
+
 
 export function synchronizeBodyData(db, data = {}) {
   const requiredTables = ['BodyWeight', 'Measurement', 'MeasurementUnit', 'MeasurementRecord']

@@ -1,5 +1,6 @@
 import { createCsvColumns } from './csv/csvColumns.js'
 import { readCsv } from './csv/readCsv.js'
+import { resolveMuscleIcon } from '../shared/models/muscleIcons.js'
 import {
   parseCsvDate,
   parseCsvNumber,
@@ -54,6 +55,7 @@ function parseExtendedCsv(file, rows, columns) {
     const type = normalizeRecordType(columns.read(row, ['Record Type']))
 
     if (type === 'body unit') addBodyUnit(row, columns, rowNumber)
+    if (type === 'muscle') workoutBuilder.addCategory(row, columns, rowNumber)
   }
 
   for (let index = 1; index < rows.length; index += 1) {
@@ -90,7 +92,7 @@ function parseExtendedCsv(file, rows, columns) {
   parsed.summary.importFormat = 'csv'
   parsed.summary.totalBodyRecords = bodyWeights.length + measurementRecords.length
 
-  if (!parsed.workoutSets.length && !bodyWeights.length && !measurementRecords.length && !measurements.length) {
+  if (!parsed.workoutSets.length && !parsed.categories.length && !bodyWeights.length && !measurementRecords.length && !measurements.length) {
     throw new Error('The CSV does not contain any importable workout or body data.')
   }
   return parsed
@@ -335,6 +337,23 @@ function createImportBuilder() {
     return id
   }
 
+  function addCategory(row, columns, rowNumber) {
+    const name = requiredText(columns.read(row, ['Category']), 'muscle name', rowNumber)
+    const id = getCategoryId(name)
+    const category = categories[id - 1]
+    if (columns.find(['Category Icon']) >= 0) {
+      category.iconId = resolveMuscleIcon(name, columns.read(row, ['Category Icon']))
+    }
+    const colour = columns.read(row, ['Category Colour'])
+    const sortOrder = columns.read(row, ['Category Sort Order'])
+    if (colour !== '') {
+      const value = Number(colour)
+      if (!Number.isInteger(value)) throw new Error('CSV row ' + rowNumber + ' has an invalid muscle colour.')
+      category.colour = value
+    }
+    if (sortOrder !== '') category.sortOrder = parseWholeNumber(sortOrder, category.sortOrder, 'muscle sort order', rowNumber)
+  }
+
   function getExerciseId(name, categoryId) {
     const key = normalizeName(name)
     if (exerciseIds.has(key)) return exerciseIds.get(key)
@@ -392,7 +411,7 @@ function createImportBuilder() {
     }
   }
 
-  return { add, finish }
+  return { add, addCategory, finish }
 }
 
 function createWorkoutOrder() {

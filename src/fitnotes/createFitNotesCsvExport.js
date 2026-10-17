@@ -1,3 +1,5 @@
+import { resolveMuscleIcon } from '../shared/models/muscleIcons.js'
+
 const COLUMNS = [
   'Record Type',
   'Record ID',
@@ -27,6 +29,9 @@ const COLUMNS = [
   'Body Fat',
   'Comment',
   'Local Body ID',
+  'Category Icon',
+  'Category Colour',
+  'Category Sort Order',
 ]
 
 export function createFitNotesCsvExport(data) {
@@ -35,6 +40,10 @@ export function createFitNotesCsvExport(data) {
   const units = createLookup(data.measurementUnits)
   const measurements = createLookup(data.measurements)
   const lines = [createCsvLine(COLUMNS)]
+
+  for (const category of sortById(data.categories)) {
+    lines.push(createCsvLine(createCategoryRow(category)))
+  }
 
   for (const unit of sortById(data.measurementUnits)) {
     lines.push(createCsvLine(createBodyUnitRow(unit)))
@@ -66,6 +75,16 @@ export function createFitNotesCsvExport(data) {
 
 function emptyRow() {
   return Array(COLUMNS.length).fill('')
+}
+
+function createCategoryRow(category) {
+  const row = emptyRow()
+  setValue(row, 'Record Type', 'Muscle')
+  setValue(row, 'Category', String(category.name ?? 'Other'))
+  setValue(row, 'Category Icon', resolveMuscleIcon(category.name, category.iconId))
+  setValue(row, 'Category Colour', optionalNumber(category.colour))
+  setValue(row, 'Category Sort Order', optionalNumber(category.sortOrder))
+  return row
 }
 
 function createSetRow(set, exercise, category) {

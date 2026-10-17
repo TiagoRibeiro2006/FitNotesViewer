@@ -1,6 +1,6 @@
 // Parents precede children so local IDs can be mapped consistently.
 export const EXPORT_TABLES = [
-  { store: 'categories', table: 'Category', fields: { name: 'name', colour: 'colour', sort_order: 'sortOrder' } },
+  { store: 'categories', table: 'Category', fields: { name: 'name', colour: 'colour', sort_order: 'sortOrder', fitnotes_viewer_icon_id: 'iconId' } },
   { store: 'exercises', table: 'exercise', fields: {
     name: 'name', category_id: 'categoryId', exercise_type_id: 'exerciseTypeId', notes: 'notes',
     weight_increment: 'weightIncrement', default_graph_id: 'defaultGraphId', default_rest_time: 'defaultRestTime',
