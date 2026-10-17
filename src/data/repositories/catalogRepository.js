@@ -1,4 +1,5 @@
 import { createLocalId } from '../../shared/utils/ids'
+import { resolveMuscleIcon } from '../../shared/models/muscleIcons.js'
 import { DEFAULT_CATEGORIES, DEFAULT_EXERCISES } from '../defaults/exerciseCatalog'
 import { openAppDatabase } from '../indexedDb/database'
 import { markLocalChanges, requestResult, transactionComplete } from '../indexedDb/transactions'
@@ -108,6 +109,7 @@ export async function createCategoryDetails(details) {
     name,
     colour,
     sortOrder: nextCategoryOrder(categories ?? []),
+    iconId: resolveMuscleIcon(name, details.iconId),
     createdLocally: true,
     localUpdatedAt: updatedAt,
   }
@@ -243,6 +245,7 @@ export async function updateCategoryDetails(categoryId, details) {
     ...category,
     name,
     colour,
+    iconId: resolveMuscleIcon(category.name, details.iconId ?? category.iconId),
     localUpdatedAt: updatedAt,
   })
   markLocalChanges(transaction, updatedAt)
@@ -295,6 +298,7 @@ function buildCatalogExercise(exercise, categoriesById, usage) {
     ...exercise,
     categoryName: category?.name ?? 'Other',
     categoryColor: category?.colour ?? null,
+    categoryIcon: resolveMuscleIcon(category?.name, category?.iconId),
     workoutCount: stats?.dates.size ?? 0,
     totalSetCount: stats?.totalSets ?? 0,
     lastWorkoutDate: stats?.lastDate ?? null,

@@ -1,5 +1,6 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
 
 defineProps({
   items: { type: Array, required: true },
@@ -53,7 +54,9 @@ function subtitle(item, mode) {
       type="button"
       @click="emit('select', item)"
     >
-      <span class="exercise-color-dot"></span>
+      <span class="exercise-picker-indicator">
+        <ExerciseMuscleIndicator :name="mode === 'muscles' ? item.name : item.categoryName" :icon-id="mode === 'muscles' ? item.iconId : item.categoryIcon" />
+      </span>
       <span class="exercise-picker-copy">
         <strong>{{ item.name }}</strong>
         <small>{{ subtitle(item, mode) }}</small>

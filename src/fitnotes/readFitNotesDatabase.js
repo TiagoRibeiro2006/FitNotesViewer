@@ -93,6 +93,7 @@ function mapExercise(row) {
 
 function mapCategory(row) {
   return {
+    ...(typeof row.fitnotes_viewer_icon_id === 'string' ? { iconId: row.fitnotes_viewer_icon_id } : {}),
     id: readNumber(row, ['_id', 'id']),
     name: readText(row, ['name']),
     colour: readNumber(row, ['colour', 'color'], 0),
