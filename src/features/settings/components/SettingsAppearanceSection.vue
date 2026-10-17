@@ -32,7 +32,7 @@ function toggleHomeIndicators() {
     <div class="appearance-home-option">
       <div>
         <strong id="home-indicators-label">Show on Home</strong>
-        <p>Show muscle icons or colours next to exercise names.</p>
+        <p>Show muscle icons or colours on Home and Change Order.</p>
       </div>
       <button
         class="appearance-switch"
@@ -67,6 +67,7 @@ function toggleHomeIndicators() {
   line-height: 1.45;
 }
 .appearance-switch {
+  position: relative;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -75,10 +76,18 @@ function toggleHomeIndicators() {
   padding: 0 4px;
   border: 0;
   border-radius: 22px;
-  background: linear-gradient(#34343a, #34343a) center / 100% 32px no-repeat;
+  background: transparent;
   cursor: pointer;
 }
+.appearance-switch::before {
+  content: '';
+  position: absolute;
+  inset: 6px 0;
+  border-radius: 999px;
+  background: #34343a;
+}
 .appearance-switch span {
+  position: relative;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -86,8 +95,8 @@ function toggleHomeIndicators() {
   transform: translateX(0);
   transition: transform .15s ease;
 }
-.appearance-switch[aria-checked='true'] {
-  background-image: linear-gradient(#3f96ff, #3f96ff);
+.appearance-switch[aria-checked='true']::before {
+  background: #3f96ff;
 }
 .appearance-switch[aria-checked='true'] span {
   transform: translateX(20px);
