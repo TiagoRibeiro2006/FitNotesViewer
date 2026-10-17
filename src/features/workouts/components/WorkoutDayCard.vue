@@ -1,7 +1,7 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
 import { androidColorToCss } from '../../../shared/utils/colors'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'

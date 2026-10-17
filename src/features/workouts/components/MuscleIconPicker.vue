@@ -1,6 +1,7 @@
 <script setup>
 import ActionModal from '../../../shared/components/ActionModal.vue'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import { BODY_ICON_IDS } from '../../../shared/models/muscleIcons.js'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 
 defineProps({
   open: { type: Boolean, required: true },
@@ -15,6 +16,10 @@ function close() {
 
 function chooseNone() {
   emit('select', '')
+}
+
+function chooseIcon(event) {
+  emit('select', event.currentTarget.dataset.icon)
 }
 
 function chooseAbs() {
@@ -128,6 +133,9 @@ function chooseForearm() {
       </button>
       <button type="button" aria-label="Forearm" :aria-pressed="selected === 'forearm'" @click="chooseForearm">
         <ExerciseMuscleIndicator icon-id="forearm" preview />
+      </button>
+      <button v-for="icon in BODY_ICON_IDS" :key="icon" type="button" :data-icon="icon" :aria-label="icon.replaceAll('-', ' ')" :aria-pressed="selected === icon" @click="chooseIcon">
+        <ExerciseMuscleIndicator :icon-id="icon" preview />
       </button>
     </div>
   </ActionModal>

@@ -20,6 +20,23 @@ const DATA = {
   ],
 }
 
+test('distribution preserves default icons, custom icons and explicit no-icon choices', verifyDistributionIcons)
+
+function verifyDistributionIcons() {
+  const data = { ...DATA, categories: [
+    { id: 10, name: 'Chest', colour: -65536 },
+    { id: 20, name: 'Back', colour: -16776961, iconId: 'body-fat' },
+  ] }
+  let result = createTrainingAnalytics(data).muscleDistribution
+  assert.equal(result[0].iconId, 'chest')
+  assert.equal(result[1].iconId, 'body-fat')
+  data.categories[0].iconId = ''
+  data.categories[1].iconId = undefined
+  result = createTrainingAnalytics(data).muscleDistribution
+  assert.equal(result[0].iconId, '')
+  assert.equal(result[1].iconId, '')
+}
+
 test('summarizes valid training sets, progress and consecutive workout days', () => {
   const analytics = createTrainingAnalytics(DATA, '2026-09-21', '2026-09-27')
 
