@@ -1,4 +1,5 @@
 import { androidColorToCss } from '../../../shared/utils/colors.js'
+import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
 import { normalizeDateKey } from '../../../shared/utils/dates.js'
 import { buildHistoricalProgress } from '../../../shared/utils/exerciseProgress.js'
 import { dateIntervalDayCount, differenceInDays, filterByDateInterval } from './dateRanges.js'
@@ -83,6 +84,7 @@ function enrichSets(sets, lookups, progressById) {
       muscleId: category?.id ?? 'unknown',
       muscleName: String(category?.name ?? 'Other'),
       muscleColor: androidColorToCss(category?.colour),
+      muscleIcon: resolveMuscleIcon(category?.name, category?.iconId),
       volume: set.weight * set.reps,
       isProgress: progressById.get(set.id) === true,
     })
@@ -155,6 +157,7 @@ function createMuscleSummary(set) {
     id: set.muscleId,
     name: set.muscleName,
     color: set.muscleColor,
+    iconId: set.muscleIcon,
     sets: 0,
     reps: 0,
     volume: 0,
