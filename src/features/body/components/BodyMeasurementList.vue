@@ -57,6 +57,7 @@ function toggleMenu(sectionId, itemId) {
   }
 
   const key = menuKey(sectionId, itemId)
+  if (editingKey.value && editingKey.value !== key) cancelEditing()
   activeMenuKey.value = activeMenuKey.value === key ? '' : key
   deleteConfirmingKey.value = ''
 }
@@ -66,11 +67,12 @@ function startFavoriteDrag(event, section, index) {
     || !props.managing
     || props.favoritesSaving
     || props.managementSaving
-  if (!disabled) closeMenu()
   startDrag(event, index, disabled)
 }
 
 function moveFavorite(fromIndex, toIndex) {
+  closeMenu()
+  cancelEditing()
   emit('move-favorite', fromIndex, toIndex)
 }
 
@@ -166,7 +168,7 @@ function displayChange(item) {
             :aria-label="'Manage ' + item.name"
             @contextmenu.prevent
             @pointerdown="startFavoriteDrag($event, section, index)"
-            @click="toggleMenu(section.id, item.id)"
+            @click.stop="toggleMenu(section.id, item.id)"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="5" r="1.7" />
@@ -178,6 +180,7 @@ function displayChange(item) {
           <form
             v-if="editingKey === menuKey(section.id, item.id)"
             class="body-measurement-copy body-name-edit-form"
+            @click.stop
             @submit.prevent="saveName(item)"
           >
             <span class="body-name-edit-control">
@@ -236,6 +239,7 @@ function displayChange(item) {
             v-if="managing && activeMenuKey === menuKey(section.id, item.id)"
             class="body-item-action-menu"
             role="menu"
+            @click.stop
           >
             <button type="button" role="menuitem" :disabled="managementSaving" @click="chooseAction('edit-measurement', item, section.id)">
               <svg viewBox="0 0 24 24" aria-hidden="true">
