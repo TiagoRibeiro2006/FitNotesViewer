@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import BodyMeasurementIcon from './BodyMeasurementIcon.vue'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
@@ -202,7 +203,10 @@ function displayChange(item) {
           </form>
 
           <button v-else class="body-measurement-copy" type="button" :aria-label="'Open ' + item.name" @click="openMeasurement(item)">
-            <span class="body-measurement-name">{{ item.name }}</span>
+            <span class="body-measurement-name">
+              <BodyMeasurementIcon :name="item.name" />
+              <span>{{ item.name }}</span>
+            </span>
             <span class="body-measurement-value">
               <strong>{{ displayValue(item) }}</strong>
               <span v-if="item.change !== null" class="body-measurement-change">
