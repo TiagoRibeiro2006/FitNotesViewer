@@ -1,6 +1,6 @@
 <script setup>
 import ActionModal from '../../../shared/components/ActionModal.vue'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 
 defineProps({
   open: { type: Boolean, required: true },

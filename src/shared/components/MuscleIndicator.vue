@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
-import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
+import { resolveMuscleIcon } from '../models/muscleIcons.js'
+import { useMuscleAppearance } from '../composables/useMuscleAppearance.js'
 
 const props = defineProps({
   name: { type: String, default: '' },

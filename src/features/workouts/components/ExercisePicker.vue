@@ -1,7 +1,7 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { exerciseMeta } from '../exerciseFormatters'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 
 defineProps({
   categories: { type: Array, required: true },

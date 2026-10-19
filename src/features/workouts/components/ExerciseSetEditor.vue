@@ -4,7 +4,7 @@ import { useDragList } from '../../../shared/composables/useDragList'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
 import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
 import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 defineProps({
