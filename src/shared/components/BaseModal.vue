@@ -1,7 +1,9 @@
+<script>
+const openModals = []
+</script>
+
 <script setup>
 import { onBeforeUnmount, onMounted, watch } from 'vue'
-
-let openModalCount = 0
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -12,6 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 let bodyLocked = false
+const modalId = Symbol('modal')
 
 watch(readOpenState, updateBodyState)
 
@@ -39,12 +42,18 @@ function unmount() {
 function updateBodyState(open) {
   if (open === bodyLocked) return
   bodyLocked = open
-  openModalCount = Math.max(0, openModalCount + (open ? 1 : -1))
-  document.body.classList.toggle('modal-open', openModalCount > 0)
+  if (open) openModals.push(modalId)
+  else {
+    const index = openModals.indexOf(modalId)
+    if (index >= 0) openModals.splice(index, 1)
+  }
+  document.body.classList.toggle('modal-open', openModals.length > 0)
 }
 
 function handleKeyDown(event) {
-  if (event.key === 'Escape' && props.open) emit('close')
+  if (event.key !== 'Escape' || !props.open || openModals.at(-1) !== modalId) return
+  event.stopImmediatePropagation()
+  emit('close')
 }
 </script>
 

@@ -70,6 +70,7 @@ export function useCatalogManager(callbacks = {}) {
       const detailsToSave = {
         name: details.name,
         colour: cssColorToAndroid(details.colour),
+        iconId: details.iconId,
       }
       if (page.value === 'create') {
         await createCategoryDetails(detailsToSave)

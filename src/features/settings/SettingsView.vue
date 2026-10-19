@@ -5,6 +5,7 @@ import CatalogManagementModal from '../catalog/CatalogManagementModal.vue'
 import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
+import SettingsAppearanceSection from './components/SettingsAppearanceSection.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -89,6 +90,8 @@ function dataDeleted() {
       @manage-exercises="openExercises"
       @manage-body-items="openBodyItems"
     />
+
+    <SettingsAppearanceSection />
 
     <SettingsUnitsSection />
 

@@ -1,5 +1,8 @@
 <script setup>
 import { formatNumber } from '../../../shared/utils/numbers'
+import { androidColorToCss } from '../../../shared/utils/colors'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
@@ -14,6 +17,7 @@ defineProps({
 const emit = defineEmits(['add', 'copy', 'edit', 'reorder', 'move-exercise', 'next', 'previous', 'save-exercise-order', 'today'])
 const { draggingIndex, startDrag } = useDragList(moveExercise, saveExerciseOrder)
 const { displayWeight, weightUnit } = useWeightUnitPreference()
+const { homeIndicatorsEnabled } = useMuscleAppearance()
 
 function moveExercise(fromIndex, toIndex) {
   emit('move-exercise', fromIndex, toIndex)
@@ -21,6 +25,10 @@ function moveExercise(fromIndex, toIndex) {
 
 function saveExerciseOrder() {
   emit('save-exercise-order')
+}
+
+function muscleStyle(exercise) {
+  return { '--category-color': androidColorToCss(exercise.categoryColor) }
 }
 
 </script>
@@ -57,6 +65,7 @@ function saveExerciseOrder() {
       >
         <div class="exercise-row-heading">
           <button class="exercise-row-title" type="button" :aria-label="`Edit ${exercise.name}`" @click="emit('edit', exercise)">
+            <span v-if="homeIndicatorsEnabled" :style="muscleStyle(exercise)"><ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" /></span>
             <strong>{{ exercise.name }}</strong>
           </button>
           <button

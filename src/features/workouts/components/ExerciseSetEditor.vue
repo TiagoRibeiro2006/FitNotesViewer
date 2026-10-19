@@ -4,6 +4,7 @@ import { useDragList } from '../../../shared/composables/useDragList'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
 import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
 import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
+import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference'
 
 defineProps({
@@ -48,7 +49,7 @@ function exerciseStyle(exercise) {
 <template>
   <div class="set-editor">
     <button class="selected-exercise-card" :style="exerciseStyle(exercise)" type="button" @click="emit('edit-details')">
-      <span class="exercise-color-dot"></span>
+      <ExerciseMuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" />
       <div>
         <strong>{{ exercise.name }}</strong>
         <small>{{ exercise.categoryName }}</small>

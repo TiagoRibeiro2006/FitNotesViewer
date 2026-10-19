@@ -33,6 +33,29 @@ function roundTrip(db, data) {
   try { return read(restored) } finally { restored.close() }
 }
 
+test('preserves custom icons, no-icon choices and local muscle IDs in SQLite backups', verifyMuscleIcons)
+
+function verifyMuscleIcons(t) {
+  const db = database(t)
+  const data = read(db)
+  data.categories[0].iconId = 'lats'
+  data.categories.push({ id: 'local-abs', name: 'Abs', colour: -65536, sortOrder: 1, iconId: '' })
+  const restored = roundTrip(db, data)
+  assert.equal(restored.categories.find(isChest).iconId, 'lats')
+  assert.equal(restored.categories.find(isAbs).iconId, '')
+  assert.ok(Number.isSafeInteger(restored.categories.find(isAbs).id))
+  const repeated = roundTrip(db, restored)
+  assert.deepEqual(repeated.categories, restored.categories)
+}
+
+function isChest(category) {
+  return category.name === 'Chest'
+}
+
+function isAbs(category) {
+  return category.name === 'Abs'
+}
+
 test('exports edited names, categories, existing sets and body values without dropping unknown columns', (t) => {
   const db = database(t)
   const data = read(db)

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { getExerciseCatalog } from '../../../data/repositories/catalogRepository'
 import { getWorkoutSetsForDate, reorderWorkoutExercises } from '../../../data/repositories/workoutRepository'
 import { groupWorkoutSetsByExercise } from '../workoutMappers'
 
@@ -15,9 +16,12 @@ export function useWorkoutDay(selectedDate) {
     error.value = ''
 
     try {
-      const sets = await getWorkoutSetsForDate(selectedDate.value)
+      const [sets, catalog] = await Promise.all([
+        getWorkoutSetsForDate(selectedDate.value),
+        getExerciseCatalog(),
+      ])
       if (sequence !== loadSequence) return
-      exercises.value = groupWorkoutSetsByExercise(sets)
+      exercises.value = groupWorkoutSetsByExercise(sets, catalog.exercises)
     } catch {
       if (sequence !== loadSequence) return
       exercises.value = []
