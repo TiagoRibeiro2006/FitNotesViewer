@@ -26,7 +26,8 @@ const BODY_ICONS = {
   'visceral fat': 'visceral-fat',
 }
 
-export function bodyMeasurementIcon(name) {
+export function bodyMeasurementIcon(name, iconId) {
+  if (typeof iconId === 'string') return resolveMuscleIcon('', iconId)
   const normalized = String(name ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

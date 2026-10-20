@@ -4,13 +4,16 @@ import MuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { bodyMeasurementIcon } from '../bodyMeasurementIcons.js'
 import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 
-const props = defineProps({ name: { type: String, required: true } })
+const props = defineProps({
+  name: { type: String, required: true },
+  iconId: { type: String, default: undefined },
+})
 const { bodyIconsEnabled } = useMuscleAppearance()
 const iconId = computed(readIconId)
 
 function readIconId() {
   if (!bodyIconsEnabled.value) return ''
-  return bodyMeasurementIcon(props.name)
+  return bodyMeasurementIcon(props.name, props.iconId)
 }
 </script>
 
