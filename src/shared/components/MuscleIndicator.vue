@@ -66,6 +66,42 @@ function readIcon() {
   <svg v-else-if="icon === 'forearm'" class="muscle-icon" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M7 11V4.5a1.2 1.2 0 0 1 2.4 0V10h.9V2.7a1.2 1.2 0 0 1 2.4 0V10h.9V3.5a1.2 1.2 0 0 1 2.4 0V11h.9V6a1.2 1.2 0 0 1 2.4 0v8.7c0 4.4-2.6 7.3-6.6 7.3-2.7 0-4.4-1.3-5.8-3.5L3 12.2c-.5-.8-.2-1.6.5-2s1.4-.2 2 .5L7 13v-2Z" />
   </svg>
+  <svg v-else-if="icon === 'body-fat'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="8" cy="7" r="3.6" />
+    <circle cx="16" cy="7" r="3.6" />
+    <circle cx="4.5" cy="12.5" r="3.4" />
+    <circle cx="12" cy="11" r="3.5" />
+    <circle cx="19.5" cy="12.5" r="3.4" />
+    <circle cx="8.2" cy="17" r="3.5" />
+    <circle cx="15.8" cy="17" r="3.5" />
+  </svg>
+  <svg v-else-if="icon === 'muscle-mass'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M10 1v3c0 2-4.5 4-4.5 8S10 18 10 20v3M14 1v3c0 2 4.5 4 4.5 8S14 18 14 20v3M12 5v14M9.5 8.5c-1.8 2-1.8 5 0 7M14.5 8.5c1.8 2 1.8 5 0 7" />
+  </svg>
+  <svg v-else-if="icon === 'body-weight'" class="muscle-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="4" r="2.8" />
+    <path d="M9 8h6c1 0 1.7.6 2.1 1.5l2.4 5.3c.3.7 0 1.4-.6 1.7-.7.3-1.4 0-1.7-.6L15 11v10a1.3 1.3 0 0 1-2.6 0v-5h-.8v5A1.3 1.3 0 0 1 9 21V11l-2.2 4.9c-.3.6-1 1-1.7.6-.6-.3-.9-1-.6-1.7l2.4-5.3C7.3 8.6 8 8 9 8Z" />
+  </svg>
+  <svg v-else-if="icon === 'height'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 7v9c0 2.2 2.7 4 6 4h12V9H9M9 11c3.3 0 6-1.8 6-4s-2.7-4-6-4-6 1.8-6 4 2.7 4 6 4ZM9 14v3m4-4v4m4-4v4" />
+    <ellipse cx="9" cy="7" rx="2" ry="1.2" />
+  </svg>
+  <svg v-else-if="icon === 'neck'" class="muscle-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 3V1h1.5v2h2V1H14v2l2-1 .5 2L20 6v3h-6l1 7 2 2v4h-3v-3l-3-1-2 4H6l3-7V8L7 6 5 5l.5-2L9 3Z" />
+    <circle cx="14.5" cy="5.5" r=".7" class="muscle-icon-eye" />
+  </svg>
+  <svg v-else-if="icon === 'waist-normal'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 2c0 4 3 5.7 3 9s-3 6-3 11M19 2c0 4-3 5.7-3 9s3 6 3 11M6 12h12M6 10v4m12-4v4" />
+  </svg>
+  <svg v-else-if="icon === 'waist-vacuum'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 2c0 4 5 5.7 5 9s-5 6-5 11M19 2c0 4-5 5.7-5 9s5 6 5 11M1 12h6m-2-2 2 2-2 2m18-2h-6m2-2-2 2 2 2" />
+  </svg>
+  <svg v-else-if="icon === 'visceral-fat'" class="muscle-icon muscle-icon-outline" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 2c0 3-2 4.5-2 10 0 4.5 1.5 7.5 3 10h10c1.5-2.5 3-5.5 3-10 0-5.5-2-7-2-10" />
+    <circle cx="9" cy="11" r="2.1" />
+    <circle cx="15" cy="11" r="2.1" />
+    <circle cx="12" cy="16" r="2.1" />
+  </svg>
   <span v-else class="exercise-color-dot" aria-hidden="true"></span>
 </template>
 

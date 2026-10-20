@@ -16,10 +16,26 @@ function verifyMuscles() {
   assert.equal(bodyMeasurementIcon('Glúteos'), 'glutes')
 }
 
-test('leaves non-muscle measurements without an icon', verifyOtherMeasurements)
+test('assigns the dedicated body measurement icons', verifyBodyIcons)
+
+function verifyBodyIcons() {
+  assert.equal(bodyMeasurementIcon('Body Fat'), 'body-fat')
+  assert.equal(bodyMeasurementIcon('Muscle Mass'), 'muscle-mass')
+  assert.equal(bodyMeasurementIcon('Bodyweight'), 'body-weight')
+  assert.equal(bodyMeasurementIcon('Body Weight'), 'body-weight')
+  assert.equal(bodyMeasurementIcon('Height'), 'height')
+  assert.equal(bodyMeasurementIcon('Neck'), 'neck')
+  assert.equal(bodyMeasurementIcon('Waist'), 'waist-normal')
+  assert.equal(bodyMeasurementIcon('Waist Normal'), 'waist-normal')
+  assert.equal(bodyMeasurementIcon('Waist Vácuo'), 'waist-vacuum')
+  assert.equal(bodyMeasurementIcon('Waist Vacuum'), 'waist-vacuum')
+  assert.equal(bodyMeasurementIcon('Visceral Fat'), 'visceral-fat')
+}
+
+test('leaves unassigned measurements without an icon', verifyOtherMeasurements)
 
 function verifyOtherMeasurements() {
-  for (const name of ['Body Fat', 'Bodyweight', 'Body Weight', 'Muscle Mass', 'Visceral Fat', 'Neck', 'Waist', 'Hips', 'Height', 'Waist Vácuo']) {
+  for (const name of ['Hips', 'Custom measurement']) {
     assert.equal(bodyMeasurementIcon(name), '')
   }
 }
