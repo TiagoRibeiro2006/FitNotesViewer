@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import MuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
+import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 import { formatNumber } from '../../../shared/utils/numbers.js'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
@@ -10,6 +12,7 @@ const props = defineProps({
 })
 
 const chartRoot = ref(null)
+const { iconsEnabled } = useMuscleAppearance()
 const selectedId = ref(null)
 const chartEntries = computed(buildChartEntries)
 const segments = computed(buildSegments)
@@ -193,9 +196,10 @@ function compactNumber(value) {
       </div>
     </div>
 
-    <div class="donut-legend">
+    <div class="donut-legend" :class="{ 'has-muscle-icons': iconsEnabled }">
       <div v-for="entry in chartEntries" :key="entry.id" class="donut-legend-row">
-        <i :style="{ background: entry.color }"></i>
+        <MuscleIndicator v-if="iconsEnabled && entry.iconId" :icon-id="entry.iconId" :style="{ '--category-color': entry.color }" />
+        <i v-else :style="{ background: entry.color }"></i>
         <span>{{ entry.name }}</span>
         <strong>{{ formatPercentage(entry) }}</strong>
         <small>{{ formatEntryValue(entry) }}</small>

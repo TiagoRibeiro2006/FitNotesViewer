@@ -542,6 +542,10 @@
 
 .donut-legend-row:last-child { border-bottom: 0; }
 
+.donut-legend.has-muscle-icons .donut-legend-row {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+}
+
 .donut-legend-row i {
   width: 8px;
   height: 8px;
