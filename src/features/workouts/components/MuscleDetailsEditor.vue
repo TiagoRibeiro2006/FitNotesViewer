@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { androidColorToCss } from '../../../shared/utils/colors'
 import CatalogDeleteButton from './CatalogDeleteButton.vue'
-import ExerciseMuscleIndicator from './ExerciseMuscleIndicator.vue'
+import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import MuscleIconPicker from './MuscleIconPicker.vue'
 import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
 

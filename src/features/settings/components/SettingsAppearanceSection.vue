@@ -1,7 +1,14 @@
 <script setup>
 import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
 
-const { iconsEnabled, homeIndicatorsEnabled, setIconsEnabled, setHomeIndicatorsEnabled } = useMuscleAppearance()
+const {
+  iconsEnabled,
+  homeIndicatorsEnabled,
+  bodyIconsEnabled,
+  setIconsEnabled,
+  setHomeIndicatorsEnabled,
+  setBodyIconsEnabled,
+} = useMuscleAppearance()
 
 function showIcons() {
   setIconsEnabled(true)
@@ -13,6 +20,10 @@ function showColours() {
 
 function toggleHomeIndicators() {
   setHomeIndicatorsEnabled(!homeIndicatorsEnabled.value)
+}
+
+function toggleBodyIcons() {
+  setBodyIconsEnabled(!bodyIconsEnabled.value)
 }
 </script>
 
@@ -41,6 +52,20 @@ function toggleHomeIndicators() {
         aria-labelledby="home-indicators-label"
         :aria-checked="homeIndicatorsEnabled"
         @click="toggleHomeIndicators"
+      ><span></span></button>
+    </div>
+    <div class="appearance-home-option">
+      <div>
+        <strong id="body-icons-label">Show Body icons</strong>
+        <p>Show blue icons next to body measurement names.</p>
+      </div>
+      <button
+        class="appearance-switch"
+        type="button"
+        role="switch"
+        aria-labelledby="body-icons-label"
+        :aria-checked="bodyIconsEnabled"
+        @click="toggleBodyIcons"
       ><span></span></button>
     </div>
   </section>
