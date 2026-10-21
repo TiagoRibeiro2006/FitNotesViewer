@@ -205,6 +205,10 @@ function displayChange(item) {
             @submit.prevent="saveName(item)"
           >
             <span class="body-name-edit-control">
+              <button class="body-icon-edit-button" type="button" aria-label="Choose measurement icon" :disabled="managementSaving" @click="openIconPicker">
+                <MuscleIndicator v-if="editingIcon" :icon-id="editingIcon" preview />
+                <span v-else aria-hidden="true">∅</span>
+              </button>
               <input
                 v-model="editingName"
                 type="text"
@@ -220,10 +224,6 @@ function displayChange(item) {
                 </svg>
               </button>
             </span>
-            <button class="body-icon-edit-button" type="button" aria-label="Choose measurement icon" :disabled="managementSaving" @click="openIconPicker">
-              <MuscleIndicator v-if="editingIcon" :icon-id="editingIcon" preview />
-              <span v-else aria-hidden="true">∅</span>
-            </button>
             <span class="body-measurement-value">
               <strong>{{ displayValue(item) }}</strong>
               <span v-if="item.change !== null" class="body-measurement-change">
