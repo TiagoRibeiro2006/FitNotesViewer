@@ -156,10 +156,7 @@ function dataDeleted() {
       @manage-body-items="openBodyItems"
     />
 
-    <template v-else-if="activeSection === 'icons'">
-      <SettingsAppearanceSection />
-      <SettingsPreviewSection section="icons" />
-    </template>
+    <SettingsAppearanceSection v-else-if="activeSection === 'icons'" />
 
     <template v-else-if="activeSection === 'appearance'">
       <SettingsThemeSection />

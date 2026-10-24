@@ -9,9 +9,6 @@ const optionsBySection = {
   body: [
     { title: 'Body icon colour', description: 'Follow the accent colour or choose a separate colour for Body icons.', value: 'Accent / Custom', colour: '#4b9cff' },
   ],
-  icons: [
-    { title: 'Icons in exercise lists', description: 'Choose whether icons appear when browsing exercises.', value: 'Show / Hide' },
-  ],
 }
 const options = computed(readOptions)
 
