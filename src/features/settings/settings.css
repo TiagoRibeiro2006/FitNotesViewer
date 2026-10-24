@@ -13,6 +13,23 @@
 
 .settings-local-note { text-align: center; }
 
+.settings-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid #29292e;
+  border-radius: var(--box-radius);
+  background: #121214;
+  color: #85858f;
+}
+
+.settings-search:focus-within { border-color: #4b9cff; }
+.settings-search svg { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.settings-search input { width: 100%; min-width: 0; padding: 14px 0; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; }
+.settings-search input::placeholder { color: #85858f; }
+
 .settings-navigation {
   overflow: hidden;
   border: 1px solid #29292e;
