@@ -6,10 +6,12 @@ const {
   homeIndicatorsEnabled,
   bodyIconsEnabled,
   chartIconsEnabled,
+  exerciseListIconsEnabled,
   setIconsEnabled,
   setHomeIndicatorsEnabled,
   setBodyIconsEnabled,
   setChartIconsEnabled,
+  setExerciseListIconsEnabled,
 } = useMuscleAppearance()
 
 function showIcons() {
@@ -30,6 +32,10 @@ function toggleBodyIcons() {
 
 function toggleChartIcons() {
   setChartIconsEnabled(!chartIconsEnabled.value)
+}
+
+function toggleExerciseListIcons() {
+  setExerciseListIconsEnabled(!exerciseListIconsEnabled.value)
 }
 </script>
 
@@ -86,6 +92,20 @@ function toggleChartIcons() {
         aria-labelledby="chart-icons-label"
         :aria-checked="chartIconsEnabled"
         @click="toggleChartIcons"
+      ><span></span></button>
+    </div>
+    <div class="appearance-home-option">
+      <div>
+        <strong id="exercise-list-icons-label">Icons in exercise lists</strong>
+        <p>Show muscle icons when adding or managing exercises. Otherwise, show muscle colours.</p>
+      </div>
+      <button
+        class="appearance-switch"
+        type="button"
+        role="switch"
+        aria-labelledby="exercise-list-icons-label"
+        :aria-checked="exerciseListIconsEnabled"
+        @click="toggleExerciseListIcons"
       ><span></span></button>
     </div>
   </section>

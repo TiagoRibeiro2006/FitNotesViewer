@@ -5,6 +5,9 @@ import MuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { androidColorToCss } from '../../../shared/utils/colors.js'
 import { useCatalogManager } from '../composables/useCatalogManager.js'
 import ExerciseDetailsEditor from './ExerciseDetailsEditor.vue'
+import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
+
+const { exerciseListIconsEnabled } = useMuscleAppearance()
 
 defineProps({ exercises: { type: Array, required: true } })
 const emit = defineEmits(['changed'])
@@ -52,7 +55,8 @@ function finishChange() {
     </button>
     <div v-if="expanded" class="muscle-exercises-list" aria-label="Exercises in this muscle">
       <button v-for="exercise in exercises" :key="exercise.id" class="muscle-exercise-card" type="button" :style="{ '--category-color': androidColorToCss(exercise.categoryColor) }" @click="openExercise(exercise)">
-        <MuscleIndicator :name="exercise.categoryName" :icon-id="exercise.categoryIcon" />
+        <MuscleIndicator v-if="exerciseListIconsEnabled" :name="exercise.categoryName" :icon-id="exercise.categoryIcon" preview />
+        <span v-else class="exercise-color-dot" aria-hidden="true"></span>
         <span class="exercise-picker-copy"><strong>{{ exercise.name }}</strong><small>{{ exercise.categoryName }}</small></span>
         <span class="exercise-chevron" aria-hidden="true">›</span>
       </button>

@@ -3,6 +3,7 @@ import test from 'node:test'
 
 const CHARTS_KEY = 'fitnotes-viewer-charts-icons'
 const MUSCLE_KEY = 'fitnotes-viewer-muscle-icons'
+const EXERCISE_LISTS_KEY = 'fitnotes-viewer-exercise-list-icons'
 let moduleId = 0
 
 async function appearance() {
@@ -75,5 +76,39 @@ async function verifyBlockedStorage(t) {
   assert.equal(preferences.chartIconsEnabled.value, true)
   preferences.setChartIconsEnabled(false)
   assert.equal(preferences.chartIconsEnabled.value, false)
+  function blocked() { throw new Error('Storage unavailable') }
+}
+
+test('exercise list icons persist independently of Charts, Home, Body and global appearance', verifyExerciseLists)
+async function verifyExerciseLists(t) {
+  const { values } = storage(t)
+  let preferences = await appearance()
+  assert.equal(preferences.exerciseListIconsEnabled.value, true)
+  preferences.setExerciseListIconsEnabled(false)
+  assert.equal(preferences.chartIconsEnabled.value, true)
+  assert.equal(preferences.homeIndicatorsEnabled.value, true)
+  assert.equal(preferences.bodyIconsEnabled.value, true)
+  assert.equal(preferences.iconsEnabled.value, true)
+  assert.equal(values.get(EXERCISE_LISTS_KEY), 'false')
+  preferences = await appearance()
+  assert.equal(preferences.exerciseListIconsEnabled.value, false)
+  preferences.setExerciseListIconsEnabled(true)
+  preferences.setIconsEnabled(false)
+  preferences = await appearance()
+  assert.equal(preferences.exerciseListIconsEnabled.value, true)
+  assert.equal(preferences.iconsEnabled.value, false)
+}
+
+test('exercise lists initially respect the previous global choice and work without storage', verifyExerciseListMigration)
+async function verifyExerciseListMigration(t) {
+  const { local } = storage(t, [[MUSCLE_KEY, 'false']])
+  let preferences = await appearance()
+  assert.equal(preferences.exerciseListIconsEnabled.value, false)
+  local.getItem = blocked
+  local.setItem = blocked
+  preferences = await appearance()
+  assert.equal(preferences.exerciseListIconsEnabled.value, true)
+  preferences.setExerciseListIconsEnabled(false)
+  assert.equal(preferences.exerciseListIconsEnabled.value, false)
   function blocked() { throw new Error('Storage unavailable') }
 }
