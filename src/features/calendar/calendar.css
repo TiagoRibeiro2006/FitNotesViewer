@@ -1,6 +1,6 @@
 .calendar-status {
   margin-bottom: 18px;
-  color: #8f8f96;
+  color: var(--theme-text-secondary, #8f8f96);
   font-size: 14px;
 }
 
@@ -24,7 +24,7 @@
 
 .copy-calendar-intro {
   margin: 0 2px 16px;
-  color: #8f8f96;
+  color: var(--theme-text-secondary, #8f8f96);
   font-size: 13px;
 }
 
@@ -35,9 +35,9 @@
 .calendar-month {
   scroll-margin-top: 20px;
   padding: 18px;
-  border: 1px solid #242424;
+  border: 1px solid var(--theme-border, #242424);
   border-radius: var(--box-radius);
-  background: #101010;
+  background: var(--theme-surface, #101010);
 }
 
 .calendar-month-heading {
@@ -50,7 +50,7 @@
 
 .calendar-month-heading h2 {
   margin: 0;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   font-size: 20px;
   letter-spacing: -.02em;
 }
@@ -58,9 +58,9 @@
 .calendar-month-heading span {
   flex: 0 0 auto;
   padding: 5px 9px;
-  border: 1px solid #303030;
+  border: 1px solid var(--theme-border-strong, #303030);
   border-radius: 999px;
-  color: #a1a1aa;
+  color: var(--theme-text-secondary, #a1a1aa);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -79,7 +79,7 @@
 
 .calendar-weekdays span {
   text-align: center;
-  color: #66666f;
+  color: var(--theme-text-muted, #66666f);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -99,7 +99,7 @@
   border: 1px solid transparent;
   border-radius: var(--box-radius);
   background: transparent;
-  color: #d7d7dc;
+  color: var(--theme-text-primary, #d7d7dc);
   cursor: pointer;
 }
 
@@ -120,18 +120,18 @@
 }
 
 .calendar-day.has-workout {
-  background: #171717;
-  color: #fff;
+  background: var(--theme-surface-raised, #171717);
+  color: var(--theme-text-primary, #fff);
 }
 
 .calendar-day.is-today {
-  border-color: #55555d;
+  border-color: var(--theme-border-strong, #55555d);
 }
 
 .calendar-day.is-selected {
-  border-color: #f5f5f5;
-  background: #f5f5f5;
-  color: #080808;
+  border-color: var(--theme-text-muted, #f5f5f5);
+  background: var(--theme-inverse, #f5f5f5);
+  color: var(--theme-text-inverse, #080808);
 }
 
 .calendar-workout-dot {
@@ -141,7 +141,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--workout-color, #8f8f96);
+  background: var(--workout-color, var(--theme-surface-muted, #8f8f96));
   transform: translateX(-50%);
 }
 

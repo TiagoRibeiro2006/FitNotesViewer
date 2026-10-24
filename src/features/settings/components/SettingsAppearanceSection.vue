@@ -79,15 +79,15 @@ function toggleBodyIcons() {
   gap: 18px;
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px solid #242424;
+  border-top: 1px solid var(--theme-border, #242424);
 }
 .appearance-home-option strong {
-  color: #f5f5f5;
+  color: var(--theme-text-primary, #f5f5f5);
   font-size: 15px;
 }
 .appearance-home-option p {
   margin: 5px 0 0;
-  color: #777780;
+  color: var(--theme-text-muted, #777780);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -109,14 +109,14 @@ function toggleBodyIcons() {
   position: absolute;
   inset: 6px 0;
   border-radius: 999px;
-  background: #34343a;
+  background: var(--theme-surface-muted, #34343a);
 }
 .appearance-switch span {
   position: relative;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--theme-inverse, #fff);
   transform: translateX(0);
   transition: transform .15s ease;
 }

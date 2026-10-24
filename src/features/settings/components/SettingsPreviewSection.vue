@@ -4,7 +4,6 @@ import { computed } from 'vue'
 const props = defineProps({ section: { type: String, required: true } })
 const optionsBySection = {
   appearance: [
-    { title: 'Theme', description: 'Dark, Light or follow your system.', value: 'Dark' },
     { title: 'Accent colour', description: 'The colour of buttons, switches, favourites and selections.', value: 'Blue', colour: '#4b9cff' },
   ],
   home: [

@@ -9,6 +9,7 @@ import SettingsManagementSection from './components/SettingsManagementSection.vu
 import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
 import SettingsAppearanceSection from './components/SettingsAppearanceSection.vue'
 import SettingsPreviewSection from './components/SettingsPreviewSection.vue'
+import SettingsThemeSection from './components/SettingsThemeSection.vue'
 import { searchSettings } from './settingsSearch.js'
 
 const props = defineProps({
@@ -28,7 +29,7 @@ const searchQuery = ref('')
 const searchInput = ref(null)
 const sections = [
   { id: 'management', title: 'Manage items', description: 'Muscles, exercises and body measurements', icon: 'M4 7h16M4 12h16M4 17h16M8 5v4m8 1v4m-6 1v4' },
-  { id: 'appearance', title: 'Theme & colours', description: 'Theme and accent colour · Coming soon', icon: 'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-3.7 1.5 1.5 0 0 1 .8-2.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3ZM7 10h.01M10 7h.01M15 7h.01M7 15h.01' },
+  { id: 'appearance', title: 'Theme & colours', description: 'Dark, Light or Soft · Accent colour coming soon', icon: 'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-3.7 1.5 1.5 0 0 1 .8-2.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3ZM7 10h.01M10 7h.01M15 7h.01M7 15h.01' },
   { id: 'icons', title: 'Icons & visibility', description: 'Muscle display and icons by page', icon: 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z' },
   { id: 'home', title: 'Home', description: 'Set progress indicators · Coming soon', icon: 'm3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7' },
   { id: 'body', title: 'Body', description: 'Body icon colour · Coming soon', icon: 'M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM5 21v-3a7 7 0 0 1 14 0v3' },
@@ -159,7 +160,12 @@ function dataDeleted() {
       <SettingsPreviewSection section="icons" />
     </template>
 
-    <SettingsPreviewSection v-else-if="['appearance', 'home', 'body'].includes(activeSection)" :section="activeSection" />
+    <template v-else-if="activeSection === 'appearance'">
+      <SettingsThemeSection />
+      <SettingsPreviewSection section="appearance" />
+    </template>
+
+    <SettingsPreviewSection v-else-if="['home', 'body'].includes(activeSection)" :section="activeSection" />
 
     <SettingsUnitsSection v-else-if="activeSection === 'units'" />
 
