@@ -113,6 +113,10 @@ function dataDeleted() {
   <AppSectionHeader title="Settings" />
 
   <div class="settings-sections">
+    <label class="settings-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+      <input type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off" />
+    </label>
     <p class="settings-introduction">Make FitNotes your own. Choose a section to get started.</p>
     <nav class="settings-navigation" aria-label="Settings sections">
       <SettingsNavigationRow v-for="section in sections" :key="section.id" :section="section" @open="openSection" />
