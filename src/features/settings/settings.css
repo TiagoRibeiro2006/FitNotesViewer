@@ -13,6 +13,16 @@
 
 .settings-local-note { text-align: center; }
 
+.settings-preview-options { display: grid; gap: 12px; }
+.settings-preview-note { margin: 14px 0 0; color: #85858f; font-size: 12px; }
+.settings-preview-option { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; width: 100%; padding: 16px; border: 1px solid #29292e; border-radius: 12px; background: #171719; text-align: left; opacity: 1; cursor: default; }
+.settings-preview-copy { display: grid; gap: 7px; min-width: 0; }
+.settings-preview-copy strong { color: #f5f5f5; font-size: 15px; }
+.settings-preview-copy small { color: #85858f; font-size: 12px; line-height: 1.5; }
+.settings-preview-value { display: flex; align-items: center; gap: 7px; margin-top: 3px; color: #b5b5bf; font-size: 12px; }
+.settings-preview-value i { width: 12px; height: 12px; border-radius: 50%; }
+.settings-preview-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 6px; background: #242429; color: #9999a5; font-size: 10px; white-space: nowrap; }
+
 .settings-search {
   display: flex;
   align-items: center;
