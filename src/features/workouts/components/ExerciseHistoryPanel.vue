@@ -1,5 +1,6 @@
 <script setup>
 import { watch } from 'vue'
+import { useProgressAppearance } from '../../../shared/composables/useProgressAppearance.js'
 import { formatDate } from '../../../shared/utils/dates'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { useExerciseHistory } from '../composables/useExerciseHistory'
@@ -10,6 +11,7 @@ const props = defineProps({
 })
 
 const { days, error, loading, load } = useExerciseHistory()
+const { editorProgressEnabled } = useProgressAppearance()
 const { displayWeight, weightUnit } = useWeightUnitPreference()
 
 watch(readExerciseId, load, { immediate: true })
@@ -35,7 +37,7 @@ function readExerciseId() {
 
       <div v-for="(set, index) in day.sets" :key="set.id" class="exercise-history-set">
         <span class="exercise-history-set-marker">
-          <svg v-if="set.isProgress" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+          <svg v-if="editorProgressEnabled && set.isProgress" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
             <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
           </svg>
           <span v-else>{{ index + 1 }}</span>
