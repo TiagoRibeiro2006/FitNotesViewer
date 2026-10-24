@@ -3,6 +3,76 @@
   gap: 18px;
 }
 
+.settings-introduction,
+.settings-local-note {
+  margin: 0;
+  color: #85858f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-local-note { text-align: center; }
+
+.settings-navigation {
+  overflow: hidden;
+  border: 1px solid #29292e;
+  border-radius: var(--box-radius);
+  background: #101010;
+}
+
+.settings-navigation-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 88px;
+  padding: 18px 16px;
+  border: 0;
+  border-bottom: 1px solid #252529;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-navigation-row:last-child { border-bottom: 0; }
+.settings-navigation-row:hover { background: #18181b; }
+.settings-navigation-row:focus-visible { outline: 2px solid #4b9cff; outline-offset: -3px; }
+
+.settings-navigation-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid #263c57;
+  border-radius: 13px;
+  background: #132032;
+  color: #4b9cff;
+}
+
+.settings-navigation-row svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-navigation-copy { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.settings-navigation-copy strong { font-size: 16px; font-weight: 750; }
+.settings-navigation-copy small { color: #85858f; font-size: 12px; line-height: 1.4; }
+.settings-navigation-chevron { flex: 0 0 auto; color: #666670; }
+
+.modal-layer.settings-detail-layer { backdrop-filter: blur(10px); }
+.workout-modal.settings-detail-modal { width: min(520px, 100%); }
+.settings-detail-modal .settings-card { padding: 0; border: 0; box-shadow: none; background: transparent; }
+.settings-detail-modal .settings-section-heading { display: none; }
+.settings-detail-modal .action-modal-actions:empty { display: none; }
+.settings-detail-modal .settings-unit-description { margin-top: 0; }
+
 .settings-card {
   padding: 18px;
   border: 1px solid #242424;
