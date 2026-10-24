@@ -8,6 +8,7 @@ import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
 import SettingsAppearanceSection from './components/SettingsAppearanceSection.vue'
+import { searchSettings } from './settingsSearch.js'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -22,6 +23,8 @@ const emit = defineEmits([
 const catalogMode = ref('muscles')
 const catalogOpen = ref(false)
 const activeSection = ref('')
+const searchQuery = ref('')
+const searchInput = ref(null)
 const sections = [
   { id: 'management', title: 'Manage items', description: 'Muscles, exercises and body measurements', icon: 'M4 7h16M4 12h16M4 17h16M8 5v4m8 1v4m-6 1v4' },
   { id: 'appearance', title: 'Appearance', description: 'Muscle icons and where to show them', icon: 'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-3.7 1.5 1.5 0 0 1 .8-2.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3ZM7 10h.01M10 7h.01M15 7h.01M7 15h.01' },
@@ -29,6 +32,16 @@ const sections = [
   { id: 'data', title: 'Data & backups', description: 'Import, export or delete your local data', icon: 'M5 3h10l4 4v14H5V3Zm10 0v5h4M12 11v6m-3-3 3 3 3-3' },
 ]
 const sectionTitle = computed(readSectionTitle)
+const visibleSections = computed(readVisibleSections)
+
+function readVisibleSections() {
+  return searchSettings(sections, searchQuery.value)
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  searchInput.value?.focus()
+}
 
 function readSectionTitle() {
   for (const section of sections) {
@@ -115,12 +128,17 @@ function dataDeleted() {
   <div class="settings-sections">
     <label class="settings-search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
-      <input type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off" />
+      <input ref="searchInput" v-model="searchQuery" type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off" @keydown.esc.prevent="clearSearch" />
+      <button v-if="searchQuery" class="settings-search-clear" type="button" aria-label="Clear search" @click="clearSearch">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
     </label>
     <p class="settings-introduction">Make FitNotes your own. Choose a section to get started.</p>
     <nav class="settings-navigation" aria-label="Settings sections">
-      <SettingsNavigationRow v-for="section in sections" :key="section.id" :section="section" @open="openSection" />
+      <SettingsNavigationRow v-for="section in visibleSections" :key="section.id" :section="section" @open="openSection" />
+      <p v-if="!visibleSections.length" class="settings-search-empty" role="status">No settings found. Try another search.</p>
     </nav>
+    <p v-if="searchQuery.trim() && visibleSections.length" class="settings-search-status" role="status">{{ visibleSections.length }} {{ visibleSections.length === 1 ? 'section found' : 'sections found' }}</p>
     <p class="settings-local-note">Your preferences and data stay on this device.</p>
   </div>
 

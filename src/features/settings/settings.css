@@ -29,6 +29,11 @@
 .settings-search svg { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
 .settings-search input { width: 100%; min-width: 0; padding: 14px 0; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; }
 .settings-search input::placeholder { color: #85858f; }
+.settings-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.settings-search-clear { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: #242429; color: #a0a0aa; cursor: pointer; }
+.settings-search-clear:focus-visible { outline: 2px solid #4b9cff; }
+.settings-search-empty { padding: 24px 16px; margin: 0; color: #85858f; text-align: center; font-size: 14px; }
+.settings-search-status { margin: 0; color: #85858f; font-size: 12px; }
 
 .settings-navigation {
   overflow: hidden;
