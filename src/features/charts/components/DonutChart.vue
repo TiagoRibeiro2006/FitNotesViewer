@@ -12,7 +12,7 @@ const props = defineProps({
 })
 
 const chartRoot = ref(null)
-const { iconsEnabled } = useMuscleAppearance()
+const { chartIconsEnabled } = useMuscleAppearance()
 const selectedId = ref(null)
 const chartEntries = computed(buildChartEntries)
 const segments = computed(buildSegments)
@@ -196,9 +196,9 @@ function compactNumber(value) {
       </div>
     </div>
 
-    <div class="donut-legend" :class="{ 'has-muscle-icons': iconsEnabled }">
+    <div class="donut-legend" :class="{ 'has-muscle-icons': chartIconsEnabled }">
       <div v-for="entry in chartEntries" :key="entry.id" class="donut-legend-row">
-        <MuscleIndicator v-if="iconsEnabled && entry.iconId" :icon-id="entry.iconId" :style="{ '--category-color': entry.color }" />
+        <MuscleIndicator v-if="chartIconsEnabled && entry.iconId" :icon-id="entry.iconId" :style="{ '--category-color': entry.color }" preview />
         <i v-else :style="{ background: entry.color }"></i>
         <span>{{ entry.name }}</span>
         <strong>{{ formatPercentage(entry) }}</strong>
