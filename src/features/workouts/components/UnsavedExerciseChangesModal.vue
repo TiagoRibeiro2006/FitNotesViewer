@@ -52,7 +52,7 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
 .modal-layer.unsaved-changes-layer {
   z-index: 260;
   padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, .58);
+  background: rgba(var(--theme-surface-rgb, 0, 0, 0), .58);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -64,8 +64,8 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
   display: block;
   padding: 24px;
   overflow-y: auto;
-  border-color: #333338;
-  background: #111113;
+  border-color: var(--theme-border-strong, #333338);
+  background: var(--theme-surface, #111113);
   box-shadow: 0 28px 80px rgba(0, 0, 0, .72);
 }
 
@@ -76,7 +76,7 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
 
 .unsaved-changes-content h2 {
   margin: 0;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   font-size: 25px;
   line-height: 1.15;
   letter-spacing: -.025em;
@@ -84,7 +84,7 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
 
 .unsaved-changes-content > p:not(.eyebrow, .editor-error) {
   margin: 11px 0 0;
-  color: #96969f;
+  color: var(--theme-text-secondary, #96969f);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -124,13 +124,13 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
 
 .unsaved-changes-save {
   border: 0;
-  background: #f4f4f5;
-  color: #09090b;
+  background: var(--theme-inverse, #f4f4f5);
+  color: var(--theme-text-inverse, #09090b);
 }
 
 .unsaved-changes-discard {
-  border: 1px solid #54302f;
-  background: #241414;
+  border: 1px solid var(--theme-danger-border, #54302f);
+  background: var(--theme-surface-raised, #241414);
   color: #ff8b84;
 }
 

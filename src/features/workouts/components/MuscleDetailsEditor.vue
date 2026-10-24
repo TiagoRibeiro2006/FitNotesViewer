@@ -114,10 +114,10 @@ function selectIcon(icon) {
   gap: 14px;
   min-height: 56px;
   padding: 12px 16px;
-  border: 1px solid #303036;
+  border: 1px solid var(--theme-border-strong, #303036);
   border-radius: var(--box-radius);
-  background: #18181c;
-  color: #fff;
+  background: var(--theme-surface-raised, #18181c);
+  color: var(--theme-text-primary, #fff);
   cursor: pointer;
 }
 .muscle-icon-field .exercise-chevron {

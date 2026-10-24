@@ -1,6 +1,6 @@
 const SECTION_KEYWORDS = {
   management: 'edit rename add remove muscles exercises body measurements colours colors',
-  appearance: 'theme dark light system accent colours colors buttons switches favourites selections',
+  appearance: 'theme dark light soft pastel accent colours colors buttons switches favourites selections',
   icons: 'muscle icons colours colors show on home show body icons charts exercise lists enable disable',
   home: 'sets progress indicators show hide',
   body: 'body icons colour color accent custom',

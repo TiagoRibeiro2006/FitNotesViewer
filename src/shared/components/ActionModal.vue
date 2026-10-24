@@ -47,7 +47,7 @@ function close() {
   display: grid;
   place-items: center;
   padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, .72);
+  background: rgba(var(--theme-surface-rgb, 0, 0, 0), .72);
 }
 
 .workout-modal.action-modal {
@@ -57,16 +57,16 @@ function close() {
   display: block;
   padding: 26px 22px 22px;
   overflow-y: auto;
-  border: 1px solid #303030;
+  border: 1px solid var(--theme-border-strong, #303030);
   border-radius: var(--box-radius);
-  background: #101010;
+  background: var(--theme-surface, #101010);
   box-shadow: 0 24px 70px rgba(0, 0, 0, .72);
 }
 
 .action-modal h2 {
   max-width: 310px;
   margin: 0;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   font-size: 24px;
   line-height: 1.16;
   letter-spacing: -.025em;
@@ -80,7 +80,7 @@ function close() {
 
 .action-modal-content {
   margin-top: 13px;
-  color: #9d9da5;
+  color: var(--theme-text-secondary, #9d9da5);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -106,8 +106,8 @@ function close() {
   min-height: 48px;
   border: 0;
   border-radius: var(--box-radius);
-  background: #f5f5f5;
-  color: #080808;
+  background: var(--theme-inverse, #f5f5f5);
+  color: var(--theme-text-inverse, #080808);
   font-weight: 850;
   cursor: pointer;
 }

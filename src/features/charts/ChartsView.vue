@@ -67,9 +67,9 @@ async function initializeCharts() {
   gap: 4px;
   margin-bottom: 18px;
   padding: 4px;
-  border: 1px solid #242424;
+  border: 1px solid var(--theme-border, #242424);
   border-radius: var(--box-radius);
-  background: #101010;
+  background: var(--theme-surface, #101010);
 }
 
 .charts-section-tabs button {
@@ -77,15 +77,15 @@ async function initializeCharts() {
   border: 0;
   border-radius: 5px;
   background: transparent;
-  color: #777780;
+  color: var(--theme-text-muted, #777780);
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
 }
 
 .charts-section-tabs button.is-active {
-  background: #242428;
-  color: #fff;
+  background: var(--theme-surface-raised, #242428);
+  color: var(--theme-text-primary, #fff);
 }
 
 .charts-status-card {
@@ -95,22 +95,22 @@ async function initializeCharts() {
   justify-content: center;
   flex-direction: column;
   padding: 32px;
-  border: 1px solid #242424;
+  border: 1px solid var(--theme-border, #242424);
   border-radius: var(--box-radius);
-  background: #101010;
+  background: var(--theme-surface, #101010);
   text-align: center;
 }
 
 .charts-status-card strong {
   margin: 0 0 8px;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   font-size: 22px;
 }
 
 .charts-status-card p {
   max-width: 430px;
   margin: 0;
-  color: #85858e;
+  color: var(--theme-text-secondary, #85858e);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -119,7 +119,7 @@ async function initializeCharts() {
   width: 30px;
   height: 30px;
   margin-bottom: 18px;
-  border: 3px solid #24242a;
+  border: 3px solid var(--theme-border, #24242a);
   border-top-color: #3f96ff;
   border-radius: 50%;
   animation: charts-spin .8s linear infinite;
@@ -134,10 +134,10 @@ async function initializeCharts() {
   min-height: 42px;
   margin-top: 18px;
   padding: 0 18px;
-  border: 1px solid #34343a;
+  border: 1px solid var(--theme-border-strong, #34343a);
   border-radius: 6px;
-  background: #1c1c20;
-  color: #fff;
+  background: var(--theme-surface-raised, #1c1c20);
+  color: var(--theme-text-primary, #fff);
   font-weight: 800;
   cursor: pointer;
 }

@@ -110,16 +110,16 @@ function readIcon() {
   width: 24px;
   height: 24px;
   flex: 0 0 auto;
-  fill: var(--category-color, #7c7c85);
+  fill: var(--category-color, var(--theme-text-muted, #7c7c85));
 }
 .muscle-icon-outline {
   fill: none;
-  stroke: var(--category-color, #7c7c85);
+  stroke: var(--category-color, var(--theme-text-muted, #7c7c85));
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .muscle-icon-eye {
-  fill: var(--surface-color, #101010);
+  fill: var(--surface-color, var(--theme-text-inverse, #101010));
 }
 </style>
