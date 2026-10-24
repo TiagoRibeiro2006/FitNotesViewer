@@ -3,7 +3,7 @@ import test from 'node:test'
 import { searchSettings } from '../src/features/settings/settingsSearch.js'
 
 const sections = [
-  { id: 'management', title: 'Manage items', description: 'Muscles, exercises and body measurements' },
+  { id: 'management', title: 'Muscles & exercises', description: 'Manage muscles and exercises' },
   { id: 'icons', title: 'Icons & visibility', description: 'Muscle icons and where to show them' },
   { id: 'units', title: 'Weight unit', description: 'Choose kilograms or pounds' },
   { id: 'data', title: 'Data & backups', description: 'Import, export or delete your local data' },
@@ -29,6 +29,7 @@ function verifyMatches() {
   assert.deepEqual(searchSettings(sections, 'dark'), [sections[4]])
   assert.deepEqual(searchSettings(sections, 'progress'), [sections[5]])
   assert.deepEqual(searchSettings(sections, 'custom'), [sections[6]])
+  assert.deepEqual(searchSettings(sections, 'measurements'), [sections[6]])
 }
 
 test('unmatched searches are empty and do not mutate the source', verifyMissing)

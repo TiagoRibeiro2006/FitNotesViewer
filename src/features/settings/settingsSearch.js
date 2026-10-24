@@ -1,9 +1,9 @@
 const SECTION_KEYWORDS = {
-  management: 'edit rename add remove muscles exercises body measurements colours colors',
+  management: 'edit rename add remove muscles exercises colours colors',
   appearance: 'theme dark light soft pastel accent colours colors buttons switches favourites selections',
   icons: 'muscle icons colours colors show on home show body icons charts exercise lists enable disable',
   home: 'sets progress indicators stars log edit exercise history show hide',
-  body: 'body icons colour color accent custom',
+  body: 'body icons colour color accent custom manage items measurements rename add remove',
   units: 'weight unit kg kilograms lb lbs pounds',
   data: 'import export delete replace backup csv fitnotes file download storage',
 }
