@@ -69,7 +69,7 @@ function toggleExerciseListIcons() {
     <div class="appearance-home-option">
       <div>
         <strong id="body-icons-label">Show Body icons</strong>
-        <p>Show blue icons next to body measurement names.</p>
+        <p>Show icons next to body measurement names. Choose their colour in Body settings.</p>
       </div>
       <button
         class="appearance-switch"

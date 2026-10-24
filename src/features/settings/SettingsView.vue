@@ -8,7 +8,7 @@ import SettingsDataSection from './components/SettingsDataSection.vue'
 import SettingsManagementSection from './components/SettingsManagementSection.vue'
 import SettingsUnitsSection from './components/SettingsUnitsSection.vue'
 import SettingsAppearanceSection from './components/SettingsAppearanceSection.vue'
-import SettingsPreviewSection from './components/SettingsPreviewSection.vue'
+import SettingsBodySection from './components/SettingsBodySection.vue'
 import SettingsThemeSection from './components/SettingsThemeSection.vue'
 import SettingsAccentSection from './components/SettingsAccentSection.vue'
 import SettingsHomeSection from './components/SettingsHomeSection.vue'
@@ -30,11 +30,11 @@ const activeSection = ref('')
 const searchQuery = ref('')
 const searchInput = ref(null)
 const sections = [
-  { id: 'management', title: 'Manage items', description: 'Muscles, exercises and body measurements', icon: 'M4 7h16M4 12h16M4 17h16M8 5v4m8 1v4m-6 1v4' },
+  { id: 'management', title: 'Muscles & exercises', description: 'Manage muscles and exercises', icon: 'M4 7h16M4 12h16M4 17h16M8 5v4m8 1v4m-6 1v4' },
   { id: 'appearance', title: 'Theme & colours', description: 'Dark, Light or Soft and your accent colour', icon: 'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-3.7 1.5 1.5 0 0 1 .8-2.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3ZM7 10h.01M10 7h.01M15 7h.01M7 15h.01' },
   { id: 'icons', title: 'Icons & visibility', description: 'Muscle display and icons by page', icon: 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z' },
   { id: 'home', title: 'Home & workout', description: 'Progress stars on Home and in Log / Edit Exercise', icon: 'm3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7' },
-  { id: 'body', title: 'Body', description: 'Body icon colour · Coming soon', icon: 'M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM5 21v-3a7 7 0 0 1 14 0v3' },
+  { id: 'body', title: 'Body', description: 'Icon colour and body measurements', icon: 'M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM5 21v-3a7 7 0 0 1 14 0v3' },
   { id: 'units', title: 'Weight unit', description: 'Choose kilograms or pounds', icon: 'M5 7h14l2 14H3L5 7ZM9 7V5a3 3 0 0 1 6 0v2M12 11v5m-2-3 2-2 2 2' },
   { id: 'data', title: 'Data & backups', description: 'Import, export or delete your local data', icon: 'M5 3h10l4 4v14H5V3Zm10 0v5h4M12 11v6m-3-3 3 3 3-3' },
 ]
@@ -154,7 +154,6 @@ function dataDeleted() {
       v-if="activeSection === 'management'"
       @manage-muscles="openMuscles"
       @manage-exercises="openExercises"
-      @manage-body-items="openBodyItems"
     />
 
     <SettingsAppearanceSection v-else-if="activeSection === 'icons'" />
@@ -165,7 +164,7 @@ function dataDeleted() {
     </template>
 
     <SettingsHomeSection v-else-if="activeSection === 'home'" />
-    <SettingsPreviewSection v-else-if="activeSection === 'body'" section="body" />
+    <SettingsBodySection v-else-if="activeSection === 'body'" @manage-body-items="openBodyItems" />
 
     <SettingsUnitsSection v-else-if="activeSection === 'units'" />
 

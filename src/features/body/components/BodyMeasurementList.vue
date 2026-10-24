@@ -4,6 +4,7 @@ import BodyMeasurementIcon from './BodyMeasurementIcon.vue'
 import MuscleIconPicker from '../../workouts/components/MuscleIconPicker.vue'
 import MuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { bodyMeasurementIcon } from '../bodyMeasurementIcons.js'
+import { useBodyIconColour } from '../../../shared/composables/useBodyIconColour.js'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { formatNumber } from '../../../shared/utils/numbers'
 import { formatBodyEntryDate, formatBodyValue } from '../bodyFormatters'
@@ -33,6 +34,7 @@ const iconPickerOpen = ref(false)
 let skipNextMenuClick = false
 const { draggingIndex, startDrag } = useDragList(moveFavorite, saveFavoriteOrder)
 const { displayMeasurementValue, weightUnit } = useWeightUnitPreference()
+const { bodyIconColour } = useBodyIconColour()
 
 watch(readManaging, resetManagementState)
 
@@ -205,7 +207,7 @@ function displayChange(item) {
             @submit.prevent="saveName(item)"
           >
             <span class="body-name-edit-control">
-              <button class="body-icon-edit-button" type="button" aria-label="Choose measurement icon" :disabled="managementSaving" @click="openIconPicker">
+              <button class="body-icon-edit-button" :style="{ '--category-color': bodyIconColour }" type="button" aria-label="Choose measurement icon" :disabled="managementSaving" @click="openIconPicker">
                 <MuscleIndicator v-if="editingIcon" :icon-id="editingIcon" preview />
                 <span v-else aria-hidden="true">∅</span>
               </button>
@@ -289,6 +291,6 @@ function displayChange(item) {
         </article>
       </div>
     </section>
-    <MuscleIconPicker :open="iconPickerOpen" :selected="editingIcon" colour="#4b9cff" @select="selectIcon" @close="closeIconPicker" />
+    <MuscleIconPicker :open="iconPickerOpen" :selected="editingIcon" :colour="bodyIconColour" @select="selectIcon" @close="closeIconPicker" />
   </div>
 </template>
