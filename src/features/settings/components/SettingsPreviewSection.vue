@@ -10,7 +10,6 @@ const optionsBySection = {
     { title: 'Body icon colour', description: 'Follow the accent colour or choose a separate colour for Body icons.', value: 'Accent / Custom', colour: '#4b9cff' },
   ],
   icons: [
-    { title: 'Icons on Charts', description: 'Choose whether muscle icons appear in the distribution legend.', value: 'Show / Hide' },
     { title: 'Icons in exercise lists', description: 'Choose whether icons appear when browsing exercises.', value: 'Show / Hide' },
   ],
 }

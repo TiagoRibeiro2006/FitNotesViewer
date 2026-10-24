@@ -5,9 +5,11 @@ const {
   iconsEnabled,
   homeIndicatorsEnabled,
   bodyIconsEnabled,
+  chartIconsEnabled,
   setIconsEnabled,
   setHomeIndicatorsEnabled,
   setBodyIconsEnabled,
+  setChartIconsEnabled,
 } = useMuscleAppearance()
 
 function showIcons() {
@@ -24,6 +26,10 @@ function toggleHomeIndicators() {
 
 function toggleBodyIcons() {
   setBodyIconsEnabled(!bodyIconsEnabled.value)
+}
+
+function toggleChartIcons() {
+  setChartIconsEnabled(!chartIconsEnabled.value)
 }
 </script>
 
@@ -66,6 +72,20 @@ function toggleBodyIcons() {
         aria-labelledby="body-icons-label"
         :aria-checked="bodyIconsEnabled"
         @click="toggleBodyIcons"
+      ><span></span></button>
+    </div>
+    <div class="appearance-home-option">
+      <div>
+        <strong id="chart-icons-label">Icons on Charts</strong>
+        <p>Show muscle icons in Distribution. Otherwise, show muscle colours.</p>
+      </div>
+      <button
+        class="appearance-switch"
+        type="button"
+        role="switch"
+        aria-labelledby="chart-icons-label"
+        :aria-checked="chartIconsEnabled"
+        @click="toggleChartIcons"
       ><span></span></button>
     </div>
   </section>
