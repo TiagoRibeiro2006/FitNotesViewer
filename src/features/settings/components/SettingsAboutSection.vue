@@ -31,6 +31,8 @@ function closeAbout() { open.value = false }
       </dl>
       <h3>Your data, your choice</h3>
       <p>Bring your history from FitNotes with a .fitnotes backup or .csv export, and export your data whenever you need it. Your information stays on your device, and the app keeps working offline.</p>
+      <h3>Privacy comes first</h3>
+      <p>We do not collect or store personal information about you. Your workouts, measurements and preferences stay locally on your device, under your control. Your privacy always comes first.</p>
       <p class="settings-about-disclaimer">FitNotesViewer is an independent project and is not affiliated with FitNotes.</p>
     </div>
   </ActionModal>
