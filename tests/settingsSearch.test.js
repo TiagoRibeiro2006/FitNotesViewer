@@ -4,9 +4,12 @@ import { searchSettings } from '../src/features/settings/settingsSearch.js'
 
 const sections = [
   { id: 'management', title: 'Manage items', description: 'Muscles, exercises and body measurements' },
-  { id: 'appearance', title: 'Appearance', description: 'Muscle icons and where to show them' },
+  { id: 'icons', title: 'Icons & visibility', description: 'Muscle icons and where to show them' },
   { id: 'units', title: 'Weight unit', description: 'Choose kilograms or pounds' },
   { id: 'data', title: 'Data & backups', description: 'Import, export or delete your local data' },
+  { id: 'appearance', title: 'Theme & colours', description: 'Theme and accent colour' },
+  { id: 'home', title: 'Home', description: 'Set progress indicators' },
+  { id: 'body', title: 'Body', description: 'Body icon colour' },
 ]
 
 test('empty searches preserve every settings section in order', verifyEmpty)
@@ -23,10 +26,13 @@ function verifyMatches() {
   assert.deepEqual(searchSettings(sections, 'exercises'), [sections[0]])
   assert.deepEqual(searchSettings(sections, '  WEÍGHT   UNIT  '), [sections[2]])
   assert.deepEqual(searchSettings(sections, 'muscle'), [sections[0], sections[1]])
+  assert.deepEqual(searchSettings(sections, 'dark'), [sections[4]])
+  assert.deepEqual(searchSettings(sections, 'progress'), [sections[5]])
+  assert.deepEqual(searchSettings(sections, 'custom'), [sections[6]])
 }
 
 test('unmatched searches are empty and do not mutate the source', verifyMissing)
 function verifyMissing() {
   assert.deepEqual(searchSettings(sections, 'not-a-setting'), [])
-  assert.equal(sections.length, 4)
+  assert.equal(sections.length, 7)
 }
