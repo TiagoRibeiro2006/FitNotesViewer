@@ -76,6 +76,8 @@ function goBack() {
       :creating="manager.page.value === 'create'"
       :deleting="manager.deleting.value"
       :exercise-count="manager.selectedMuscleExerciseCount.value"
+      :exercises="manager.selectedMuscleExercises.value"
+      @exercises-changed="manager.load"
       :error="manager.error.value"
       :saving="manager.saving.value"
       @save="manager.saveMuscle"
