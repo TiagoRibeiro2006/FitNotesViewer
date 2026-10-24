@@ -9,7 +9,7 @@ body.modal-open {
   display: grid;
   place-items: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-  background: #fff;
+  background: var(--theme-inverse, #fff);
 }
 
 .workout-modal {
@@ -19,9 +19,9 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--theme-border, #2a2a2a);
   border-radius: var(--box-radius);
-  background: #090909;
+  background: var(--theme-page, #090909);
   box-shadow: 0 30px 90px rgba(0, 0, 0, .65);
 }
 
@@ -34,8 +34,8 @@ body.modal-open {
   gap: 10px;
   min-height: calc(82px + var(--header-top-spacing));
   padding: calc(14px + var(--header-top-spacing)) 16px 14px;
-  border-bottom: 1px solid #202020;
-  background: rgba(9, 9, 9, .96);
+  border-bottom: 1px solid var(--theme-border, #202020);
+  background: rgba(var(--theme-surface-rgb, 9, 9, 9), .96);
 }
 
 .modal-heading {
@@ -48,7 +48,7 @@ body.modal-open {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #777780;
+  color: var(--theme-text-muted, #777780);
   font-size: 11px;
   font-weight: 750;
 }
@@ -58,7 +58,7 @@ body.modal-open {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   font-size: 22px;
   line-height: 1.1;
   letter-spacing: -.025em;
@@ -75,10 +75,10 @@ body.modal-open {
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--theme-border, #2a2a2a);
   border-radius: 50%;
-  background: #171717;
-  color: #b7b7bd;
+  background: var(--theme-surface-raised, #171717);
+  color: var(--theme-text-secondary, #b7b7bd);
   cursor: pointer;
 }
 
@@ -94,7 +94,7 @@ body.modal-open {
 
 .modal-icon-button:active {
   transform: scale(.96);
-  background: #202020;
+  background: var(--theme-surface-raised, #202020);
 }
 
 .confirmation-modal {
@@ -110,7 +110,7 @@ body.modal-open {
 
 .confirmation-form > p {
   margin: 0;
-  color: #a0a0a8;
+  color: var(--theme-text-secondary, #a0a0a8);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -121,7 +121,7 @@ body.modal-open {
 }
 
 .confirmation-form label > span {
-  color: #8f8f96;
+  color: var(--theme-text-secondary, #8f8f96);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .08em;
@@ -132,32 +132,32 @@ body.modal-open {
   width: 100%;
   min-height: 52px;
   padding: 0 14px;
-  border: 1px solid #303030;
+  border: 1px solid var(--theme-border-strong, #303030);
   border-radius: var(--box-radius);
   outline: 0;
-  background: #151515;
-  color: #f5f5f5;
+  background: var(--theme-surface, #151515);
+  color: var(--theme-text-primary, #f5f5f5);
   font-size: 17px;
   font-weight: 700;
 }
 
 .confirmation-form input:focus {
-  border-color: #66666e;
+  border-color: var(--theme-text-muted, #66666e);
 }
 
 .confirmation-submit {
   min-height: 50px;
   border: 0;
   border-radius: var(--box-radius);
-  background: #f5f5f5;
-  color: #080808;
+  background: var(--theme-inverse, #f5f5f5);
+  color: var(--theme-text-inverse, #080808);
   font-weight: 850;
   cursor: pointer;
 }
 
 .confirmation-submit.is-danger {
-  border: 1px solid #612d2d;
-  background: #2a1212;
+  border: 1px solid var(--theme-danger-border, #612d2d);
+  background: var(--theme-danger-surface, #2a1212);
   color: #ff8179;
 }
 

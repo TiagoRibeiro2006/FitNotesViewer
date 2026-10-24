@@ -3,18 +3,26 @@ import { readonly, ref } from 'vue'
 const ICONS_KEY = 'fitnotes-viewer-muscle-icons'
 const HOME_KEY = 'fitnotes-viewer-home-muscle-indicators'
 const BODY_KEY = 'fitnotes-viewer-body-icons'
+const CHARTS_KEY = 'fitnotes-viewer-charts-icons'
+const EXERCISE_LISTS_KEY = 'fitnotes-viewer-exercise-list-icons'
 const iconsEnabled = ref(readPreference(ICONS_KEY))
 const homeIndicatorsEnabled = ref(readPreference(HOME_KEY))
 const bodyIconsEnabled = ref(readPreference(BODY_KEY))
+const chartIconsEnabled = ref(readPreference(CHARTS_KEY, iconsEnabled.value))
+const exerciseListIconsEnabled = ref(readPreference(EXERCISE_LISTS_KEY, iconsEnabled.value))
 
 export function useMuscleAppearance() {
   return {
     iconsEnabled: readonly(iconsEnabled),
     homeIndicatorsEnabled: readonly(homeIndicatorsEnabled),
     bodyIconsEnabled: readonly(bodyIconsEnabled),
+    chartIconsEnabled: readonly(chartIconsEnabled),
+    exerciseListIconsEnabled: readonly(exerciseListIconsEnabled),
     setIconsEnabled,
     setHomeIndicatorsEnabled,
     setBodyIconsEnabled,
+    setChartIconsEnabled,
+    setExerciseListIconsEnabled,
   }
 }
 
@@ -33,11 +41,22 @@ function setBodyIconsEnabled(enabled) {
   savePreference(BODY_KEY, enabled)
 }
 
-function readPreference(key) {
+function setChartIconsEnabled(enabled) {
+  chartIconsEnabled.value = enabled
+  savePreference(CHARTS_KEY, enabled)
+}
+
+function setExerciseListIconsEnabled(enabled) {
+  exerciseListIconsEnabled.value = enabled
+  savePreference(EXERCISE_LISTS_KEY, enabled)
+}
+
+function readPreference(key, fallback = true) {
   try {
-    return globalThis.localStorage?.getItem(key) !== 'false'
+    const value = globalThis.localStorage?.getItem(key)
+    return value === null || value === undefined ? fallback : value !== 'false'
   } catch {
-    return true
+    return fallback
   }
 }
 

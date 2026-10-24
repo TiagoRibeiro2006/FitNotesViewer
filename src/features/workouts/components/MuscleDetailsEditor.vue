@@ -4,6 +4,7 @@ import { androidColorToCss } from '../../../shared/utils/colors'
 import CatalogDeleteButton from './CatalogDeleteButton.vue'
 import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import MuscleIconPicker from './MuscleIconPicker.vue'
+import MuscleExercisesList from './MuscleExercisesList.vue'
 import { resolveMuscleIcon } from '../../../shared/models/muscleIcons.js'
 
 const props = defineProps({
@@ -11,11 +12,13 @@ const props = defineProps({
   creating: { type: Boolean, default: false },
   deleting: { type: Boolean, default: false },
   exerciseCount: { type: Number, default: 0 },
+  exercises: { type: Array, default: Array },
   muscle: { type: Object, required: true },
   saving: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['delete', 'save'])
+const emit = defineEmits(['delete', 'save', 'exercises-changed'])
+
 const colour = ref('#7c7c85')
 const name = ref('')
 const iconId = ref('')
@@ -103,6 +106,7 @@ function selectIcon(icon) {
       :warning="exerciseCount > 0 ? 'Move or delete the exercises in this muscle first.' : ''"
       @delete="emit('delete')"
     />
+    <MuscleExercisesList v-if="!creating && exerciseCount > 0" :key="muscle.id" :exercises="exercises" @changed="emit('exercises-changed')" />
   </form>
   <MuscleIconPicker :open="iconPickerOpen" :selected="iconId" :colour="colour" @close="closeIconPicker" @select="selectIcon" />
 </template>
@@ -114,10 +118,10 @@ function selectIcon(icon) {
   gap: 14px;
   min-height: 56px;
   padding: 12px 16px;
-  border: 1px solid #303036;
+  border: 1px solid var(--theme-border-strong, #303036);
   border-radius: var(--box-radius);
-  background: #18181c;
-  color: #fff;
+  background: var(--theme-surface-raised, #18181c);
+  color: var(--theme-text-primary, #fff);
   cursor: pointer;
 }
 .muscle-icon-field .exercise-chevron {

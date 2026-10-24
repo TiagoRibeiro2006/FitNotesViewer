@@ -1,6 +1,7 @@
 <script setup>
 import { androidColorToCss } from '../../../shared/utils/colors'
 import { useDragList } from '../../../shared/composables/useDragList'
+import { useProgressAppearance } from '../../../shared/composables/useProgressAppearance.js'
 import ExerciseHistoryPanel from './ExerciseHistoryPanel.vue'
 import ExerciseOneRepMaxPanel from './ExerciseOneRepMaxPanel.vue'
 import ExerciseRecordsPanel from './ExerciseRecordsPanel.vue'
@@ -31,6 +32,7 @@ const emit = defineEmits([
   'update-set',
 ])
 const { weightUnit } = useWeightUnitPreference()
+const { editorProgressEnabled } = useProgressAppearance()
 const { draggingIndex, startDrag } = useDragList(moveSet)
 
 function moveSet(fromIndex, toIndex) {
@@ -83,7 +85,7 @@ function exerciseStyle(exercise) {
           @contextmenu.prevent
           @pointerdown="startDrag($event, index, saving)"
         >
-          <svg v-if="setProgress[index]" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+          <svg v-if="editorProgressEnabled && setProgress[index]" class="set-progress-star" viewBox="0 0 24 24" aria-hidden="true">
             <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
           </svg>
           <span v-else>{{ index + 1 }}</span>

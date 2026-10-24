@@ -97,10 +97,10 @@ function finishDownload() {
   justify-content: space-between;
   gap: 16px;
   padding: 13px 14px;
-  border: 1px solid #303036;
+  border: 1px solid var(--theme-border-strong, #303036);
   border-radius: var(--box-radius);
-  background: #17171a;
-  color: #fff;
+  background: var(--theme-surface-raised, #17171a);
+  color: var(--theme-text-primary, #fff);
   text-align: left;
   text-decoration: none;
 }
@@ -117,7 +117,7 @@ function finishDownload() {
 
 .export-format-button small {
   overflow: hidden;
-  color: #8f8f98;
+  color: var(--theme-text-secondary, #8f8f98);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,8 +127,8 @@ function finishDownload() {
   flex: 0 0 auto;
   padding: 5px 8px;
   border-radius: 7px;
-  background: #242429;
-  color: #8f8f98;
+  background: var(--theme-surface-raised, #242429);
+  color: var(--theme-text-secondary, #8f8f98);
   font-size: 11px;
   letter-spacing: .04em;
 }
@@ -138,13 +138,13 @@ function finishDownload() {
 }
 
 .export-format-button.is-enabled {
-  border-color: #fff;
+  border-color: var(--theme-text-muted, #fff);
   cursor: pointer;
 }
 
 .export-format-button.is-enabled b {
-  background: #17273b;
-  color: #fff;
+  background: var(--theme-accent-surface, #17273b);
+  color: var(--theme-text-primary, #fff);
 }
 
 .export-format-button.is-enabled:active {

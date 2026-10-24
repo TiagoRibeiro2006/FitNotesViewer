@@ -38,10 +38,10 @@ function reset() {
 .reset-order-cancel {
   width: 100%;
   min-height: 48px;
-  border: 1px solid #38383e;
+  border: 1px solid var(--theme-border-strong, #38383e);
   border-radius: var(--box-radius);
-  background: #202024;
-  color: #fff;
+  background: var(--theme-surface-raised, #202024);
+  color: var(--theme-text-primary, #fff);
   font-weight: 800;
   cursor: pointer;
 }

@@ -226,6 +226,8 @@ function selectOption(option) {
         :creating="catalogManager.page.value === 'create'"
         :deleting="catalogManager.deleting.value"
         :exercise-count="catalogManager.selectedMuscleExerciseCount.value"
+        :exercises="catalogManager.selectedMuscleExercises.value"
+        @exercises-changed="catalogManager.load"
         :error="catalogManager.error.value"
         :saving="catalogManager.saving.value"
         @save="catalogManager.saveMuscle"
