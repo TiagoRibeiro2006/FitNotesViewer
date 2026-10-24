@@ -356,7 +356,7 @@
 .set-input-row.is-dragging {
   position: relative;
   z-index: 2;
-  outline: 2px solid #4b9cff;
+  outline: 2px solid var(--accent-colour, #4b9cff);
   outline-offset: 1px;
   border-radius: var(--box-radius);
   background: var(--theme-surface-raised, #202020);
@@ -381,8 +381,8 @@
 .set-progress-star {
   width: 19px;
   height: 19px;
-  fill: #4b9cff;
-  stroke: #4b9cff;
+  fill: var(--accent-ink, #4b9cff);
+  stroke: var(--accent-ink, #4b9cff);
   stroke-width: 1.4;
   stroke-linejoin: round;
 }
@@ -536,7 +536,7 @@
   border: 1px solid #315d91;
   border-radius: 10px;
   background: var(--theme-accent-surface, #142238);
-  color: #62a9ff;
+  color: var(--accent-ink, #62a9ff);
   cursor: pointer;
 }
 
@@ -908,7 +908,7 @@
   height: 21px;
   flex: 0 0 auto;
   fill: none;
-  stroke: #4b9cff;
+  stroke: var(--accent-ink, #4b9cff);
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -921,7 +921,7 @@
 }
 
 .catalog-add-button {
-  color: #4b9cff;
+  color: var(--accent-ink, #4b9cff);
 }
 
 .catalog-delete-action {

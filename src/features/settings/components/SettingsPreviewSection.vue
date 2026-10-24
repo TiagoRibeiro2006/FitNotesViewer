@@ -3,9 +3,6 @@ import { computed } from 'vue'
 
 const props = defineProps({ section: { type: String, required: true } })
 const optionsBySection = {
-  appearance: [
-    { title: 'Accent colour', description: 'The colour of buttons, switches, favourites and selections.', value: 'Blue', colour: '#4b9cff' },
-  ],
   home: [
     { title: 'Set progress indicators', description: 'Show or hide the progress indicators next to your sets.', value: 'Show / Hide' },
   ],

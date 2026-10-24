@@ -121,13 +121,13 @@ function toggleBodyIcons() {
   transition: transform .15s ease;
 }
 .appearance-switch[aria-checked='true']::before {
-  background: #3f96ff;
+  background: var(--accent-colour, #3f96ff);
 }
 .appearance-switch[aria-checked='true'] span {
   transform: translateX(20px);
 }
 .appearance-switch:focus-visible {
-  outline: 2px solid #62adff;
+  outline: 2px solid var(--accent-colour, #62adff);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

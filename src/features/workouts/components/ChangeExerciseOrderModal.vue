@@ -102,9 +102,9 @@ function muscleStyle(exercise) {
 
 <style scoped>
 .exercise-order-close-changed {
-  border-color: #3f96ff;
+  border-color: var(--accent-colour, #3f96ff);
   background: var(--theme-accent-surface, #142238);
-  color: #62adff;
+  color: var(--accent-ink, #62adff);
 }
 .exercise-order-close-changed:active {
   background: var(--theme-accent-surface, #203957);
