@@ -102,16 +102,16 @@ function muscleStyle(exercise) {
 
 <style scoped>
 .exercise-order-close-changed {
-  border-color: #3f96ff;
-  background: #142238;
-  color: #62adff;
+  border-color: var(--accent-colour, #3f96ff);
+  background: var(--theme-accent-surface, #142238);
+  color: var(--accent-ink, #62adff);
 }
 .exercise-order-close-changed:active {
-  background: #203957;
+  background: var(--theme-accent-surface, #203957);
 }
 .exercise-order-reset:not(:disabled) {
-  border-color: #64646d;
-  color: #fff;
+  border-color: var(--theme-text-muted, #64646d);
+  color: var(--theme-text-primary, #fff);
 }
 .exercise-order-reset:disabled {
   opacity: .3;
@@ -134,9 +134,9 @@ function muscleStyle(exercise) {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid #242424;
+  border: 1px solid var(--theme-border, #242424);
   border-radius: var(--box-radius);
-  background: #19191b;
+  background: var(--theme-surface-raised, #19191b);
 }
 .exercise-order-row strong {
   min-width: 0;
@@ -151,7 +151,7 @@ function muscleStyle(exercise) {
 .exercise-order-number {
   flex-shrink: 0;
   min-width: 24px;
-  color: #8f8f96;
+  color: var(--theme-text-secondary, #8f8f96);
   font-size: 14px;
   font-weight: 800;
   text-align: center;
@@ -178,7 +178,7 @@ function muscleStyle(exercise) {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #fff;
+  color: var(--theme-text-primary, #fff);
   cursor: pointer;
 }
 .exercise-order-controls button:disabled {
@@ -186,7 +186,7 @@ function muscleStyle(exercise) {
   cursor: default;
 }
 .exercise-order-controls button:active:not(:disabled) {
-  background: #303034;
+  background: var(--theme-surface-muted, #303034);
 }
 .exercise-order-controls button > svg {
   width: 22px;

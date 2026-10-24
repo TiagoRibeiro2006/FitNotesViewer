@@ -1,5 +1,5 @@
 <script setup>
-const emit = defineEmits(['manage-muscles', 'manage-exercises', 'manage-body-items'])
+const emit = defineEmits(['manage-muscles', 'manage-exercises'])
 
 function manageMuscles() {
   emit('manage-muscles')
@@ -9,9 +9,6 @@ function manageExercises() {
   emit('manage-exercises')
 }
 
-function manageBodyItems() {
-  emit('manage-body-items')
-}
 </script>
 
 <template>
@@ -19,7 +16,7 @@ function manageBodyItems() {
     <div class="settings-section-heading">
       <div>
         <p class="eyebrow">EDIT</p>
-        <h2>Manage items</h2>
+        <h2>Muscles & exercises</h2>
       </div>
     </div>
 
@@ -43,14 +40,5 @@ function manageBodyItems() {
       </button>
     </div>
 
-    <div class="settings-data-action">
-      <div>
-        <strong>Manage body items</strong>
-        <p>Rename, add or remove body measurements.</p>
-      </div>
-      <button class="settings-export-button" type="button" @click="manageBodyItems">
-        Open body items
-      </button>
-    </div>
   </section>
 </template>

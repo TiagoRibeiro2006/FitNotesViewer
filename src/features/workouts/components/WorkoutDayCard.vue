@@ -3,6 +3,7 @@ import { formatNumber } from '../../../shared/utils/numbers'
 import { androidColorToCss } from '../../../shared/utils/colors'
 import ExerciseMuscleIndicator from '../../../shared/components/MuscleIndicator.vue'
 import { useMuscleAppearance } from '../../../shared/composables/useMuscleAppearance.js'
+import { useProgressAppearance } from '../../../shared/composables/useProgressAppearance.js'
 import { useDragList } from '../../../shared/composables/useDragList'
 import { useWeightUnitPreference } from '../../../shared/units/useWeightUnitPreference.js'
 
@@ -18,6 +19,7 @@ const emit = defineEmits(['add', 'copy', 'edit', 'reorder', 'move-exercise', 'ne
 const { draggingIndex, startDrag } = useDragList(moveExercise, saveExerciseOrder)
 const { displayWeight, weightUnit } = useWeightUnitPreference()
 const { homeIndicatorsEnabled } = useMuscleAppearance()
+const { homeProgressEnabled } = useProgressAppearance()
 
 function moveExercise(fromIndex, toIndex) {
   emit('move-exercise', fromIndex, toIndex)
@@ -89,7 +91,7 @@ function muscleStyle(exercise) {
           <span class="exercise-set-list">
             <span v-for="(set, setIndex) in exercise.sets" :key="set.id" class="exercise-set-row">
               <span class="exercise-set-number">
-                <svg v-if="set.isProgress" class="exercise-progress-star" viewBox="0 0 24 24" aria-hidden="true">
+                <svg v-if="homeProgressEnabled && set.isProgress" class="exercise-progress-star" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
                 </svg>
                 <span v-else>{{ setIndex + 1 }}</span>

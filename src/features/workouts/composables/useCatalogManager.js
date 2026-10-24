@@ -23,6 +23,7 @@ export function useCatalogManager(callbacks = {}) {
   const searchQuery = ref('')
   const selectedItem = ref(null)
   const selectedMuscleExerciseCount = computed(readSelectedMuscleExerciseCount)
+  const selectedMuscleExercises = computed(readSelectedMuscleExercises)
   const filteredItems = computed(readFilteredItems)
   const title = computed(readTitle)
 
@@ -184,12 +185,16 @@ export function useCatalogManager(callbacks = {}) {
   }
 
   function readSelectedMuscleExerciseCount() {
-    if (mode.value !== 'muscles' || !selectedItem.value) return 0
-    let count = 0
+    return selectedMuscleExercises.value.length
+  }
+
+  function readSelectedMuscleExercises() {
+    if (mode.value !== 'muscles' || !selectedItem.value) return []
+    const matches = []
     for (const exercise of exercises.value) {
-      if (exercise.categoryId === selectedItem.value.id) count += 1
+      if (exercise.categoryId === selectedItem.value.id) matches.push(exercise)
     }
-    return count
+    return matches
   }
 
   return {
@@ -204,9 +209,11 @@ export function useCatalogManager(callbacks = {}) {
     searchQuery,
     selectedItem,
     selectedMuscleExerciseCount,
+    selectedMuscleExercises,
     title,
     goBack,
     open,
+    load,
     reset,
     removeExercise,
     removeMuscle,

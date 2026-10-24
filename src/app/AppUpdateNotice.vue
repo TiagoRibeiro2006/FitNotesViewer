@@ -30,7 +30,7 @@ onBeforeUnmount(() => window.clearTimeout(dismissTimer))
   padding: 11px 14px;
   border: 1px solid #347f59;
   border-radius: var(--box-radius);
-  background: #13271d;
+  background: var(--theme-accent-surface, #13271d);
   box-shadow: 0 12px 30px rgba(0, 0, 0, .4);
   color: #70d69b;
   font-size: 13px;

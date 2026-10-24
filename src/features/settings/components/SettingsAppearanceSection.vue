@@ -5,9 +5,13 @@ const {
   iconsEnabled,
   homeIndicatorsEnabled,
   bodyIconsEnabled,
+  chartIconsEnabled,
+  exerciseListIconsEnabled,
   setIconsEnabled,
   setHomeIndicatorsEnabled,
   setBodyIconsEnabled,
+  setChartIconsEnabled,
+  setExerciseListIconsEnabled,
 } = useMuscleAppearance()
 
 function showIcons() {
@@ -24,6 +28,14 @@ function toggleHomeIndicators() {
 
 function toggleBodyIcons() {
   setBodyIconsEnabled(!bodyIconsEnabled.value)
+}
+
+function toggleChartIcons() {
+  setChartIconsEnabled(!chartIconsEnabled.value)
+}
+
+function toggleExerciseListIcons() {
+  setExerciseListIconsEnabled(!exerciseListIconsEnabled.value)
 }
 </script>
 
@@ -57,7 +69,7 @@ function toggleBodyIcons() {
     <div class="appearance-home-option">
       <div>
         <strong id="body-icons-label">Show Body icons</strong>
-        <p>Show blue icons next to body measurement names.</p>
+        <p>Show icons next to body measurement names. Choose their colour in Body settings.</p>
       </div>
       <button
         class="appearance-switch"
@@ -66,6 +78,34 @@ function toggleBodyIcons() {
         aria-labelledby="body-icons-label"
         :aria-checked="bodyIconsEnabled"
         @click="toggleBodyIcons"
+      ><span></span></button>
+    </div>
+    <div class="appearance-home-option">
+      <div>
+        <strong id="chart-icons-label">Icons on Charts</strong>
+        <p>Show muscle icons in Distribution. Otherwise, show muscle colours.</p>
+      </div>
+      <button
+        class="appearance-switch"
+        type="button"
+        role="switch"
+        aria-labelledby="chart-icons-label"
+        :aria-checked="chartIconsEnabled"
+        @click="toggleChartIcons"
+      ><span></span></button>
+    </div>
+    <div class="appearance-home-option">
+      <div>
+        <strong id="exercise-list-icons-label">Icons in exercise lists</strong>
+        <p>Show muscle icons when adding or managing exercises. Otherwise, show muscle colours.</p>
+      </div>
+      <button
+        class="appearance-switch"
+        type="button"
+        role="switch"
+        aria-labelledby="exercise-list-icons-label"
+        :aria-checked="exerciseListIconsEnabled"
+        @click="toggleExerciseListIcons"
       ><span></span></button>
     </div>
   </section>
@@ -79,15 +119,15 @@ function toggleBodyIcons() {
   gap: 18px;
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px solid #242424;
+  border-top: 1px solid var(--theme-border, #242424);
 }
 .appearance-home-option strong {
-  color: #f5f5f5;
+  color: var(--theme-text-primary, #f5f5f5);
   font-size: 15px;
 }
 .appearance-home-option p {
   margin: 5px 0 0;
-  color: #777780;
+  color: var(--theme-text-muted, #777780);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -109,25 +149,25 @@ function toggleBodyIcons() {
   position: absolute;
   inset: 6px 0;
   border-radius: 999px;
-  background: #34343a;
+  background: var(--theme-surface-muted, #34343a);
 }
 .appearance-switch span {
   position: relative;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--theme-inverse, #fff);
   transform: translateX(0);
   transition: transform .15s ease;
 }
 .appearance-switch[aria-checked='true']::before {
-  background: #3f96ff;
+  background: var(--accent-colour, #3f96ff);
 }
 .appearance-switch[aria-checked='true'] span {
   transform: translateX(20px);
 }
 .appearance-switch:focus-visible {
-  outline: 2px solid #62adff;
+  outline: 2px solid var(--accent-colour, #62adff);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

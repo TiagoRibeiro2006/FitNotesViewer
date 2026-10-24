@@ -159,19 +159,19 @@ function chooseForearm() {
   width: 48px;
   height: 48px;
   padding: 0;
-  border: 1px solid #35353b;
+  border: 1px solid var(--theme-border-strong, #35353b);
   border-radius: var(--box-radius);
-  background: #19191b;
-  color: #fff;
+  background: var(--theme-surface-raised, #19191b);
+  color: var(--theme-text-primary, #fff);
   cursor: pointer;
 }
 .muscle-icon-options button[aria-pressed='true'] {
-  border-color: #62adff;
-  background: #142238;
+  border-color: var(--accent-colour, #62adff);
+  background: var(--theme-accent-surface, #142238);
 }
 .muscle-icon-empty {
   height: 24px;
-  color: #93939c;
+  color: var(--theme-text-secondary, #93939c);
   font-size: 24px;
   line-height: 24px;
 }
