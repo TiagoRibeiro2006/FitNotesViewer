@@ -166,7 +166,7 @@ function chooseForearm() {
   cursor: pointer;
 }
 .muscle-icon-options button[aria-pressed='true'] {
-  border-color: #62adff;
+  border-color: var(--accent-colour, #62adff);
   background: var(--theme-accent-surface, #142238);
 }
 .muscle-icon-empty {

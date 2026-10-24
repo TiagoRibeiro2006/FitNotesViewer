@@ -109,7 +109,7 @@ const emit = defineEmits(['cancel', 'discard', 'save'])
 }
 
 .unsaved-changes-actions button:focus-visible {
-  outline: 2px solid #62adff;
+  outline: 2px solid var(--accent-colour, #62adff);
   outline-offset: 2px;
 }
 

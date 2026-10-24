@@ -1,5 +1,6 @@
 import { readonly, ref } from 'vue'
 import { applyTheme, normalizeTheme, readTheme, saveTheme, THEMES } from '../models/themes.js'
+import { initializeAccentColour } from './useAccentColour.js'
 
 function themeStorage() {
   try {
@@ -13,6 +14,7 @@ const selectedTheme = ref(readTheme(themeStorage()))
 
 export function initializeTheme() {
   applyTheme(globalThis.document, selectedTheme.value)
+  initializeAccentColour()
 }
 
 function setTheme(theme) {

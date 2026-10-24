@@ -35,13 +35,13 @@
   color: var(--theme-text-secondary, #85858f);
 }
 
-.settings-search:focus-within { border-color: #4b9cff; }
+.settings-search:focus-within { border-color: var(--accent-colour, #4b9cff); }
 .settings-search svg { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
 .settings-search input { width: 100%; min-width: 0; padding: 14px 0; border: 0; outline: 0; background: transparent; color: var(--theme-text-primary, #fff); font: inherit; }
 .settings-search input::placeholder { color: var(--theme-text-secondary, #85858f); }
 .settings-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .settings-search-clear { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: var(--theme-surface-raised, #242429); color: var(--theme-text-secondary, #a0a0aa); cursor: pointer; }
-.settings-search-clear:focus-visible { outline: 2px solid #4b9cff; }
+.settings-search-clear:focus-visible { outline: 2px solid var(--accent-colour, #4b9cff); }
 .settings-search-empty { padding: 24px 16px; margin: 0; color: var(--theme-text-secondary, #85858f); text-align: center; font-size: 14px; }
 .settings-search-status { margin: 0; color: var(--theme-text-secondary, #85858f); font-size: 12px; }
 
@@ -69,7 +69,7 @@
 
 .settings-navigation-row:last-child { border-bottom: 0; }
 .settings-navigation-row:hover { background: var(--theme-surface-raised, #18181b); }
-.settings-navigation-row:focus-visible { outline: 2px solid #4b9cff; outline-offset: -3px; }
+.settings-navigation-row:focus-visible { outline: 2px solid var(--accent-colour, #4b9cff); outline-offset: -3px; }
 
 .settings-navigation-icon {
   display: grid;
@@ -80,7 +80,7 @@
   border: 1px solid var(--theme-accent-border, #263c57);
   border-radius: 13px;
   background: var(--theme-accent-surface, #132032);
-  color: #4b9cff;
+  color: var(--accent-ink, #4b9cff);
 }
 
 .settings-navigation-row svg {
@@ -265,14 +265,14 @@
 }
 
 .settings-unit-option.is-selected {
-  border-color: #3f8fef;
+  border-color: var(--accent-colour, #3f8fef);
   background: var(--theme-accent-surface, #121b27);
   color: var(--theme-text-primary, #fff);
 }
 
 .settings-unit-option.is-selected span {
   background: var(--theme-accent-surface, #172d47);
-  color: #62a9ff;
+  color: var(--accent-ink, #62a9ff);
 }
 
 .settings-unit-option:active {

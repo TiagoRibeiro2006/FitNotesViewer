@@ -175,26 +175,26 @@
 }
 
 .time-series-line-glow {
-  stroke: rgba(63, 150, 255, .18);
+  stroke: rgba(var(--accent-rgb, 63, 150, 255), .18);
   stroke-width: 12;
 }
 
 .time-series-line {
-  stroke: #3f96ff;
+  stroke: var(--accent-ink, #3f96ff);
   stroke-width: 3;
 }
 
 .time-series-points circle {
   fill: var(--theme-text-inverse, #101010);
-  stroke: #3f96ff;
+  stroke: var(--accent-ink, #3f96ff);
   stroke-width: 3;
   cursor: pointer;
   transition: r .15s ease, fill .15s ease;
 }
 
 .time-series-points circle.is-selected {
-  fill: #3f96ff;
-  stroke: #bcdcff;
+  fill: var(--accent-ink, #3f96ff);
+  stroke: var(--accent-ink, #bcdcff);
 }
 
 .time-series-points circle:focus-visible {

@@ -120,7 +120,7 @@ async function initializeCharts() {
   height: 30px;
   margin-bottom: 18px;
   border: 3px solid var(--theme-border, #24242a);
-  border-top-color: #3f96ff;
+  border-top-color: var(--accent-colour, #3f96ff);
   border-radius: 50%;
   animation: charts-spin .8s linear infinite;
 }

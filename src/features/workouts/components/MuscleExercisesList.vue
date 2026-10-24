@@ -77,5 +77,5 @@ function finishChange() {
 .muscle-exercises-list { display: grid; gap: 10px; margin-top: 12px; }
 .muscle-exercise-card { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 72px; padding: 14px 16px; border: 1px solid var(--theme-border, #292929); border-radius: var(--box-radius); background: var(--theme-surface, #111); text-align: left; cursor: pointer; }
 .muscle-exercise-card .exercise-picker-copy { flex: 1; min-width: 0; }
-.muscle-exercises button:focus-visible { outline: 2px solid #4b9cff; outline-offset: 2px; }
+.muscle-exercises button:focus-visible { outline: 2px solid var(--accent-colour, #4b9cff); outline-offset: 2px; }
 </style>
