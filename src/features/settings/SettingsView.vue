@@ -12,6 +12,7 @@ import SettingsBodySection from './components/SettingsBodySection.vue'
 import SettingsThemeSection from './components/SettingsThemeSection.vue'
 import SettingsAccentSection from './components/SettingsAccentSection.vue'
 import SettingsHomeSection from './components/SettingsHomeSection.vue'
+import SettingsAboutSection from './components/SettingsAboutSection.vue'
 import { searchSettings } from './settingsSearch.js'
 
 const props = defineProps({
@@ -147,6 +148,7 @@ function dataDeleted() {
     </nav>
     <p v-if="searchQuery.trim() && visibleSections.length" class="settings-search-status" role="status">{{ visibleSections.length }} {{ visibleSections.length === 1 ? 'section found' : 'sections found' }}</p>
     <p class="settings-local-note">Your preferences and data stay on this device.</p>
+    <SettingsAboutSection v-if="!searchQuery.trim()" />
   </div>
 
   <ActionModal :open="activeSection !== ''" :title="sectionTitle" :aria-label="sectionTitle || 'Settings'" modal-class="settings-detail-modal" layer-class="settings-detail-layer" @close="closeSection">
