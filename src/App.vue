@@ -1,6 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
-import { checkAutomaticBackup } from './features/settings/services/automaticBackupService.js'
+import { computed, onMounted, ref } from 'vue'
 import AppBottomNavigation from './app/AppBottomNavigation.vue'
 import AppUpdateNotice from './app/AppUpdateNotice.vue'
 import { consumeAppUpdateNotice } from './app/serviceWorker'
@@ -37,12 +36,6 @@ const {
 } = useAppNavigation()
 
 onMounted(initializeApp)
-onMounted(() => document.addEventListener('visibilitychange', checkBackupOnReturn))
-onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkBackupOnReturn))
-
-function checkBackupOnReturn() {
-  if (appReady.value && document.visibilityState === 'visible') void checkAutomaticBackup()
-}
 
 function handleWorkoutChanged(updatedSummary) {
   summary.value = updatedSummary
