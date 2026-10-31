@@ -32,8 +32,11 @@ export async function writeAutomaticBackup(directory, backup, name) {
     throw error
   }
   const saved = await file.getFile()
-  const expected = new Blob([backup.data]).size
-  if (saved.size !== expected || !saved.size) throw new Error('The backup file could not be verified.')
+  const expected = new Uint8Array(await new Blob([backup.data]).arrayBuffer())
+  const actual = new Uint8Array(await saved.arrayBuffer())
+  if (!expected.length || actual.length !== expected.length || actual.some((value, index) => value !== expected[index])) {
+    throw new Error('The backup file could not be verified.')
+  }
 }
 
 export async function removeOlderBackups(directory, names) {
