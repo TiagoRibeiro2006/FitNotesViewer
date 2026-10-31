@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import TypedConfirmationModal from '../../../shared/components/TypedConfirmationModal.vue'
 import { useFitNotesBackup } from '../composables/useFitNotesBackup'
 import ExportDataModal from './ExportDataModal.vue'
+import AutomaticBackupSettings from './AutomaticBackupSettings.vue'
 
 const props = defineProps({
   summary: { type: Object, required: true },
@@ -153,6 +154,8 @@ function readConfirmationBusy() {
         Export data
       </button>
     </div>
+
+    <AutomaticBackupSettings v-if="hasCurrentData" />
 
     <div v-if="hasCurrentData" class="settings-data-action">
       <div>
