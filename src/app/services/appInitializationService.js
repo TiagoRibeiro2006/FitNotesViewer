@@ -3,6 +3,7 @@ import { migrateLegacyLocalStorage } from '../../data/repositories/backupReposit
 import { getSummary } from '../../data/repositories/summaryRepository'
 import { warmUpSqliteEngine } from '../../fitnotes'
 import { createEmptySummary } from '../../shared/models/summary'
+import { checkAutomaticBackup } from '../../features/settings/services/automaticBackupService.js'
 
 export async function loadApplicationSummary() {
   await migrateLegacyLocalStorage()
@@ -12,6 +13,7 @@ export async function loadApplicationSummary() {
 export function startBackgroundServices() {
   void requestPersistentStorage()
   void warmUpDatabaseEngine()
+  void checkAutomaticBackup()
 }
 
 async function warmUpDatabaseEngine() {
