@@ -38,6 +38,14 @@ Import data from FitNotes on iOS or Android and export it again as a `.fitnotes`
 
 FitNotesViewer is an independent project and is not affiliated with FitNotes.
 
+### Automatic backups
+
+In **Settings → Data & backups**, compatible browsers can save backups to a folder you select. Enable **Automatic backups**, choose a folder, and select an interval from 1 to 30 days. The app checks when it opens or returns to the foreground; it does not run a scheduled task while closed. Enabling the feature creates the first backup immediately when data is available.
+
+**Keep only the latest backup** removes previously tracked automatic backups in the selected folder only after the new file is saved and its contents verified. Other files and manually exported backups are left alone. Changing folders leaves the old folder untouched and starts a new backup history.
+
+An imported `.fitnotes` source enables complete `.fitnotes` backups; otherwise the app saves its extended CSV export with training and body data. Folder access requires HTTPS (or localhost), a browser with writable folder selection, and permission from the user. Some mobile browsers do not support it. If permission expires, select the folder again in settings. The settings show the last successful backup and any error.
+
 ---
 
 <p align="center">
